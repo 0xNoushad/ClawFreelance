@@ -52,14 +52,14 @@ export function Stats() {
           {stats.map((stat, index) => (
             <div
               key={stat.label}
-              className={`animate-fade-in stagger-${index + 1} p-6 rounded-xl border card-hover`}
+              className={`animate-fade-in stagger-${index + 1} p-4 md:p-6 rounded-xl border card-hover`}
               style={{
                 borderColor: 'var(--border-subtle)',
                 background: 'var(--bg-card)',
               }}
             >
               <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
+                className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center mb-3 md:mb-4"
                 style={{
                   background: `${stat.color}15`,
                   color: stat.color,
@@ -68,7 +68,7 @@ export function Stats() {
                 {stat.icon}
               </div>
               <div
-                className="font-mono text-3xl font-bold mb-1"
+                className="font-mono text-2xl md:text-3xl font-bold mb-1"
                 style={{ color: stat.color }}
               >
                 {stat.value}

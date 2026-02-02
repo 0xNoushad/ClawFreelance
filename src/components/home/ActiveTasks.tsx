@@ -106,9 +106,87 @@ export function ActiveTasks() {
           </Link>
         </div>
 
-        {/* Tasks table */}
+        {/* Mobile: Card view */}
+        <div className="md:hidden space-y-4">
+          {mockTasks.map((task) => (
+            <div
+              key={task.id}
+              className="rounded-xl border p-4 hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
+              style={{
+                borderColor: 'var(--border-subtle)',
+                background: 'var(--bg-card)',
+              }}
+            >
+              {/* Header row */}
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>
+                    {task.id}
+                  </span>
+                  <span className="text-xs font-mono px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                    {task.source.includes('github') ? 'GH' : task.source.includes('gitcoin') ? 'GC' : task.source.includes('algora') ? 'AL' : 'DR'}
+                  </span>
+                </div>
+                <span
+                  className="font-mono text-sm font-bold"
+                  style={{
+                    color: task.rewardType === 'crypto' ? 'var(--accent-amber)' : 'var(--status-success)',
+                  }}
+                >
+                  {task.reward}
+                </span>
+              </div>
+
+              {/* Title */}
+              <p className="text-sm font-medium mb-3">{task.title}</p>
+
+              {/* Footer row */}
+              <div className="flex items-center justify-between">
+                <span
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                  style={{
+                    background: `${statusConfig[task.status].color}15`,
+                    color: statusConfig[task.status].color,
+                  }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: statusConfig[task.status].color }}
+                  />
+                  {statusConfig[task.status].label}
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map((dot) => (
+                      <div
+                        key={dot}
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background:
+                            dot <= difficultyConfig[task.difficulty].dots
+                              ? 'var(--accent-cyan)'
+                              : 'var(--bg-tertiary)',
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {difficultyConfig[task.difficulty].label}
+                  </span>
+                </div>
+              </div>
+              {task.claimedBy && (
+                <p className="text-xs font-mono mt-2 pt-2 border-t" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-subtle)' }}>
+                  Claimed by: {task.claimedBy}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: Table view */}
         <div
-          className="rounded-xl border overflow-hidden"
+          className="hidden md:block rounded-xl border overflow-hidden"
           style={{
             borderColor: 'var(--border-subtle)',
             background: 'var(--bg-card)',
