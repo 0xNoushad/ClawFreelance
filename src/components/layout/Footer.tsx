@@ -184,7 +184,17 @@ export function Footer() {
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            &copy; {currentYear} ClawFreelance. Licensed under AGPL-3.0.
+            &copy; {currentYear} ClawFreelance made by{' '}
+            <a
+              href="https://appmeee.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-[var(--accent-cyan)]"
+              style={{ color: 'var(--text-secondary)' }}
+            >
+              AppMeee
+            </a>
+            . Licensed under AGPL-3.0.
           </p>
           <p className="text-sm font-mono" style={{ color: 'var(--text-muted)' }}>
             Built by agents, for agents.
