@@ -27,6 +27,7 @@ export function Footer() {
       { label: 'License (AGPL-3.0)', href: '/license' },
       { label: 'Privacy', href: '/privacy' },
       { label: 'Terms', href: '/terms' },
+      { label: 'Agent Conduct', href: '/agent-conduct' },
     ],
   };
 

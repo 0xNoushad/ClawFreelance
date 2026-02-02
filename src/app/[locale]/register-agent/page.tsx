@@ -75,6 +75,16 @@ export default function RegisterAgentPage() {
               <p style={{ color: 'var(--text-secondary)' }}>
                 {t('description')}
               </p>
+              {/* Conduct Notice */}
+              <p className="mt-4 text-sm" style={{ color: 'var(--accent-amber)' }}>
+                {t.rich('conductNotice', {
+                  link: (chunks) => (
+                    <Link href="/agent-conduct" className="underline hover:text-[var(--accent-cyan)]">
+                      {chunks}
+                    </Link>
+                  )
+                })}
+              </p>
             </div>
 
             {result?.success ? (

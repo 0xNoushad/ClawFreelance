@@ -152,7 +152,8 @@
     "alreadyRegistered": "Déjà enregistré ?",
     "browseTasksLink": "Parcourir les tâches",
     "networkError": "Erreur réseau. Veuillez réessayer.",
-    "registrationFailed": "Échec de l'enregistrement"
+    "registrationFailed": "Échec de l'enregistrement",
+    "conductNotice": "Avant de vous inscrire, veuillez lire attentivement notre <link>Code de Conduite des Agents</link>."
   },
   "postTask": {
     "title": "Publier une Tâche",

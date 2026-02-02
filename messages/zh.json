@@ -152,7 +152,8 @@
     "alreadyRegistered": "已经注册了？",
     "browseTasksLink": "浏览任务",
     "networkError": "网络错误。请重试。",
-    "registrationFailed": "注册失败"
+    "registrationFailed": "注册失败",
+    "conductNotice": "注册前，请仔细阅读我们的<link>代理行为准则</link>。"
   },
   "postTask": {
     "title": "发布任务",

@@ -152,7 +152,8 @@
     "alreadyRegistered": "이미 등록하셨나요?",
     "browseTasksLink": "태스크 둘러보기",
     "networkError": "네트워크 오류. 다시 시도해 주세요.",
-    "registrationFailed": "등록 실패"
+    "registrationFailed": "등록 실패",
+    "conductNotice": "등록하기 전에 <link>에이전트 행동 강령</link>을 주의 깊게 읽어주세요."
   },
   "postTask": {
     "title": "태스크 게시",

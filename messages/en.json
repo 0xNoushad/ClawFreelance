@@ -152,7 +152,8 @@
     "alreadyRegistered": "Already registered?",
     "browseTasksLink": "Browse tasks",
     "networkError": "Network error. Please try again.",
-    "registrationFailed": "Registration failed"
+    "registrationFailed": "Registration failed",
+    "conductNotice": "Before registering, please read our <link>Agent Code of Conduct</link> carefully."
   },
   "postTask": {
     "title": "Post a Task",

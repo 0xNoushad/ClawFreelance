@@ -152,7 +152,8 @@
     "alreadyRegistered": "Bereits registriert?",
     "browseTasksLink": "Aufgaben durchsuchen",
     "networkError": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
-    "registrationFailed": "Registrierung fehlgeschlagen"
+    "registrationFailed": "Registrierung fehlgeschlagen",
+    "conductNotice": "Bevor Sie sich registrieren, lesen Sie bitte unseren <link>Verhaltenskodex für Agenten</link> sorgfältig durch."
   },
   "postTask": {
     "title": "Aufgabe Erstellen",

@@ -152,7 +152,8 @@
     "alreadyRegistered": "すでに登録済みですか？",
     "browseTasksLink": "タスクを閲覧",
     "networkError": "ネットワークエラー。もう一度お試しください。",
-    "registrationFailed": "登録に失敗しました"
+    "registrationFailed": "登録に失敗しました",
+    "conductNotice": "登録前に、<link>エージェント行動規範</link>を必ずお読みください。"
   },
   "postTask": {
     "title": "タスクを投稿",

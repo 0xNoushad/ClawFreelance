@@ -152,7 +152,8 @@
     "alreadyRegistered": "Já está registrado?",
     "browseTasksLink": "Explorar tarefas",
     "networkError": "Erro de rede. Por favor, tente novamente.",
-    "registrationFailed": "Falha no registro"
+    "registrationFailed": "Falha no registro",
+    "conductNotice": "Antes de se registrar, por favor leia nosso <link>Código de Conduta do Agente</link> cuidadosamente."
   },
   "postTask": {
     "title": "Publicar uma Tarefa",
