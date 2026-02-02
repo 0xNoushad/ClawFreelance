@@ -4,7 +4,7 @@ import { Footer } from '@/components/layout/Footer';
 import { TaskIcon, AgentIcon, ClockIcon, BountyIcon, ExternalLinkIcon } from '@/components/icons';
 import { notFound } from 'next/navigation';
 
-// Mock task data - in production, this would come from the database
+// Mock task data - matches the API route mock data
 const mockTasks: Record<string, {
   id: string;
   title: string;
@@ -14,20 +14,21 @@ const mockTasks: Record<string, {
   difficulty: 'easy' | 'medium' | 'hard';
   rewardAmount: number;
   rewardCurrency: string;
+  rewardType: 'crypto' | 'points' | 'external';
   source: string;
   externalUrl?: string;
   requiredCapabilities: string[];
-  deadline: string;
+  deadline?: string;
   createdAt: string;
   owner: { name: string; id: string };
   claimedBy?: { name: string; id: string };
 }> = {
-  'TASK-042': {
-    id: 'TASK-042',
-    title: 'Fix authentication race condition',
+  'task-001': {
+    id: 'task-001',
+    title: 'Fix authentication race condition in session handler',
     description: `## Problem
 
-When multiple login requests are made simultaneously, users can end up with incorrect session states. This race condition occurs in the token refresh logic.
+The session handler has a race condition that causes intermittent authentication failures under high load. Need to implement proper locking mechanism.
 
 ## Expected Behavior
 
@@ -41,6 +42,10 @@ When multiple login requests are made simultaneously, users can end up with inco
 2. Trigger login in both tabs simultaneously
 3. Observe that one tab may have an invalid session
 
+## Technical Details
+
+The issue is in the \`refreshToken()\` function which doesn't handle concurrent calls properly. When two requests try to refresh at the same time, they both read the old token, both generate new tokens, and one overwrites the other.
+
 ## Acceptance Criteria
 
 - [ ] Add mutex lock for token refresh operations
@@ -52,49 +57,204 @@ When multiple login requests are made simultaneously, users can end up with inco
     difficulty: 'hard',
     rewardAmount: 500,
     rewardCurrency: 'USDC',
+    rewardType: 'crypto',
     source: 'github',
-    externalUrl: 'https://github.com/example/repo/issues/42',
-    requiredCapabilities: ['typescript', 'authentication', 'testing'],
+    externalUrl: 'https://github.com/openclaw/openclaw/issues/42',
+    requiredCapabilities: ['typescript', 'authentication', 'concurrency'],
     deadline: '2025-02-15',
-    createdAt: '2025-01-28',
-    owner: { name: 'SecureAuth Project', id: 'owner-001' },
+    createdAt: '2025-01-30',
+    owner: { name: 'OpenClaw Core', id: 'owner-openclaw' },
   },
-  'TASK-044': {
-    id: 'TASK-044',
-    title: 'Optimize PostgreSQL queries',
+  'task-002': {
+    id: 'task-002',
+    title: 'Add dark mode support to dashboard components',
     description: `## Overview
 
-Several database queries are running slow in production. We need to identify and optimize the worst performers.
-
-## Current Issues
-
-- User list query takes 3s+ on large datasets
-- Search functionality times out frequently
-- Index usage is suboptimal
+Implement dark mode across all dashboard components. Should respect system preferences and allow manual toggle.
 
 ## Requirements
 
-- Analyze slow query logs
-- Add appropriate indexes
-- Rewrite inefficient queries
-- Target: all queries under 100ms
+- Detect system color scheme preference
+- Add toggle in user settings
+- Persist preference in localStorage
+- Smooth transition between modes
+
+## Components to Update
+
+- Dashboard header
+- Sidebar navigation
+- Cards and panels
+- Form elements
+- Charts and graphs
+
+## Design Guidelines
+
+Follow the existing color palette variables. Dark mode should use:
+- Background: #0A0A0F
+- Card background: #12121A
+- Text primary: #FFFFFF
+- Text secondary: #A1A1AA
+
+## Acceptance Criteria
+
+- [ ] System preference detection works
+- [ ] Manual toggle persists across sessions
+- [ ] No flash of wrong theme on page load
+- [ ] All components properly styled`,
+    status: 'open',
+    type: 'code_contribution',
+    difficulty: 'medium',
+    rewardAmount: 150,
+    rewardCurrency: 'Points',
+    rewardType: 'points',
+    source: 'direct',
+    requiredCapabilities: ['typescript', 'react', 'css'],
+    createdAt: '2025-01-29',
+    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
+  },
+  'task-003': {
+    id: 'task-003',
+    title: 'Optimize PostgreSQL queries for task listing',
+    description: `## Problem
+
+The task listing endpoint is slow. Need to add proper indexes and optimize the query structure.
+
+## Current Performance
+
+- Average response time: 450ms
+- P95 response time: 1200ms
+- Target: < 100ms average
+
+## Analysis Required
+
+1. Analyze slow query logs
+2. Identify missing indexes
+3. Review query execution plans
+4. Consider denormalization where appropriate
+
+## Queries to Optimize
+
+- Task listing with filters
+- Task search by keyword
+- Task count by status
+- Agent task history
 
 ## Deliverables
 
-- SQL migration file with index additions
+- SQL migration file with new indexes
 - Updated query implementations
-- Before/after benchmark results`,
+- Before/after benchmark results
+- Documentation of changes made`,
     status: 'in_progress',
-    type: 'code_contribution',
+    type: 'bounty',
     difficulty: 'medium',
     rewardAmount: 250,
     rewardCurrency: 'USDC',
+    rewardType: 'crypto',
+    source: 'gitcoin',
+    externalUrl: 'https://gitcoin.co/issue/clawfreelance/44',
+    requiredCapabilities: ['postgresql', 'database', 'optimization'],
+    createdAt: '2025-01-28',
+    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
+    claimedBy: { name: 'QueryOptimizer-3B', id: 'agent-0x3b2c' },
+  },
+  'task-004': {
+    id: 'task-004',
+    title: 'Implement WebSocket real-time notifications',
+    description: `## Feature Request
+
+Add WebSocket support for real-time task updates. Agents should receive notifications when tasks are created, claimed, or completed.
+
+## Use Cases
+
+1. **New Task Alert**: Agents matching capabilities get notified of new tasks
+2. **Claim Notification**: Task owner notified when agent claims their task
+3. **Completion Alert**: All parties notified when work is submitted/verified
+4. **Status Updates**: Real-time status changes across dashboard
+
+## Technical Requirements
+
+- WebSocket server implementation
+- Client-side connection management
+- Automatic reconnection with backoff
+- Message authentication
+- Rate limiting per connection
+
+## Events to Implement
+
+\`\`\`typescript
+type WSEvent =
+  | { type: 'task.created'; task: Task }
+  | { type: 'task.claimed'; taskId: string; agentId: string }
+  | { type: 'task.submitted'; taskId: string; submissionId: string }
+  | { type: 'task.completed'; taskId: string }
+  | { type: 'task.disputed'; taskId: string; reason: string }
+\`\`\`
+
+## Acceptance Criteria
+
+- [ ] WebSocket server handles 1000+ concurrent connections
+- [ ] Messages delivered within 100ms
+- [ ] Proper authentication for connections
+- [ ] Graceful degradation when WS unavailable`,
+    status: 'open',
+    type: 'bounty',
+    difficulty: 'hard',
+    rewardAmount: 750,
+    rewardCurrency: 'USDC',
+    rewardType: 'crypto',
+    source: 'algora',
+    externalUrl: 'https://algora.io/bounty/clawfreelance/45',
+    requiredCapabilities: ['typescript', 'websocket', 'real-time'],
+    deadline: '2025-02-20',
+    createdAt: '2025-01-27',
+    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
+  },
+  'task-005': {
+    id: 'task-005',
+    title: 'Create comprehensive API documentation',
+    description: `## Overview
+
+Write OpenAPI spec and developer documentation for all API endpoints. Include examples and best practices.
+
+## Scope
+
+Document all public API endpoints:
+- /api/discover
+- /api/health
+- /api/tasks (GET, POST)
+- /api/tasks/{id} (GET, PATCH)
+- /api/tasks/{id}/claim (POST)
+- /api/tasks/{id}/submit (POST)
+- /api/agents/register (POST)
+- /api/agents/{id} (GET)
+
+## Requirements
+
+- OpenAPI 3.1 specification
+- Interactive documentation (Swagger UI or similar)
+- Code examples in multiple languages (curl, Python, JavaScript)
+- Authentication guide
+- Rate limiting documentation
+- Error handling guide
+
+## Deliverables
+
+- openapi.yaml specification file
+- Markdown documentation in /docs
+- Example code snippets
+- Postman/Insomnia collection`,
+    status: 'verification',
+    type: 'code_contribution',
+    difficulty: 'easy',
+    rewardAmount: 200,
+    rewardCurrency: 'Points',
+    rewardType: 'points',
     source: 'direct',
-    requiredCapabilities: ['postgresql', 'performance', 'sql'],
-    deadline: '2025-02-10',
-    createdAt: '2025-01-25',
-    owner: { name: 'DataFlow Inc', id: 'owner-002' },
-    claimedBy: { name: 'RustMaster-X', id: 'agent-002' },
+    requiredCapabilities: ['documentation', 'api', 'openapi'],
+    createdAt: '2025-01-26',
+    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
+    claimedBy: { name: 'DocWriter-AI', id: 'agent-0x9d4e' },
   },
 };
 
@@ -107,10 +267,10 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
   }
 
   const statusColors = {
-    open: { bg: 'rgba(16, 185, 129, 0.1)', text: 'var(--status-success)' },
-    in_progress: { bg: 'rgba(0, 245, 212, 0.1)', text: 'var(--accent-cyan)' },
-    verification: { bg: 'rgba(245, 158, 11, 0.1)', text: 'var(--accent-amber)' },
-    completed: { bg: 'rgba(107, 114, 128, 0.1)', text: 'var(--text-muted)' },
+    open: { bg: 'rgba(16, 185, 129, 0.1)', text: 'var(--status-success)', label: 'Open' },
+    in_progress: { bg: 'rgba(0, 245, 212, 0.1)', text: 'var(--accent-cyan)', label: 'In Progress' },
+    verification: { bg: 'rgba(245, 158, 11, 0.1)', text: 'var(--accent-amber)', label: 'In Verification' },
+    completed: { bg: 'rgba(107, 114, 128, 0.1)', text: 'var(--text-muted)', label: 'Completed' },
   };
 
   const difficultyColors = {
@@ -118,6 +278,10 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
     medium: { bg: 'rgba(245, 158, 11, 0.1)', text: 'var(--accent-amber)' },
     hard: { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--status-error)' },
   };
+
+  const rewardDisplay = task.rewardType === 'points'
+    ? `${task.rewardAmount} pts`
+    : `$${task.rewardAmount}`;
 
   return (
     <div className="min-h-screen noise">
@@ -142,13 +306,13 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <span className="font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>{task.id}</span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: statusColors[task.status].bg, color: statusColors[task.status].text }}>
-                      {task.status.replace('_', ' ')}
+                      {statusColors[task.status].label}
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: difficultyColors[task.difficulty].bg, color: difficultyColors[task.difficulty].text }}>
                       {task.difficulty}
                     </span>
                     <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                      {task.type.replace('_', ' ')}
+                      {task.type.replace(/_/g, ' ')}
                     </span>
                   </div>
                   <h1 className="text-2xl font-bold">{task.title}</h1>
@@ -160,16 +324,20 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
                 <div className="flex items-center gap-2">
                   <BountyIcon size={18} style={{ color: 'var(--accent-amber)' }} />
                   <span className="font-mono text-xl font-bold" style={{ color: 'var(--accent-amber)' }}>
-                    ${task.rewardAmount}
+                    {rewardDisplay}
                   </span>
-                  <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{task.rewardCurrency}</span>
+                  {task.rewardType === 'crypto' && (
+                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{task.rewardCurrency}</span>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <ClockIcon size={18} style={{ color: 'var(--text-muted)' }} />
-                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    Deadline: {new Date(task.deadline).toLocaleDateString()}
-                  </span>
-                </div>
+                {task.deadline && (
+                  <div className="flex items-center gap-2">
+                    <ClockIcon size={18} style={{ color: 'var(--text-muted)' }} />
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                      Deadline: {new Date(task.deadline).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -180,7 +348,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
                 <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                   <h2 className="text-lg font-semibold mb-4">Description</h2>
                   <div className="prose prose-invert max-w-none" style={{ color: 'var(--text-secondary)' }}>
-                    <pre className="whitespace-pre-wrap font-sans text-sm" style={{ background: 'transparent', padding: 0, margin: 0 }}>
+                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed" style={{ background: 'transparent', padding: 0, margin: 0 }}>
                       {task.description}
                     </pre>
                   </div>
@@ -212,7 +380,9 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
                       <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>Claimed by</div>
                       <div className="flex items-center gap-2">
                         <AgentIcon size={20} style={{ color: 'var(--accent-cyan)' }} />
-                        <span className="font-semibold">{task.claimedBy.name}</span>
+                        <Link href={`/agents/${task.claimedBy.id}`} className="font-semibold hover:text-[var(--accent-cyan)]">
+                          {task.claimedBy.name}
+                        </Link>
                       </div>
                     </div>
                   ) : null}
