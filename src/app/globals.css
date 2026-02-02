@@ -82,12 +82,255 @@ body {
   opacity: 0.3;
 }
 
-/* Grid background pattern */
+/* Grid background pattern with animated scan effect */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
   background-size: 40px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scanning beam effect - horizontal */
+.grid-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 229, 255, 0.03) 20%,
+    rgba(0, 229, 255, 0.08) 50%,
+    rgba(0, 229, 255, 0.03) 80%,
+    transparent 100%
+  );
+  animation: scan-down 4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform;
+}
+
+@keyframes scan-down {
+  0% { transform: translateY(-200px); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Glowing orb that pulses and moves */
+.grid-bg::after {
+  content: '';
+  position: fixed;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 229, 255, 0.15) 0%,
+    rgba(0, 229, 255, 0.05) 30%,
+    transparent 70%
+  );
+  animation: orb-move 8s ease-in-out infinite, orb-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform, opacity;
+  filter: blur(40px);
+}
+
+@media (min-width: 768px) {
+  .grid-bg::after {
+    width: 600px;
+    height: 600px;
+  }
+}
+
+@keyframes orb-move {
+  0%, 100% {
+    transform: translate(-30%, -30%);
+  }
+  25% {
+    transform: translate(60vw, 20vh);
+  }
+  50% {
+    transform: translate(40vw, 60vh);
+  }
+  75% {
+    transform: translate(-10%, 40vh);
+  }
+}
+
+@keyframes orb-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Data stream lines - vertical flowing effect */
+@keyframes data-stream {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+/* Animated corner accents */
+.grid-bg-corners::before,
+.grid-bg-corners::after {
+  content: '';
+  position: fixed;
+  width: 150px;
+  height: 150px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.grid-bg-corners::before {
+  top: 20px;
+  left: 20px;
+  border-right: none;
+  border-bottom: none;
+  animation: corner-pulse 3s ease-in-out infinite;
+}
+
+.grid-bg-corners::after {
+  bottom: 20px;
+  right: 20px;
+  border-left: none;
+  border-top: none;
+  animation: corner-pulse 3s ease-in-out infinite 1.5s;
+}
+
+@keyframes corner-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* Grid highlight sweep */
+.grid-bg-sweep {
+  position: relative;
+}
+
+.grid-bg-sweep::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 229, 255, 0.02) 50%,
+    transparent 100%
+  );
+  animation: sweep-right 6s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform;
+}
+
+@keyframes sweep-right {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(400%); }
+}
+
+/* Ambient glow points */
+@keyframes glow-point {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Network pulse effect for hero sections */
+.network-pulse {
+  position: relative;
+}
+
+.network-pulse::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+  border: 1px solid var(--accent-cyan);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: network-ring 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes network-ring {
+  0% {
+    width: 100px;
+    height: 100px;
+    opacity: 0.8;
+  }
+  100% {
+    width: 400px;
+    height: 400px;
+    opacity: 0;
+  }
+}
+
+/* Flicker effect for cyberpunk feel */
+@keyframes subtle-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; }
+  94% { opacity: 1; }
+  96% { opacity: 0.9; }
+  97% { opacity: 1; }
+}
+
+.flicker {
+  animation: subtle-flicker 4s infinite;
+}
+
+/* Fast data ticker line */
+.data-ticker::before {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-cyan) 20%,
+    var(--accent-amber) 50%,
+    var(--accent-cyan) 80%,
+    transparent 100%
+  );
+  animation: ticker-move 3s linear infinite;
+  pointer-events: none;
+  z-index: 10;
+  will-change: transform;
+}
+
+@keyframes ticker-move {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 /* Noise texture overlay */

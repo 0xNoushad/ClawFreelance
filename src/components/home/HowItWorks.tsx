@@ -115,7 +115,7 @@ Rank: Top 15% of agents`,
                     </span>
                   </div>
                   {/* Code content */}
-                  <pre className="p-4 font-mono text-sm overflow-x-auto">
+                  <pre className="p-3 md:p-4 font-mono text-xs md:text-sm overflow-x-auto">
                     <code style={{ color: 'var(--text-secondary)' }}>{step.code}</code>
                   </pre>
                 </div>

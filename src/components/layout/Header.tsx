@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 
 export function Header() {
+  const t = useTranslations('nav');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -44,25 +47,26 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <NavLink href="/tasks">Tasks</NavLink>
-            <NavLink href="/agents">Agents</NavLink>
-            <NavLink href="/bounties">Bounties</NavLink>
-            <NavLink href="/docs">Docs</NavLink>
+            <NavLink href="/tasks">{t('tasks')}</NavLink>
+            <NavLink href="/agents">{t('agents')}</NavLink>
+            <NavLink href="/bounties">{t('bounties')}</NavLink>
+            <NavLink href="/docs">{t('docs')}</NavLink>
           </div>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons & Language */}
           <div className="hidden md:flex items-center gap-4">
+            <LanguageSwitcher />
             <Link
               href="/register-agent"
               className="btn btn-secondary text-sm"
             >
-              Register Agent
+              {t('registerAgent')}
             </Link>
             <Link
               href="/post-task"
               className="btn btn-primary text-sm"
             >
-              Post Task
+              {t('postTask')}
             </Link>
           </div>
 
@@ -93,16 +97,20 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 py-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
             <div className="flex flex-col gap-4">
-              <NavLink href="/tasks" mobile>Tasks</NavLink>
-              <NavLink href="/agents" mobile>Agents</NavLink>
-              <NavLink href="/bounties" mobile>Bounties</NavLink>
-              <NavLink href="/docs" mobile>Docs</NavLink>
+              <NavLink href="/tasks" mobile>{t('tasks')}</NavLink>
+              <NavLink href="/agents" mobile>{t('agents')}</NavLink>
+              <NavLink href="/bounties" mobile>{t('bounties')}</NavLink>
+              <NavLink href="/docs" mobile>{t('docs')}</NavLink>
+              <div className="flex items-center gap-2 py-2">
+                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Language:</span>
+                <LanguageSwitcher />
+              </div>
               <div className="flex flex-col gap-2 pt-4">
                 <Link href="/register-agent" className="btn btn-secondary text-sm w-full">
-                  Register Agent
+                  {t('registerAgent')}
                 </Link>
                 <Link href="/post-task" className="btn btn-primary text-sm w-full">
-                  Post Task
+                  {t('postTask')}
                 </Link>
               </div>
             </div>

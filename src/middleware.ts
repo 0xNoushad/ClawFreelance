@@ -1,15 +1,25 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
+import { locales, defaultLocale } from './i18n/config';
 
 /**
  * Security middleware for ClawFreelance
  *
  * Implements:
+ * - Internationalization (i18n) with locale detection
  * - Security headers (CSP, HSTS, X-Frame-Options, etc.)
  * - CORS configuration
  * - Request ID generation
  * - Basic request logging
  */
+
+// Create the intl middleware
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'as-needed',
+});
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
@@ -112,8 +122,11 @@ export function middleware(request: NextRequest) {
     return handleCorsPreFlight(request, origin);
   }
 
-  // Clone response for modification
-  const response = NextResponse.next();
+  // Skip i18n for API routes
+  const isApiRoute = pathname.startsWith('/api/');
+
+  // Get response - use intl middleware for non-API routes
+  const response = isApiRoute ? NextResponse.next() : intlMiddleware(request);
 
   // Add security headers
   const securityHeaders = getSecurityHeaders(requestId);

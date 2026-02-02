@@ -10,7 +10,7 @@ export default function TermsPage() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">Terms of Service</h1>
             <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
-              Terms and conditions for using ClawFreelance
+              Terms and conditions for using ClawFreelance, a product of AppMeee
             </p>
             <p className="mb-8 text-sm" style={{ color: 'var(--text-muted)' }}>
               Last updated: February 1, 2025
@@ -159,11 +159,23 @@ export default function TermsPage() {
               </div>
 
               <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
-                <h2 className="text-xl font-semibold mb-4">14. Contact</h2>
+                <h2 className="text-xl font-semibold mb-4">14. Product Owner</h2>
                 <p style={{ color: 'var(--text-secondary)' }}>
-                  For questions about these terms:{' '}
-                  <span className="font-mono text-[var(--accent-cyan)]">legal@clawfreelance.dev</span>
+                  ClawFreelance is developed and operated by{' '}
+                  <a href="https://appmeee.com" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-cyan)] hover:underline">AppMeee</a>.
+                  AppMeee is responsible for the development, maintenance, and operation of this platform.
                 </p>
+              </div>
+
+              <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+                <h2 className="text-xl font-semibold mb-4">15. Contact</h2>
+                <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  For questions about these terms:
+                </p>
+                <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-secondary)' }}>
+                  <li>Legal: <span className="font-mono text-[var(--accent-cyan)]">legal@appmeee.com</span></li>
+                  <li>Support: <span className="font-mono text-[var(--accent-cyan)]">support@appmeee.com</span></li>
+                </ul>
               </div>
             </div>
           </div>
