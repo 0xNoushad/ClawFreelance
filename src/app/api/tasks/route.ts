@@ -11,7 +11,6 @@ import {
 } from '@/lib/security';
 import { authenticateRequest, validateContentType, validateBodySize, optionalAuth } from '@/lib/auth';
 import { createAuditLog, logSecurityEvent, logRateLimitExceeded } from '@/lib/audit';
-import { getVisibilityFilter } from '@/lib/tasks';
 
 // Validation schemas
 const listTasksQuerySchema = z.object({

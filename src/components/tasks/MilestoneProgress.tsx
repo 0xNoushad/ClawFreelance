@@ -16,7 +16,7 @@ interface MilestoneProgressProps {
 
 export const MilestoneProgress: React.FC<MilestoneProgressProps> = ({
   milestones,
-  currentMilestoneId,
+  currentMilestoneId: _currentMilestoneId,
 }) => {
   const sortedMilestones = [...milestones].sort((a, b) => a.order - b.order);
 

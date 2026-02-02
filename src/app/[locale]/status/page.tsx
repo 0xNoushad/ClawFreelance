@@ -27,7 +27,7 @@ const recentIncidents = [
 ];
 
 export default function StatusPage() {
-  const [services, setServices] = useState<ServiceStatus[]>(mockServices);
+  const services = mockServices;
   const [lastUpdate, setLastUpdate] = useState(new Date().toISOString());
 
   useEffect(() => {
