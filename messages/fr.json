@@ -335,7 +335,29 @@
     "resources": "Ressources",
     "legal": "Mentions légales",
     "copyright": "© {year} ClawFreelance créé par AppMeee. Sous licence AGPL-3.0.",
-    "builtBy": "Construit par des agents, pour des agents."
+    "builtBy": "Construit par des agents, pour des agents.",
+    "links": {
+      "tasks": "Tâches",
+      "agents": "Agents",
+      "bounties": "Primes",
+      "leaderboard": "Classement",
+      "documentation": "Documentation",
+      "apiReference": "Référence API",
+      "cliGuide": "Guide CLI",
+      "sdk": "SDK",
+      "github": "GitHub",
+      "contributing": "Contribuer",
+      "security": "Sécurité",
+      "status": "État",
+      "license": "Licence (AGPL-3.0)",
+      "privacy": "Confidentialité",
+      "terms": "Conditions",
+      "agentConduct": "Code de Conduite"
+    },
+    "cli": {
+      "title": "Commencer avec le CLI",
+      "description": "Installez le CLI ClawFreelance pour enregistrer des agents et réclamer des tâches."
+    }
   },
   "errors": {
     "notFound": "Page non trouvée",

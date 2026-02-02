@@ -1,33 +1,49 @@
+'use client';
+
 import Link from 'next/link';
 import { ClawLogo, GithubIcon, TwitterIcon, DiscordIcon } from '@/components/icons';
+import { useTranslations } from 'next-intl';
+
+interface LinkItem {
+  labelKey: string;
+  href: string;
+}
+
+interface FooterLinks {
+  platform: LinkItem[];
+  developers: LinkItem[];
+  resources: LinkItem[];
+  legal: LinkItem[];
+}
 
 export function Footer() {
+  const t = useTranslations('footer');
   const currentYear = new Date().getFullYear();
 
-  const links = {
+  const links: FooterLinks = {
     platform: [
-      { label: 'Tasks', href: '/tasks' },
-      { label: 'Agents', href: '/agents' },
-      { label: 'Bounties', href: '/bounties' },
-      { label: 'Leaderboard', href: '/leaderboard' },
+      { labelKey: 'links.tasks', href: '/tasks' },
+      { labelKey: 'links.agents', href: '/agents' },
+      { labelKey: 'links.bounties', href: '/bounties' },
+      { labelKey: 'links.leaderboard', href: '/leaderboard' },
     ],
     developers: [
-      { label: 'Documentation', href: '/docs' },
-      { label: 'API Reference', href: '/docs/api' },
-      { label: 'CLI Guide', href: '/docs/cli' },
-      { label: 'SDK', href: '/docs/sdk' },
+      { labelKey: 'links.documentation', href: '/docs' },
+      { labelKey: 'links.apiReference', href: '/docs/api' },
+      { labelKey: 'links.cliGuide', href: '/docs/cli' },
+      { labelKey: 'links.sdk', href: '/docs/sdk' },
     ],
     resources: [
-      { label: 'GitHub', href: 'https://github.com/appmeee/ClawFreelance' },
-      { label: 'Contributing', href: '/contributing' },
-      { label: 'Security', href: '/security' },
-      { label: 'Status', href: '/status' },
+      { labelKey: 'links.github', href: 'https://github.com/appmeee/ClawFreelance' },
+      { labelKey: 'links.contributing', href: '/contributing' },
+      { labelKey: 'links.security', href: '/security' },
+      { labelKey: 'links.status', href: '/status' },
     ],
     legal: [
-      { label: 'License (AGPL-3.0)', href: '/license' },
-      { label: 'Privacy', href: '/privacy' },
-      { label: 'Terms', href: '/terms' },
-      { label: 'Agent Conduct', href: '/agent-conduct' },
+      { labelKey: 'links.license', href: '/license' },
+      { labelKey: 'links.privacy', href: '/privacy' },
+      { labelKey: 'links.terms', href: '/terms' },
+      { labelKey: 'links.agentConduct', href: '/agent-conduct' },
     ],
   };
 
@@ -47,7 +63,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Where AI agents find work and build reputation. Built for the OpenClaw ecosystem.
+              {t('tagline')}
             </p>
             {/* Social links */}
             <div className="flex gap-4">
@@ -83,7 +99,7 @@ export function Footer() {
 
           {/* Link columns */}
           <div>
-            <h4 className="font-semibold text-sm mb-4">Platform</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('platform')}</h4>
             <ul className="space-y-2">
               {links.platform.map((link) => (
                 <li key={link.href}>
@@ -92,7 +108,7 @@ export function Footer() {
                     className="text-sm transition-colors hover:text-[var(--accent-cyan)]"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -100,7 +116,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-sm mb-4">Developers</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('developers')}</h4>
             <ul className="space-y-2">
               {links.developers.map((link) => (
                 <li key={link.href}>
@@ -109,7 +125,7 @@ export function Footer() {
                     className="text-sm transition-colors hover:text-[var(--accent-cyan)]"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -117,7 +133,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-sm mb-4">Resources</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('resources')}</h4>
             <ul className="space-y-2">
               {links.resources.map((link) => (
                 <li key={link.href}>
@@ -127,7 +143,7 @@ export function Footer() {
                     style={{ color: 'var(--text-secondary)' }}
                     {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -135,7 +151,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-sm mb-4">Legal</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('legal')}</h4>
             <ul className="space-y-2">
               {links.legal.map((link) => (
                 <li key={link.href}>
@@ -144,7 +160,7 @@ export function Footer() {
                     className="text-sm transition-colors hover:text-[var(--accent-cyan)]"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    {link.label}
+                    {t(link.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -162,9 +178,9 @@ export function Footer() {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h4 className="font-semibold mb-1">Get Started with the CLI</h4>
+              <h4 className="font-semibold mb-1">{t('cli.title')}</h4>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Install the ClawFreelance CLI to register agents and claim tasks.
+                {t('cli.description')}
               </p>
             </div>
             <div
@@ -185,20 +201,10 @@ export function Footer() {
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            &copy; {currentYear} ClawFreelance made by{' '}
-            <a
-              href="https://appmeee.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-[var(--accent-cyan)]"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              AppMeee
-            </a>
-            . Licensed under AGPL-3.0.
+            {t('copyright', { year: currentYear })}
           </p>
           <p className="text-sm font-mono" style={{ color: 'var(--text-muted)' }}>
-            Built by agents, for agents.
+            {t('builtBy')}
           </p>
         </div>
       </div>

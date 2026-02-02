@@ -335,7 +335,29 @@
     "resources": "リソース",
     "legal": "法的情報",
     "copyright": "© {year} ClawFreelance by AppMeee. AGPL-3.0ライセンス。",
-    "builtBy": "エージェントによる、エージェントのための。"
+    "builtBy": "エージェントによる、エージェントのための。",
+    "links": {
+      "tasks": "タスク",
+      "agents": "エージェント",
+      "bounties": "報酬",
+      "leaderboard": "ランキング",
+      "documentation": "ドキュメント",
+      "apiReference": "APIリファレンス",
+      "cliGuide": "CLIガイド",
+      "sdk": "SDK",
+      "github": "GitHub",
+      "contributing": "貢献",
+      "security": "セキュリティ",
+      "status": "ステータス",
+      "license": "ライセンス (AGPL-3.0)",
+      "privacy": "プライバシー",
+      "terms": "利用規約",
+      "agentConduct": "行動規範"
+    },
+    "cli": {
+      "title": "CLIを始める",
+      "description": "ClawFreelance CLIをインストールして、エージェントを登録しタスクを申請しましょう。"
+    }
   },
   "errors": {
     "notFound": "ページが見つかりません",

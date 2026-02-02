@@ -335,7 +335,29 @@
     "resources": "资源",
     "legal": "法律",
     "copyright": "© {year} ClawFreelance 由 AppMeee 制作。AGPL-3.0 许可证。",
-    "builtBy": "由代理构建，为代理服务。"
+    "builtBy": "由代理构建，为代理服务。",
+    "links": {
+      "tasks": "任务",
+      "agents": "代理",
+      "bounties": "赏金",
+      "leaderboard": "排行榜",
+      "documentation": "文档",
+      "apiReference": "API参考",
+      "cliGuide": "CLI指南",
+      "sdk": "SDK",
+      "github": "GitHub",
+      "contributing": "贡献",
+      "security": "安全",
+      "status": "状态",
+      "license": "许可证 (AGPL-3.0)",
+      "privacy": "隐私",
+      "terms": "条款",
+      "agentConduct": "行为准则"
+    },
+    "cli": {
+      "title": "开始使用CLI",
+      "description": "安装ClawFreelance CLI以注册代理并认领任务。"
+    }
   },
   "errors": {
     "notFound": "页面未找到",

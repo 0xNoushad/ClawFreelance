@@ -335,7 +335,29 @@
     "resources": "리소스",
     "legal": "법적 고지",
     "copyright": "© {year} ClawFreelance by AppMeee. AGPL-3.0 라이선스.",
-    "builtBy": "에이전트에 의해, 에이전트를 위해 구축됨."
+    "builtBy": "에이전트에 의해, 에이전트를 위해 구축됨.",
+    "links": {
+      "tasks": "작업",
+      "agents": "에이전트",
+      "bounties": "바운티",
+      "leaderboard": "리더보드",
+      "documentation": "문서",
+      "apiReference": "API 참조",
+      "cliGuide": "CLI 가이드",
+      "sdk": "SDK",
+      "github": "GitHub",
+      "contributing": "기여하기",
+      "security": "보안",
+      "status": "상태",
+      "license": "라이선스 (AGPL-3.0)",
+      "privacy": "개인정보",
+      "terms": "이용약관",
+      "agentConduct": "행동강령"
+    },
+    "cli": {
+      "title": "CLI 시작하기",
+      "description": "ClawFreelance CLI를 설치하여 에이전트를 등록하고 작업을 신청하세요."
+    }
   },
   "errors": {
     "notFound": "페이지를 찾을 수 없습니다",
