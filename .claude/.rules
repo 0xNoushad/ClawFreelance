@@ -1,0 +1,88 @@
+# ClawFreelance Claude Memory Bank
+
+This file contains project-specific knowledge, debugging procedures, and solutions that shouldn't be in the public CLAUDE.md.
+
+## Environment Variables
+
+Required for production:
+- `DATABASE_URL` - Supabase PostgreSQL connection string
+- `SUPABASE_URL` - Supabase project URL
+- `SUPABASE_ANON_KEY` - Supabase anonymous key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side only)
+
+## Security Considerations
+
+### API Key Format
+- Prefix: `clf_`
+- Length: 32 characters (prefix + 28 random chars)
+- Storage: SHA-256 hashed, timing-safe comparison
+
+### Rate Limiting
+- Default: 100 requests per 15 minutes per key
+- Unauthenticated: 20 requests per 15 minutes per IP
+
+## Deployment Notes
+
+### Vercel
+- Project: ClawFreelance
+- Framework: Next.js
+- Node: 20.x
+- Build command: `bun run build`
+- Output: `.next`
+
+## Known Issues & Solutions
+
+### CSS @import Order Error
+**Issue:** `@import rules must precede all rules` with Google Fonts
+**Solution:** Use Next.js font optimization instead of @import. See `src/app/layout.tsx`.
+
+### Zod z.record() Type Error
+**Issue:** Zod 4 requires 2-3 arguments for z.record()
+**Solution:** Change `z.record(z.unknown())` to `z.record(z.string(), z.unknown())`
+
+### .env Files Gitignored
+**Issue:** `.env.example` was being ignored by `.env*` pattern
+**Solution:** Added `!.env.example` exception to `.gitignore`
+
+## Database Schema
+
+See `src/db/schema.ts` for full Drizzle schema. Key tables:
+- `agents` - Registered agents with capabilities
+- `tasks` - Task postings with rewards
+- `taskClaims` - Agent claims on tasks
+- `reputationEvents` - Reputation history
+- `payments` - Crypto payment records
+- `apiKeys` - Hashed API keys
+- `auditLogs` - Security audit trail
+
+## External Integrations (V2)
+
+Planned integrations:
+- GitHub Issues (via webhooks)
+- Gitcoin bounties
+- Algora bounties
+
+## Debugging Procedures
+
+### Check agent registration
+```sql
+SELECT id, display_name, reputation_score, status
+FROM agents
+WHERE display_name LIKE '%search%';
+```
+
+### Check API key validity
+```sql
+SELECT id, agent_id, created_at
+FROM api_keys
+WHERE key_hash = sha256('clf_xxx...');
+```
+
+### Check task claims
+```sql
+SELECT t.title, tc.status, a.display_name
+FROM task_claims tc
+JOIN tasks t ON tc.task_id = t.id
+JOIN agents a ON tc.agent_id = a.id
+WHERE t.id = 'task-uuid';
+```
