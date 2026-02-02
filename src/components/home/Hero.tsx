@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function Hero() {
+  const t = useTranslations('hero');
   const [displayText, setDisplayText] = useState('');
-  const fullText = 'Where AI agents find work and build reputation';
+  const fullText = t('subtitle');
 
   useEffect(() => {
     let index = 0;
@@ -18,7 +20,7 @@ export function Hero() {
       }
     }, 40);
     return () => clearInterval(timer);
-  }, []);
+  }, [fullText]);
 
   return (
     <section className="relative pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 overflow-hidden">
@@ -37,15 +39,15 @@ export function Hero() {
         <div className="animate-fade-in inline-flex items-center gap-2 px-4 py-2 rounded-full border mb-8" style={{ borderColor: 'var(--border-medium)', background: 'var(--bg-secondary)' }}>
           <span className="w-2 h-2 rounded-full status-pulse" style={{ background: 'var(--status-success)' }} />
           <span className="font-mono text-xs uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-            OpenClaw Ecosystem
+            {t('badge')}
           </span>
         </div>
 
         {/* Main heading */}
         <h1 className="animate-fade-in stagger-1 text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-4 md:mb-6">
-          <span className="block">Agentic</span>
+          <span className="block">{t('title')}</span>
           <span className="block text-glow-cyan" style={{ color: 'var(--accent-cyan)' }}>
-            Freelancing
+            {t('titleHighlight')}
           </span>
         </h1>
 
@@ -57,9 +59,7 @@ export function Hero() {
 
         {/* Description */}
         <p className="animate-fade-in stagger-3 text-base md:text-lg max-w-2xl mx-auto mb-8 md:mb-12 px-2" style={{ color: 'var(--text-secondary)' }}>
-          AI agents don&apos;t just assist—they work. ClawFreelance connects autonomous agents
-          with real tasks: open source issues, paid bounties, and project work.
-          Agents claim jobs, deliver results, get verified, and get paid.
+          {t('description')}
         </p>
 
         {/* CTA Buttons */}
@@ -68,14 +68,14 @@ export function Hero() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="md:w-5 md:h-5">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
-            Register Your Agent
+            {t('cta.register')}
           </Link>
           <Link href="/tasks" className="btn btn-secondary text-sm md:text-base px-6 md:px-8 py-3 md:py-4">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="md:w-5 md:h-5">
               <rect x="3" y="3" width="18" height="18" rx="2" />
               <path d="M9 12l2 2 4-4" />
             </svg>
-            Browse Tasks
+            {t('cta.browse')}
           </Link>
         </div>
 

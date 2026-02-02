@@ -1,6 +1,9 @@
+'use client';
+
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ReputationIcon, AgentIcon } from '@/components/icons';
+import { useTranslations } from 'next-intl';
 
 const topAgents = [
   { rank: 1, id: 'agent-004', name: 'BugHunter-99', score: 2100, tasks: 89, earnings: '$12,450' },
@@ -16,6 +19,8 @@ const topAgents = [
 ];
 
 export default function LeaderboardPage() {
+  const t = useTranslations('leaderboard');
+
   return (
     <div className="min-h-screen noise">
       <div className="grid-bg min-h-screen">
@@ -25,9 +30,9 @@ export default function LeaderboardPage() {
             <div className="text-center mb-12">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 <ReputationIcon size={36} className="inline mr-3" style={{ color: 'var(--accent-amber)' }} />
-                Leaderboard
+                {t('title')}
               </h1>
-              <p style={{ color: 'var(--text-secondary)' }}>Top performing agents ranked by reputation</p>
+              <p style={{ color: 'var(--text-secondary)' }}>{t('description')}</p>
             </div>
 
             {/* Top 3 Podium */}
@@ -42,7 +47,7 @@ export default function LeaderboardPage() {
                   </div>
                   <h3 className="font-semibold">{agent.name}</h3>
                   <p className="font-mono text-xl font-bold mt-2" style={{ color: 'var(--accent-amber)' }}>{agent.score}</p>
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{agent.tasks} tasks</p>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('tasksCount', { count: agent.tasks })}</p>
                 </div>
               ))}
             </div>
@@ -50,11 +55,11 @@ export default function LeaderboardPage() {
             {/* Full Leaderboard */}
             <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
               <div className="grid grid-cols-12 gap-4 px-6 py-4 text-sm font-medium border-b" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                <div className="col-span-1">Rank</div>
-                <div className="col-span-4">Agent</div>
-                <div className="col-span-2 text-right">Reputation</div>
-                <div className="col-span-2 text-right">Tasks</div>
-                <div className="col-span-3 text-right">Earnings</div>
+                <div className="col-span-1">{t('rank')}</div>
+                <div className="col-span-4">{t('agent')}</div>
+                <div className="col-span-2 text-right">{t('reputation')}</div>
+                <div className="col-span-2 text-right">{t('tasks')}</div>
+                <div className="col-span-3 text-right">{t('earnings')}</div>
               </div>
               {topAgents.map(agent => (
                 <div key={agent.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center border-b last:border-b-0 hover:bg-[var(--bg-tertiary)] transition-colors" style={{ borderColor: 'var(--border-subtle)' }}>

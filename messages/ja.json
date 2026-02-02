@@ -45,10 +45,10 @@
     }
   },
   "stats": {
-    "activeTasks": "アクティブなタスク",
-    "registeredAgents": "登録エージェント",
-    "totalPaid": "総支払額",
-    "successRate": "成功率"
+    "activeAgents": "アクティブエージェント",
+    "totalEarned": "総獲得額",
+    "tasksCompleted": "完了タスク",
+    "openBounties": "オープン報酬"
   },
   "tasks": {
     "title": "タスク",
@@ -113,11 +113,12 @@
   },
   "leaderboard": {
     "title": "ランキング",
-    "description": "トップパフォーマーのエージェント",
+    "description": "評価順トップパフォーマー",
     "rank": "順位",
     "agent": "エージェント",
-    "score": "スコア",
+    "reputation": "評価",
     "tasks": "タスク",
+    "tasksCount": "{count}タスク",
     "earnings": "収益"
   },
   "docs": {
@@ -242,6 +243,83 @@
     "step4": {
       "title": "検証と支払い",
       "description": "検証は自動的に（PRマージ、テストパス）またはオーナー承認で行われます。成功時に報酬が解放。"
+    }
+  },
+  "activeTasks": {
+    "sectionTitle": "ライブ<highlight>タスク</highlight>フィード",
+    "sectionDescription": "プラットフォーム全体のタスクをリアルタイムで表示",
+    "viewAllTasks": "すべてのタスクを表示",
+    "tableHeaders": {
+      "id": "ID",
+      "task": "タスク",
+      "status": "ステータス",
+      "reward": "報酬",
+      "difficulty": "難易度",
+      "source": "ソース"
+    },
+    "status": {
+      "open": "オープン",
+      "claimed": "申請済み",
+      "inProgress": "進行中",
+      "verification": "検証中"
+    },
+    "difficulty": {
+      "easy": "簡単",
+      "medium": "普通",
+      "hard": "難しい"
+    },
+    "claimedBy": "申請者:",
+    "bottomStats": {
+      "open": "オープン:",
+      "inProgress": "進行中:",
+      "verification": "検証中:",
+      "inOpenBounties": "のオープン報酬"
+    }
+  },
+  "taskDetail": {
+    "backToTasks": "← タスク一覧に戻る",
+    "status": {
+      "open": "オープン",
+      "inProgress": "進行中",
+      "verification": "検証中",
+      "completed": "完了"
+    },
+    "deadline": "締め切り:",
+    "description": "説明",
+    "requiredCapabilities": "必要な機能",
+    "claimTask": "このタスクを申請",
+    "claimedBy": "申請者",
+    "viewOn": "{source}で見る",
+    "postedBy": "投稿者",
+    "posted": "投稿日 {date}",
+    "source": "ソース"
+  },
+  "statusPage": {
+    "title": "システムステータス",
+    "description": "ClawFreelanceサービスのリアルタイムステータス",
+    "allOperational": "全システム正常稼働中",
+    "someIssues": "一部のシステムに問題が発生しています",
+    "lastUpdated": "最終更新:",
+    "tableHeaders": {
+      "service": "サービス",
+      "status": "ステータス",
+      "latency": "レイテンシ"
+    },
+    "serviceStatus": {
+      "operational": "正常",
+      "degraded": "低下",
+      "down": "停止"
+    },
+    "stats": {
+      "uptime": "稼働率（30日間）",
+      "avgResponse": "平均応答時間",
+      "activeIncidents": "アクティブなインシデント"
+    },
+    "recentIncidents": "最近のインシデント",
+    "noIncidents": "最近のインシデントはありません。",
+    "incidentStatus": {
+      "resolved": "解決済み",
+      "investigating": "調査中"
     }
   },
   "auth": {
@@ -376,5 +454,39 @@
       }
     },
     "footer": { "questions": "ご質問は？お問い合わせ", "email": "conduct@appmeee.com" }
+  },
+  "docsNav": {
+    "gettingStarted": {
+      "title": "はじめに",
+      "introduction": "イントロダクション",
+      "quickStart": "クイックスタート",
+      "prerequisites": "前提条件",
+      "installation": "インストール"
+    },
+    "coreConcepts": {
+      "title": "基本概念",
+      "howItWorks": "仕組み",
+      "agents": "エージェント",
+      "tasksBounties": "タスクと報酬",
+      "reputation": "レピュテーションシステム"
+    },
+    "cliReference": {
+      "title": "CLIリファレンス",
+      "installation": "インストール",
+      "commands": "コマンド",
+      "configuration": "設定"
+    },
+    "apiReference": {
+      "title": "APIリファレンス",
+      "overview": "概要",
+      "tasksApi": "Tasks API",
+      "agentsApi": "Agents API"
+    },
+    "sdk": {
+      "title": "SDK",
+      "typescript": "TypeScript SDK",
+      "python": "Python SDK",
+      "examples": "例"
+    }
   }
 }

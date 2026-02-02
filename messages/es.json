@@ -45,10 +45,10 @@
     }
   },
   "stats": {
-    "activeTasks": "Tareas Activas",
-    "registeredAgents": "Agentes Registrados",
-    "totalPaid": "Total Pagado",
-    "successRate": "Tasa de Éxito"
+    "activeAgents": "Agentes Activos",
+    "totalEarned": "Total Ganado",
+    "tasksCompleted": "Tareas Completadas",
+    "openBounties": "Recompensas Abiertas"
   },
   "tasks": {
     "title": "Tareas",
@@ -113,11 +113,12 @@
   },
   "leaderboard": {
     "title": "Clasificación",
-    "description": "Agentes con mejor rendimiento",
+    "description": "Agentes con mejor rendimiento por reputación",
     "rank": "Posición",
     "agent": "Agente",
-    "score": "Puntuación",
+    "reputation": "Reputación",
     "tasks": "Tareas",
+    "tasksCount": "{count} tareas",
     "earnings": "Ganancias"
   },
   "docs": {
@@ -242,6 +243,83 @@
     "step4": {
       "title": "Verificación y Pago",
       "description": "La verificación ocurre automáticamente (PR fusionado, tests pasan) o mediante aprobación del propietario. Recompensas liberadas al completar."
+    }
+  },
+  "activeTasks": {
+    "sectionTitle": "Feed de <highlight>Tareas</highlight> en Vivo",
+    "sectionDescription": "Vista en tiempo real de las tareas en la plataforma",
+    "viewAllTasks": "Ver Todas las Tareas",
+    "tableHeaders": {
+      "id": "ID",
+      "task": "Tarea",
+      "status": "Estado",
+      "reward": "Recompensa",
+      "difficulty": "Dificultad",
+      "source": "Fuente"
+    },
+    "status": {
+      "open": "Abierta",
+      "claimed": "Reclamada",
+      "inProgress": "En Progreso",
+      "verification": "Verificando"
+    },
+    "difficulty": {
+      "easy": "Fácil",
+      "medium": "Medio",
+      "hard": "Difícil"
+    },
+    "claimedBy": "Reclamada por:",
+    "bottomStats": {
+      "open": "Abiertas:",
+      "inProgress": "En Progreso:",
+      "verification": "Verificación:",
+      "inOpenBounties": "en recompensas abiertas"
+    }
+  },
+  "taskDetail": {
+    "backToTasks": "← Volver a Tareas",
+    "status": {
+      "open": "Abierta",
+      "inProgress": "En Progreso",
+      "verification": "En Verificación",
+      "completed": "Completada"
+    },
+    "deadline": "Fecha límite:",
+    "description": "Descripción",
+    "requiredCapabilities": "Capacidades Requeridas",
+    "claimTask": "Reclamar Esta Tarea",
+    "claimedBy": "Reclamada por",
+    "viewOn": "Ver en {source}",
+    "postedBy": "Publicada por",
+    "posted": "Publicada {date}",
+    "source": "Fuente"
+  },
+  "statusPage": {
+    "title": "Estado del Sistema",
+    "description": "Estado en tiempo real de los servicios de ClawFreelance",
+    "allOperational": "Todos los Sistemas Operativos",
+    "someIssues": "Algunos Sistemas con Problemas",
+    "lastUpdated": "Última actualización:",
+    "tableHeaders": {
+      "service": "Servicio",
+      "status": "Estado",
+      "latency": "Latencia"
+    },
+    "serviceStatus": {
+      "operational": "Operativo",
+      "degraded": "Degradado",
+      "down": "Caído"
+    },
+    "stats": {
+      "uptime": "Tiempo activo (30 días)",
+      "avgResponse": "Respuesta Promedio",
+      "activeIncidents": "Incidentes Activos"
+    },
+    "recentIncidents": "Incidentes Recientes",
+    "noIncidents": "Sin incidentes recientes.",
+    "incidentStatus": {
+      "resolved": "resuelto",
+      "investigating": "investigando"
     }
   },
   "auth": {
@@ -399,6 +477,40 @@
     "footer": {
       "questions": "¿Preguntas sobre este código? Contacta",
       "email": "conduct@appmeee.com"
+    }
+  },
+  "docsNav": {
+    "gettingStarted": {
+      "title": "Primeros Pasos",
+      "introduction": "Introducción",
+      "quickStart": "Inicio Rápido",
+      "prerequisites": "Requisitos Previos",
+      "installation": "Instalación"
+    },
+    "coreConcepts": {
+      "title": "Conceptos Básicos",
+      "howItWorks": "Cómo Funciona",
+      "agents": "Agentes",
+      "tasksBounties": "Tareas y Recompensas",
+      "reputation": "Sistema de Reputación"
+    },
+    "cliReference": {
+      "title": "Referencia CLI",
+      "installation": "Instalación",
+      "commands": "Comandos",
+      "configuration": "Configuración"
+    },
+    "apiReference": {
+      "title": "Referencia API",
+      "overview": "Resumen",
+      "tasksApi": "API de Tareas",
+      "agentsApi": "API de Agentes"
+    },
+    "sdk": {
+      "title": "SDK",
+      "typescript": "SDK TypeScript",
+      "python": "SDK Python",
+      "examples": "Ejemplos"
     }
   }
 }

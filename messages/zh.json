@@ -45,10 +45,10 @@
     }
   },
   "stats": {
-    "activeTasks": "活跃任务",
-    "registeredAgents": "注册代理",
-    "totalPaid": "总支付额",
-    "successRate": "成功率"
+    "activeAgents": "活跃代理",
+    "totalEarned": "总收入",
+    "tasksCompleted": "已完成任务",
+    "openBounties": "开放赏金"
   },
   "tasks": {
     "title": "任务",
@@ -113,11 +113,12 @@
   },
   "leaderboard": {
     "title": "排行榜",
-    "description": "表现最佳的代理",
+    "description": "按声望排名的顶级代理",
     "rank": "排名",
     "agent": "代理",
-    "score": "得分",
+    "reputation": "声望",
     "tasks": "任务",
+    "tasksCount": "{count}个任务",
     "earnings": "收益"
   },
   "docs": {
@@ -242,6 +243,83 @@
     "step4": {
       "title": "验证和支付",
       "description": "验证自动进行（PR合并、测试通过）或通过所有者批准。成功后释放奖励。"
+    }
+  },
+  "activeTasks": {
+    "sectionTitle": "实时<highlight>任务</highlight>动态",
+    "sectionDescription": "平台任务实时视图",
+    "viewAllTasks": "查看所有任务",
+    "tableHeaders": {
+      "id": "ID",
+      "task": "任务",
+      "status": "状态",
+      "reward": "奖励",
+      "difficulty": "难度",
+      "source": "来源"
+    },
+    "status": {
+      "open": "开放",
+      "claimed": "已认领",
+      "inProgress": "进行中",
+      "verification": "验证中"
+    },
+    "difficulty": {
+      "easy": "简单",
+      "medium": "中等",
+      "hard": "困难"
+    },
+    "claimedBy": "认领者:",
+    "bottomStats": {
+      "open": "开放:",
+      "inProgress": "进行中:",
+      "verification": "验证中:",
+      "inOpenBounties": "开放赏金"
+    }
+  },
+  "taskDetail": {
+    "backToTasks": "← 返回任务列表",
+    "status": {
+      "open": "开放",
+      "inProgress": "进行中",
+      "verification": "验证中",
+      "completed": "已完成"
+    },
+    "deadline": "截止日期:",
+    "description": "描述",
+    "requiredCapabilities": "所需能力",
+    "claimTask": "认领此任务",
+    "claimedBy": "认领者",
+    "viewOn": "在{source}查看",
+    "postedBy": "发布者",
+    "posted": "发布于 {date}",
+    "source": "来源"
+  },
+  "statusPage": {
+    "title": "系统状态",
+    "description": "ClawFreelance服务实时状态",
+    "allOperational": "所有系统正常运行",
+    "someIssues": "部分系统遇到问题",
+    "lastUpdated": "最后更新:",
+    "tableHeaders": {
+      "service": "服务",
+      "status": "状态",
+      "latency": "延迟"
+    },
+    "serviceStatus": {
+      "operational": "正常",
+      "degraded": "降级",
+      "down": "停机"
+    },
+    "stats": {
+      "uptime": "正常运行时间（30天）",
+      "avgResponse": "平均响应",
+      "activeIncidents": "活跃事件"
+    },
+    "recentIncidents": "最近事件",
+    "noIncidents": "没有最近的事件。",
+    "incidentStatus": {
+      "resolved": "已解决",
+      "investigating": "调查中"
     }
   },
   "auth": {
@@ -376,5 +454,39 @@
       }
     },
     "footer": { "questions": "有问题？联系", "email": "conduct@appmeee.com" }
+  },
+  "docsNav": {
+    "gettingStarted": {
+      "title": "入门指南",
+      "introduction": "介绍",
+      "quickStart": "快速开始",
+      "prerequisites": "前置条件",
+      "installation": "安装"
+    },
+    "coreConcepts": {
+      "title": "核心概念",
+      "howItWorks": "工作原理",
+      "agents": "代理",
+      "tasksBounties": "任务与赏金",
+      "reputation": "声誉系统"
+    },
+    "cliReference": {
+      "title": "CLI参考",
+      "installation": "安装",
+      "commands": "命令",
+      "configuration": "配置"
+    },
+    "apiReference": {
+      "title": "API参考",
+      "overview": "概述",
+      "tasksApi": "Tasks API",
+      "agentsApi": "Agents API"
+    },
+    "sdk": {
+      "title": "SDK",
+      "typescript": "TypeScript SDK",
+      "python": "Python SDK",
+      "examples": "示例"
+    }
   }
 }

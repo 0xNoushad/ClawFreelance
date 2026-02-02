@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { HealthIcon } from '@/components/icons';
+import { useTranslations } from 'next-intl';
 
 interface ServiceStatus {
   name: string;
@@ -27,6 +28,7 @@ const recentIncidents = [
 ];
 
 export default function StatusPage() {
+  const t = useTranslations('statusPage');
   const services = mockServices;
   const [lastUpdate, setLastUpdate] = useState(new Date().toISOString());
 
@@ -47,10 +49,10 @@ export default function StatusPage() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               <HealthIcon size={36} className="inline mr-3" style={{ color: 'var(--status-success)' }} />
-              System Status
+              {t('title')}
             </h1>
             <p className="mb-8" style={{ color: 'var(--text-secondary)' }}>
-              Real-time status of ClawFreelance services
+              {t('description')}
             </p>
 
             {/* Overall Status */}
@@ -64,10 +66,10 @@ export default function StatusPage() {
                 }} />
                 <div>
                   <h2 className="text-xl font-semibold">
-                    {allOperational ? 'All Systems Operational' : 'Some Systems Experiencing Issues'}
+                    {allOperational ? t('allOperational') : t('someIssues')}
                   </h2>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    Last updated: {new Date(lastUpdate).toLocaleTimeString()}
+                    {t('lastUpdated')} {new Date(lastUpdate).toLocaleTimeString()}
                   </p>
                 </div>
               </div>
@@ -76,9 +78,9 @@ export default function StatusPage() {
             {/* Services Grid */}
             <div className="rounded-xl border overflow-hidden mb-8" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
               <div className="grid grid-cols-12 gap-4 px-6 py-4 text-sm font-medium border-b" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                <div className="col-span-5">Service</div>
-                <div className="col-span-3">Status</div>
-                <div className="col-span-4 text-right">Latency</div>
+                <div className="col-span-5">{t('tableHeaders.service')}</div>
+                <div className="col-span-3">{t('tableHeaders.status')}</div>
+                <div className="col-span-4 text-right">{t('tableHeaders.latency')}</div>
               </div>
               {services.map(service => (
                 <div key={service.name} className="grid grid-cols-12 gap-4 px-6 py-4 items-center border-b last:border-b-0" style={{ borderColor: 'var(--border-subtle)' }}>
@@ -94,7 +96,7 @@ export default function StatusPage() {
                         background: service.status === 'operational' ? 'var(--status-success)' :
                                    service.status === 'degraded' ? 'var(--accent-amber)' : 'var(--status-error)'
                       }} />
-                      {service.status === 'operational' ? 'Operational' : service.status === 'degraded' ? 'Degraded' : 'Down'}
+                      {t(`serviceStatus.${service.status}`)}
                     </span>
                   </div>
                   <div className="col-span-4 text-right font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -108,23 +110,23 @@ export default function StatusPage() {
             <div className="grid md:grid-cols-3 gap-4 mb-8">
               <div className="rounded-xl border p-6 text-center" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                 <div className="font-mono text-3xl font-bold mb-1" style={{ color: 'var(--status-success)' }}>99.95%</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Uptime (30 days)</div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('stats.uptime')}</div>
               </div>
               <div className="rounded-xl border p-6 text-center" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                 <div className="font-mono text-3xl font-bold mb-1" style={{ color: 'var(--accent-cyan)' }}>48ms</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Avg Response</div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('stats.avgResponse')}</div>
               </div>
               <div className="rounded-xl border p-6 text-center" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                 <div className="font-mono text-3xl font-bold mb-1" style={{ color: 'var(--accent-amber)' }}>0</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Active Incidents</div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('stats.activeIncidents')}</div>
               </div>
             </div>
 
             {/* Recent Incidents */}
             <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
-              <h2 className="text-xl font-semibold mb-4">Recent Incidents</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('recentIncidents')}</h2>
               {recentIncidents.length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)' }}>No recent incidents.</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('noIncidents')}</p>
               ) : (
                 <div className="space-y-4">
                   {recentIncidents.map((incident, i) => (
