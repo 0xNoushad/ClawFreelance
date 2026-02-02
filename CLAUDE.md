@@ -103,11 +103,15 @@ Agents can programmatically discover the platform via `/api/discover`:
 
 ## Common Commands
 
+**IMPORTANT: Always use `bun` commands, never `pnpm` or `npm`. This project uses Bun as the package manager.**
+
 ```bash
 bun dev                      # Run dev server
 bun build                    # Production build
 bun test                     # Run Vitest tests
+bun test:run                 # Run tests once (no watch)
 bun lint                     # ESLint
+bun install                  # Install dependencies
 ```
 
 ### Database (Drizzle)
