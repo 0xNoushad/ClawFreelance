@@ -9,8 +9,9 @@ import {
   validateTaskContent,
   isIpBlocked,
 } from '@/lib/security';
-import { authenticateRequest, validateContentType, validateBodySize } from '@/lib/auth';
+import { authenticateRequest, validateContentType, validateBodySize, optionalAuth } from '@/lib/auth';
 import { createAuditLog, logSecurityEvent, logRateLimitExceeded } from '@/lib/audit';
+import { getVisibilityFilter } from '@/lib/tasks';
 
 // Validation schemas
 const listTasksQuerySchema = z.object({
@@ -36,6 +37,18 @@ const createTaskSchema = z.object({
   rewardType: z.enum(['crypto', 'external', 'points']).default('points'),
   rewardAmount: z.number().min(0).max(1000000).default(0),
   rewardCurrency: z.string().max(50).optional(),
+  visibility: z.enum(['public', 'private', 'unlisted']).default('public'),
+  isMilestoneBased: z.boolean().default(false),
+  milestones: z
+    .array(
+      z.object({
+        title: z.string().min(5).max(255),
+        description: z.string().max(1000).optional(),
+        percentage: z.number().min(1).max(100),
+        order: z.number().min(0),
+      })
+    )
+    .optional(),
   verificationMethod: z.enum(['pr_merged', 'owner_approval', 'tests_pass', 'peer_review']).default('owner_approval'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
   requirements: z.array(z.string().max(50)).max(20).default([]),
@@ -57,6 +70,7 @@ const mockTasks = [
     status: 'open',
     verificationMethod: 'pr_merged',
     difficulty: 'hard',
+    visibility: 'public',
     requirements: ['typescript', 'authentication', 'concurrency'],
     createdAt: '2025-01-30T10:00:00Z',
     deadline: '2025-02-15T23:59:59Z',
@@ -72,6 +86,7 @@ const mockTasks = [
     status: 'open',
     verificationMethod: 'owner_approval',
     difficulty: 'medium',
+    visibility: 'public',
     requirements: ['typescript', 'react', 'css'],
     createdAt: '2025-01-29T14:30:00Z',
   },
@@ -89,6 +104,7 @@ const mockTasks = [
     claimedBy: 'agent-0x3b2c',
     verificationMethod: 'tests_pass',
     difficulty: 'medium',
+    visibility: 'public',
     requirements: ['postgresql', 'database', 'optimization'],
     createdAt: '2025-01-28T09:00:00Z',
   },
@@ -105,6 +121,7 @@ const mockTasks = [
     status: 'open',
     verificationMethod: 'pr_merged',
     difficulty: 'hard',
+    visibility: 'public',
     requirements: ['typescript', 'websocket', 'real-time'],
     createdAt: '2025-01-27T16:00:00Z',
     deadline: '2025-02-20T23:59:59Z',
@@ -121,6 +138,7 @@ const mockTasks = [
     claimedBy: 'agent-0x9d4e',
     verificationMethod: 'owner_approval',
     difficulty: 'easy',
+    visibility: 'public',
     requirements: ['documentation', 'api', 'openapi'],
     createdAt: '2025-01-26T11:00:00Z',
   },
@@ -191,9 +209,21 @@ export async function GET(request: NextRequest) {
   }
 
   const filters = parsed.data;
+  const agent = await optionalAuth(request);
 
-  // Filter tasks (in production, this would be a DB query)
+  // Filter tasks (in production, this would be a DB query using getVisibilityFilter(agent?.id))
   let filteredTasks = [...mockTasks];
+
+  // Visibility filtering
+  if (!agent) {
+    filteredTasks = filteredTasks.filter(t => t.visibility === 'public');
+  } else {
+    filteredTasks = filteredTasks.filter(t => 
+      t.visibility === 'public' || 
+      t.ownerId === agent.id ||
+      t.visibility === 'unlisted' // unlisted is visible if you have the ID, which is true here
+    );
+  }
 
   if (filters.status) {
     filteredTasks = filteredTasks.filter((t) => t.status === filters.status);
@@ -380,7 +410,8 @@ export async function POST(request: NextRequest) {
     // If there are non-blocking issues, flag for review
     const needsReview = !taskValidation.valid;
 
-    // Create task (in production, insert into DB)
+    // Create task
+    // In production, use a transaction for task + milestones
     const newTask = {
       id: `task-${Date.now()}`,
       ...taskData,
@@ -393,6 +424,18 @@ export async function POST(request: NextRequest) {
         reviewSeverity: taskValidation.severity,
       }),
     };
+
+    // Handle Milestones if provided
+    if (taskData.isMilestoneBased && taskData.milestones) {
+      const totalPercentage = taskData.milestones.reduce((sum, m) => sum + m.percentage, 0);
+      if (totalPercentage !== 100) {
+        return NextResponse.json(
+          { error: 'Total milestone percentage must be 100%' },
+          { status: 400 }
+        );
+      }
+      // In production: await db.insert(taskMilestones).values(taskData.milestones.map(m => ({ ...m, taskId: newTask.id })))
+    }
 
     // Audit log
     createAuditLog(request, 'task.create', {
