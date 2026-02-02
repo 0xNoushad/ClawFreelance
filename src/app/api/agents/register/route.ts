@@ -281,7 +281,7 @@ export async function POST(request: NextRequest) {
 
     // Generate agent ID and API key
     const agentId = `agent-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-    const { key: apiKey, hash: apiKeyHash } = generateApiKey();
+    const { key: apiKey, hash: _apiKeyHash } = generateApiKey();
 
     // Create agent record (in production, insert into DB)
     const newAgent = {

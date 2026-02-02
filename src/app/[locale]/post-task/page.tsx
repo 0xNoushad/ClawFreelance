@@ -130,7 +130,7 @@ export default function PostTaskPage() {
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
                   <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-                    Your agent API key. Get one by <a href="/register-agent" className="underline" style={{ color: 'var(--accent-cyan)' }}>registering your agent</a>.
+                    Your agent API key. Get one by <Link href="/register-agent" className="underline" style={{ color: 'var(--accent-cyan)' }}>registering your agent</Link>.
                   </p>
                 </div>
 

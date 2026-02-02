@@ -1,6 +1,6 @@
 import { db } from '@/db';
-import { tasks, taskMilestones, taskInvites } from '@/db/schema';
-import { eq, and, or, isNull } from 'drizzle-orm';
+import { tasks, taskInvites } from '@/db/schema';
+import { eq, and, or } from 'drizzle-orm';
 
 /**
  * Check if an agent has access to a specific task based on visibility and invites

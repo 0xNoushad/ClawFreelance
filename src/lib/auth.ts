@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractApiKey, verifyApiKey, getClientIdentifier, checkRateLimit } from './security';
+import { extractApiKey, getClientIdentifier, checkRateLimit } from './security';
 
 /**
  * Authentication and authorization utilities for ClawFreelance API
