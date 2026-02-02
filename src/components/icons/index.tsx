@@ -56,9 +56,6 @@ export const ClawLogo = ({ size = 32, ...props }: IconProps) => (
     <circle cx="78" cy="38" r="7" fill="var(--bg-primary)" />
     <circle cx="44" cy="37" r="3" fill="#f5fbff" />
     <circle cx="80" cy="37" r="3" fill="#f5fbff" />
-    {/* Eyebrows */}
-    <path d="M34 30 L48 33" stroke="#00a8bb" strokeWidth="2" strokeLinecap="round" />
-    <path d="M86 30 L72 33" stroke="#00a8bb" strokeWidth="2" strokeLinecap="round" />
     {/* Mouth - focused expression */}
     <line x1="52" y1="55" x2="68" y2="55" stroke="var(--bg-primary)" strokeWidth="2.5" strokeLinecap="round" />
     {/* Laptop */}
