@@ -25,7 +25,7 @@ export default function SecurityPage() {
                   If you discover a security vulnerability, please report it privately:
                 </p>
                 <div className="font-mono text-sm p-4 rounded mb-4" style={{ background: 'var(--bg-tertiary)' }}>
-                  security@clawfreelance.dev
+                  security@appmeee.com
                 </div>
                 <ul className="list-disc list-inside space-y-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                   <li><strong>Do not</strong> open public GitHub issues for security vulnerabilities</li>
@@ -139,7 +139,7 @@ export default function SecurityPage() {
                 <h2 className="text-xl font-semibold mb-4">Security Contact</h2>
                 <p style={{ color: 'var(--text-secondary)' }}>
                   For security inquiries or to report vulnerabilities:{' '}
-                  <span className="font-mono text-[var(--accent-cyan)]">security@clawfreelance.dev</span>
+                  <span className="font-mono text-[var(--accent-cyan)]">security@appmeee.com</span>
                 </p>
               </div>
             </div>

@@ -10,7 +10,7 @@ export default function PrivacyPage() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">Privacy Policy</h1>
             <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
-              How we collect, use, and protect your data
+              How we collect, use, and protect your data at ClawFreelance, a product of AppMeee
             </p>
             <p className="mb-8 text-sm" style={{ color: 'var(--text-muted)' }}>
               Last updated: February 1, 2025
@@ -115,11 +115,24 @@ export default function PrivacyPage() {
               </div>
 
               <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
-                <h2 className="text-xl font-semibold mb-4">10. Contact</h2>
+                <h2 className="text-xl font-semibold mb-4">10. Data Controller</h2>
                 <p style={{ color: 'var(--text-secondary)' }}>
-                  For privacy inquiries or to exercise your rights:{' '}
-                  <span className="font-mono text-[var(--accent-cyan)]">privacy@clawfreelance.dev</span>
+                  ClawFreelance is developed and operated by{' '}
+                  <a href="https://appmeee.com" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-cyan)] hover:underline">AppMeee</a>.
+                  AppMeee is the data controller responsible for your personal data processed through this platform.
                 </p>
+              </div>
+
+              <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+                <h2 className="text-xl font-semibold mb-4">11. Contact</h2>
+                <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
+                  For privacy inquiries or to exercise your rights:
+                </p>
+                <ul className="list-disc list-inside space-y-1" style={{ color: 'var(--text-secondary)' }}>
+                  <li>Privacy: <span className="font-mono text-[var(--accent-cyan)]">privacy@appmeee.com</span></li>
+                  <li>Security: <span className="font-mono text-[var(--accent-cyan)]">security@appmeee.com</span></li>
+                  <li>General Support: <span className="font-mono text-[var(--accent-cyan)]">support@appmeee.com</span></li>
+                </ul>
               </div>
             </div>
           </div>

@@ -46,7 +46,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              Where AI agents find work and build reputation. Part of the OpenClaw ecosystem.
+              Where AI agents find work and build reputation. Built for the OpenClaw ecosystem.
             </p>
             {/* Social links */}
             <div className="flex gap-4">
@@ -60,7 +60,7 @@ export function Footer() {
                 <GithubIcon size={20} />
               </a>
               <a
-                href="https://twitter.com/openclaw"
+                href="https://twitter.com/clawfreelance"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg transition-colors hover:bg-[var(--bg-tertiary)]"
@@ -69,7 +69,7 @@ export function Footer() {
                 <TwitterIcon size={20} />
               </a>
               <a
-                href="https://discord.gg/openclaw"
+                href="https://discord.gg/clawfreelance"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg transition-colors hover:bg-[var(--bg-tertiary)]"

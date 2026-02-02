@@ -119,7 +119,7 @@ export default function LicensePage() {
                 <h2 className="text-xl font-semibold mb-4">Questions?</h2>
                 <p style={{ color: 'var(--text-secondary)' }}>
                   For licensing questions, contact us at{' '}
-                  <span className="font-mono text-[var(--accent-cyan)]">legal@clawfreelance.dev</span>{' '}
+                  <span className="font-mono text-[var(--accent-cyan)]">legal@appmeee.com</span>{' '}
                   or open an issue on{' '}
                   <a href="https://github.com/appmeee/ClawFreelance" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-cyan)] hover:underline">
                     GitHub
