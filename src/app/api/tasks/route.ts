@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { checkRateLimit, getClientIdentifier, sanitizeInput } from '@/lib/security';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  sanitizeInputStrict,
+  sanitizeMarkdown,
+  detectInjection,
+  validateTaskContent,
+  isIpBlocked,
+} from '@/lib/security';
+import { authenticateRequest, validateContentType, validateBodySize } from '@/lib/auth';
+import { createAuditLog, logSecurityEvent, logRateLimitExceeded } from '@/lib/audit';
 
 // Validation schemas
 const listTasksQuerySchema = z.object({
@@ -10,7 +20,7 @@ const listTasksQuerySchema = z.object({
   source: z.enum(['direct', 'github', 'gitcoin', 'algora', 'agent_discovered']).optional(),
   minReward: z.coerce.number().min(0).optional(),
   maxReward: z.coerce.number().min(0).optional(),
-  capabilities: z.string().optional(), // comma-separated
+  capabilities: z.string().max(500).optional(), // comma-separated, with length limit
   limit: z.coerce.number().min(1).max(100).default(20),
   offset: z.coerce.number().min(0).default(0),
   sortBy: z.enum(['created_at', 'reward_amount', 'difficulty', 'deadline']).default('created_at'),
@@ -22,13 +32,13 @@ const createTaskSchema = z.object({
   description: z.string().min(50).max(10000),
   type: z.enum(['code_contribution', 'bounty', 'showcase']).default('bounty'),
   source: z.enum(['direct', 'github', 'gitcoin', 'algora', 'agent_discovered']).default('direct'),
-  externalUrl: z.string().url().optional(),
+  externalUrl: z.string().url().max(2000).optional(),
   rewardType: z.enum(['crypto', 'external', 'points']).default('points'),
-  rewardAmount: z.number().min(0).default(0),
+  rewardAmount: z.number().min(0).max(1000000).default(0),
   rewardCurrency: z.string().max(50).optional(),
   verificationMethod: z.enum(['pr_merged', 'owner_approval', 'tests_pass', 'peer_review']).default('owner_approval'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
-  requirements: z.array(z.string()).default([]),
+  requirements: z.array(z.string().max(50)).max(20).default([]),
   deadline: z.string().datetime().optional(),
 });
 
@@ -120,11 +130,21 @@ const mockTasks = [
  * GET /api/tasks - List tasks with filtering
  */
 export async function GET(request: NextRequest) {
-  // Rate limiting
   const clientId = getClientIdentifier(request);
+
+  // Check if IP is blocked
+  if (isIpBlocked(clientId)) {
+    return NextResponse.json(
+      { error: 'Access denied' },
+      { status: 403 }
+    );
+  }
+
+  // Rate limiting
   const rateLimit = checkRateLimit(clientId, { maxRequests: 100, windowMs: 60000 });
 
   if (!rateLimit.allowed) {
+    logRateLimitExceeded(request, '/api/tasks', undefined);
     return NextResponse.json(
       {
         error: 'Rate limit exceeded',
@@ -144,6 +164,20 @@ export async function GET(request: NextRequest) {
   // Parse and validate query params
   const { searchParams } = new URL(request.url);
   const queryParams = Object.fromEntries(searchParams.entries());
+
+  // Check for injection in query parameters
+  for (const [key, value] of Object.entries(queryParams)) {
+    const injection = detectInjection(value);
+    if (injection.detected) {
+      logSecurityEvent(request, 'suspicious_activity', `Injection attempt in query param: ${key}`, {
+        types: injection.types,
+      });
+      return NextResponse.json(
+        { error: 'Invalid query parameters' },
+        { status: 400 }
+      );
+    }
+  }
 
   const parsed = listTasksQuerySchema.safeParse(queryParams);
   if (!parsed.success) {
@@ -198,7 +232,7 @@ export async function GET(request: NextRequest) {
       },
       filters: {
         applied: Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== undefined)
+          Object.entries(filters).filter(([, v]) => v !== undefined)
         ),
       },
     },
@@ -206,7 +240,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'X-RateLimit-Remaining': String(rateLimit.remaining),
         'X-RateLimit-Reset': String(rateLimit.resetAt),
-        'Cache-Control': 'public, max-age=30', // Cache for 30 seconds
+        'Cache-Control': 'public, max-age=30',
       },
     }
   );
@@ -216,28 +250,84 @@ export async function GET(request: NextRequest) {
  * POST /api/tasks - Create a new task
  */
 export async function POST(request: NextRequest) {
-  // Rate limiting (stricter for writes)
   const clientId = getClientIdentifier(request);
-  const rateLimit = checkRateLimit(`${clientId}:write`, { maxRequests: 20, windowMs: 60000 });
+
+  // Check if IP is blocked
+  if (isIpBlocked(clientId)) {
+    return NextResponse.json(
+      { error: 'Access denied' },
+      { status: 403 }
+    );
+  }
+
+  // Validate content type
+  const contentTypeCheck = validateContentType(request);
+  if (!contentTypeCheck.valid) {
+    return NextResponse.json(
+      { error: contentTypeCheck.error },
+      { status: 415 }
+    );
+  }
+
+  // Validate body size (1MB max)
+  const bodySizeCheck = validateBodySize(request.headers.get('content-length'), 1024 * 1024);
+  if (!bodySizeCheck.valid) {
+    return NextResponse.json(
+      { error: bodySizeCheck.error },
+      { status: 413 }
+    );
+  }
+
+  // Rate limiting (stricter for writes)
+  const rateLimit = checkRateLimit(`${clientId}:write`, { maxRequests: 10, windowMs: 60000 });
 
   if (!rateLimit.allowed) {
+    logRateLimitExceeded(request, '/api/tasks:POST', undefined);
     return NextResponse.json(
       { error: 'Rate limit exceeded' },
       { status: 429 }
     );
   }
 
-  // TODO: Authenticate request (require API key or signature)
-  // For now, we'll allow unauthenticated task creation for demo
+  // Authenticate request
+  const authResult = await authenticateRequest(request);
+  if (!authResult.authenticated || !authResult.agent) {
+    createAuditLog(request, 'auth.failure', {
+      resourceType: 'task',
+      success: false,
+      errorMessage: authResult.error,
+    });
+    return NextResponse.json(
+      { error: authResult.error || 'Authentication required' },
+      { status: 401 }
+    );
+  }
 
   try {
     const body = await request.json();
 
     // Sanitize string inputs
-    if (body.title) body.title = sanitizeInput(body.title);
-    if (body.description) body.description = sanitizeInput(body.description);
+    if (body.title) body.title = sanitizeInputStrict(body.title);
+    if (body.description) body.description = sanitizeMarkdown(body.description);
+    if (body.externalUrl) body.externalUrl = sanitizeInputStrict(body.externalUrl);
 
-    // Validate
+    // Check for injection attacks
+    const titleInjection = detectInjection(body.title || '');
+    const descInjection = detectInjection(body.description || '');
+
+    if (titleInjection.detected || descInjection.detected) {
+      logSecurityEvent(request, 'suspicious_activity', 'Injection attempt in task creation', {
+        titleTypes: titleInjection.types,
+        descTypes: descInjection.types,
+        agentId: authResult.agent.id,
+      });
+      return NextResponse.json(
+        { error: 'Invalid content detected' },
+        { status: 400 }
+      );
+    }
+
+    // Validate against schema
     const parsed = createTaskSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -251,24 +341,86 @@ export async function POST(request: NextRequest) {
 
     const taskData = parsed.data;
 
+    // CRITICAL: Validate task content for malicious patterns
+    const taskValidation = validateTaskContent(
+      taskData.title,
+      taskData.description,
+      taskData.externalUrl
+    );
+
+    if (taskValidation.blocked) {
+      logSecurityEvent(request, 'blocked_request', 'Malicious task creation blocked', {
+        agentId: authResult.agent.id,
+        issues: taskValidation.issues,
+        severity: taskValidation.severity,
+      });
+
+      createAuditLog(request, 'task.create', {
+        actorId: authResult.agent.id,
+        actorType: 'agent',
+        resourceType: 'task',
+        success: false,
+        errorMessage: 'Blocked due to malicious content',
+        metadata: {
+          issues: taskValidation.issues,
+          severity: taskValidation.severity,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          error: 'Task creation blocked',
+          message: 'The task content was flagged for review due to potentially harmful content.',
+          severity: taskValidation.severity,
+        },
+        { status: 422 }
+      );
+    }
+
+    // If there are non-blocking issues, flag for review
+    const needsReview = !taskValidation.valid;
+
     // Create task (in production, insert into DB)
     const newTask = {
       id: `task-${Date.now()}`,
       ...taskData,
-      status: 'open',
+      status: needsReview ? 'pending_review' : 'open',
+      createdBy: authResult.agent.id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      ...(needsReview && {
+        reviewFlags: taskValidation.issues,
+        reviewSeverity: taskValidation.severity,
+      }),
     };
+
+    // Audit log
+    createAuditLog(request, 'task.create', {
+      actorId: authResult.agent.id,
+      actorType: 'agent',
+      resourceType: 'task',
+      resourceId: newTask.id,
+      success: true,
+      metadata: {
+        needsReview,
+        severity: taskValidation.severity,
+      },
+    });
 
     return NextResponse.json(
       {
-        message: 'Task created successfully',
+        message: needsReview
+          ? 'Task created and queued for review'
+          : 'Task created successfully',
         task: newTask,
+        ...(needsReview && {
+          notice: 'Your task has been flagged for review and will be visible once approved.',
+        }),
       },
       {
         status: 201,
         headers: {
-          'Location': `/api/tasks/${newTask.id}`,
+          Location: `/api/tasks/${newTask.id}`,
         },
       }
     );
