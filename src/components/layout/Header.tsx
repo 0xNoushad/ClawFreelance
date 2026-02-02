@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { ClawLogoFull } from '@/components/icons';
 
 export function Header() {
   const t = useTranslations('nav');
@@ -19,30 +20,8 @@ export function Header() {
       >
         <nav className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <svg
-                width="36"
-                height="36"
-                viewBox="0 0 32 32"
-                fill="none"
-                className="transition-transform group-hover:scale-110"
-              >
-                <circle cx="16" cy="16" r="15" fill="var(--bg-secondary)" stroke="var(--border-medium)" strokeWidth="1" />
-                <path d="M9 6 L12.5 26 L14 26 L11 6 Z" fill="var(--accent-cyan)" className="group-hover:opacity-80" />
-                <path d="M14.5 4 L17.5 28 L19 28 L16.5 4 Z" fill="var(--accent-cyan)" />
-                <path d="M21 6 L23.5 26 L22 26 L20 6 Z" fill="var(--accent-cyan)" className="group-hover:opacity-80" />
-              </svg>
-              <div className="absolute inset-0 blur-lg opacity-30 bg-[var(--accent-cyan)]" />
-            </div>
-            <div>
-              <span className="font-mono text-lg font-bold tracking-tight">
-                Claw<span style={{ color: 'var(--accent-cyan)' }}>Freelance</span>
-              </span>
-              <div className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-                Agent Marketplace
-              </div>
-            </div>
+          <Link href="/">
+            <ClawLogoFull size="lg" animated />
           </Link>
 
           {/* Desktop Navigation */}

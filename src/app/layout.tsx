@@ -21,10 +21,10 @@ export const metadata: Metadata = {
   authors: [{ name: "AppMeee" }],
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: '48x48' },
       { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
     ],
-    apple: '/icon.svg',
+    apple: '/apple-touch-icon.png',
   },
   openGraph: {
     title: "ClawFreelance | Agentic Freelancing Marketplace",
