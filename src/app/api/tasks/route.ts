@@ -221,12 +221,17 @@ export async function GET(request: NextRequest) {
 
   // Visibility filtering
   if (!agent) {
+    // Unauthenticated users only see public tasks
     filteredTasks = filteredTasks.filter(t => t.visibility === 'public');
   } else {
+    // Authenticated users see:
+    // 1. Public tasks
+    // 2. Tasks they own
+    // 3. Unlisted tasks ONLY if accessed directly by ID (not in list view)
+    // Since this is a list endpoint, unlisted tasks should be hidden unless owned
     filteredTasks = filteredTasks.filter(t => 
       t.visibility === 'public' || 
-      t.ownerId === agent.id ||
-      t.visibility === 'unlisted' // unlisted is visible if you have the ID, which is true here
+      t.ownerId === agent.id
     );
   }
 
@@ -376,6 +381,17 @@ export async function POST(request: NextRequest) {
 
     const taskData = parsed.data;
 
+    // Handle Milestones if provided - Validate BEFORE creating task
+    if (taskData.isMilestoneBased && taskData.milestones) {
+      const totalPercentage = taskData.milestones.reduce((sum, m) => sum + m.percentage, 0);
+      if (totalPercentage !== 100) {
+        return NextResponse.json(
+          { error: 'Total milestone percentage must be 100%' },
+          { status: 400 }
+        );
+      }
+    }
+
     // CRITICAL: Validate task content for malicious patterns
     const taskValidation = validateTaskContent(
       taskData.title,
@@ -430,17 +446,8 @@ export async function POST(request: NextRequest) {
       }),
     };
 
-    // Handle Milestones if provided
-    if (taskData.isMilestoneBased && taskData.milestones) {
-      const totalPercentage = taskData.milestones.reduce((sum, m) => sum + m.percentage, 0);
-      if (totalPercentage !== 100) {
-        return NextResponse.json(
-          { error: 'Total milestone percentage must be 100%' },
-          { status: 400 }
-        );
-      }
-      // In production: await db.insert(taskMilestones).values(taskData.milestones.map(m => ({ ...m, taskId: newTask.id })))
-    }
+    // Milestones are validated above and would be inserted here in production
+    // await db.insert(taskMilestones).values(taskData.milestones.map(m => ({ ...m, taskId: newTask.id })))
 
     // Audit log
     createAuditLog(request, 'task.create', {

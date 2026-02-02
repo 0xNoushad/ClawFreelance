@@ -23,13 +23,13 @@ export const MilestoneProgress: React.FC<MilestoneProgressProps> = ({
   const getStatusColor = (status: Milestone['status']) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-500';
+        return 'bg-[var(--status-success)]';
       case 'verification':
-        return 'bg-blue-500 animate-pulse';
+        return 'bg-[var(--status-info)] animate-pulse';
       case 'in_progress':
-        return 'bg-yellow-500';
+        return 'bg-[var(--status-warning)]';
       case 'disputed':
-        return 'bg-red-500';
+        return 'bg-[var(--status-error)]';
       default:
         return 'bg-gray-300';
     }
