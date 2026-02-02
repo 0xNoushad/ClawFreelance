@@ -34,9 +34,17 @@ export const verificationMethodEnum = pgEnum('verification_method', [
 ]);
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const rewardTypeEnum = pgEnum('reward_type', ['crypto', 'external', 'points']);
+export const taskVisibilityEnum = pgEnum('task_visibility', ['public', 'private', 'unlisted']);
 
 export const claimStatusEnum = pgEnum('claim_status', ['active', 'completed', 'abandoned', 'rejected']);
 export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'escrow', 'released', 'refunded']);
+export const milestoneStatusEnum = pgEnum('milestone_status', [
+  'pending',
+  'in_progress',
+  'verification',
+  'completed',
+  'disputed',
+]);
 export const reputationEventTypeEnum = pgEnum('reputation_event_type', [
   'task_completed',
   'task_failed',
@@ -72,6 +80,8 @@ export const tasks = pgTable('tasks', {
   rewardType: rewardTypeEnum('reward_type').default('points').notNull(),
   rewardAmount: integer('reward_amount').default(0).notNull(),
   rewardCurrency: varchar('reward_currency', { length: 50 }),
+  visibility: taskVisibilityEnum('visibility').default('public').notNull(),
+  isMilestoneBased: boolean('is_milestone_based').default(false).notNull(),
   status: taskStatusEnum('status').default('open').notNull(),
   verificationMethod: verificationMethodEnum('verification_method').default('owner_approval').notNull(),
   difficulty: difficultyEnum('difficulty').default('medium').notNull(),
@@ -79,6 +89,33 @@ export const tasks = pgTable('tasks', {
   deadline: timestamp('deadline'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const taskMilestones = pgTable('task_milestones', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id')
+    .references(() => tasks.id, { onDelete: 'cascade' })
+    .notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  percentage: integer('percentage').notNull(), // Percentage of total reward
+  status: milestoneStatusEnum('status').default('pending').notNull(),
+  order: integer('order').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const taskInvites = pgTable('task_invites', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id')
+    .references(() => tasks.id, { onDelete: 'cascade' })
+    .notNull(),
+  agentId: uuid('agent_id').references(() => agents.id, { onDelete: 'cascade' }),
+  inviteCode: varchar('invite_code', { length: 255 }).unique(),
+  expiresAt: timestamp('expires_at'),
+  maxUses: integer('max_uses').default(1).notNull(),
+  uses: integer('uses').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const taskClaims = pgTable('task_claims', {
@@ -117,6 +154,7 @@ export const payments = pgTable('payments', {
   agentId: uuid('agent_id')
     .references(() => agents.id, { onDelete: 'cascade' })
     .notNull(),
+  milestoneId: uuid('milestone_id').references(() => taskMilestones.id, { onDelete: 'set null' }),
   amount: integer('amount').notNull(),
   currency: varchar('currency', { length: 50 }).notNull(),
   status: paymentStatusEnum('status').default('pending').notNull(),
@@ -170,6 +208,27 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
   }),
   claims: many(taskClaims),
   payments: many(payments),
+  milestones: many(taskMilestones),
+  invites: many(taskInvites),
+}));
+
+export const taskMilestonesRelations = relations(taskMilestones, ({ one, many }) => ({
+  task: one(tasks, {
+    fields: [taskMilestones.taskId],
+    references: [tasks.id],
+  }),
+  payments: many(payments),
+}));
+
+export const taskInvitesRelations = relations(taskInvites, ({ one }) => ({
+  task: one(tasks, {
+    fields: [taskInvites.taskId],
+    references: [tasks.id],
+  }),
+  agent: one(agents, {
+    fields: [taskInvites.agentId],
+    references: [agents.id],
+  }),
 }));
 
 export const taskClaimsRelations = relations(taskClaims, ({ one }) => ({
@@ -202,6 +261,10 @@ export const paymentsRelations = relations(payments, ({ one }) => ({
   agent: one(agents, {
     fields: [payments.agentId],
     references: [agents.id],
+  }),
+  milestone: one(taskMilestones, {
+    fields: [payments.milestoneId],
+    references: [taskMilestones.id],
   }),
 }));
 
