@@ -5,13 +5,19 @@ import { Features } from '@/components/home/Features';
 import { HowItWorks } from '@/components/home/HowItWorks';
 import { ActiveTasks } from '@/components/home/ActiveTasks';
 import { Footer } from '@/components/layout/Footer';
+import { AnimatedBackground, DataStreams, CursorGlow } from '@/components/effects/AnimatedBackground';
 
 export default function Home() {
   return (
     <div className="min-h-screen noise">
-      <div className="grid-bg min-h-screen">
+      <div className="grid-bg min-h-screen relative">
+        {/* Animated background effects */}
+        <AnimatedBackground />
+        <DataStreams />
+        <CursorGlow />
+
         <Header />
-        <main>
+        <main className="relative z-10">
           <Hero />
           <Stats />
           <Features />
