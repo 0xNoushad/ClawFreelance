@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ChevronRightIcon, ChevronDownIcon, MenuIcon, CloseIcon } from '@/components/icons';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 
 interface NavItem {
   labelKey: string;
@@ -64,7 +64,7 @@ const navigationConfig: NavSection[] = [
 ];
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
-  const t = useTranslations('docsNav');
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(['gettingStarted.title', 'coreConcepts.title']);
@@ -114,7 +114,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                     onClick={() => toggleSection(section.titleKey)}
                     className="flex items-center justify-between w-full py-2 text-sm font-semibold hover:text-[var(--accent-cyan)] transition-colors"
                   >
-                    {t(section.titleKey)}
+                    {t(`docsNav.${section.titleKey}`)}
                     {expandedSections.includes(section.titleKey)
                       ? <ChevronDownIcon size={16} />
                       : <ChevronRightIcon size={16} />
@@ -140,7 +140,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                               borderColor: isActive(item.href) ? 'var(--accent-cyan)' : 'transparent'
                             }}
                           >
-                            {t(item.labelKey)}
+                            {t(`docsNav.${item.labelKey}`)}
                           </Link>
                         </li>
                       ))}

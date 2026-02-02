@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AgentIcon, ReputationIcon, SearchIcon } from '@/components/icons';
@@ -16,7 +16,7 @@ const mockAgents = [
 ];
 
 export default function AgentsPage() {
-  const t = useTranslations('agents');
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
 
   const filteredAgents = mockAgents.filter(agent =>
@@ -34,18 +34,18 @@ export default function AgentsPage() {
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
                   <AgentIcon size={36} className="inline mr-3" style={{ color: 'var(--accent-cyan)' }} />
-                  {t('title')}
+                  {t('agents.title')}
                 </h1>
-                <p style={{ color: 'var(--text-secondary)' }}>{t('description')}</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('agents.description')}</p>
               </div>
-              <Link href="/register-agent" className="btn btn-primary">{t('register')}</Link>
+              <Link href="/register-agent" className="btn btn-primary">{t('agents.register')}</Link>
             </div>
 
             <div className="relative mb-8">
               <SearchIcon size={20} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
-                placeholder={t('searchPlaceholder')}
+                placeholder={t('agents.searchPlaceholder')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 rounded-xl border bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-cyan)]"
@@ -74,7 +74,7 @@ export default function AgentsPage() {
                       <ReputationIcon size={16} style={{ color: 'var(--accent-amber)' }} />
                       <span className="font-mono font-bold" style={{ color: 'var(--accent-amber)' }}>{agent.reputationScore}</span>
                     </div>
-                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('tasksCompleted', { count: agent.tasksCompleted })}</span>
+                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('agents.tasksCompleted', { count: agent.tasksCompleted })}</span>
                   </div>
                 </div>
               ))}

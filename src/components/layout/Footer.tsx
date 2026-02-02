@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ClawLogo, GithubIcon, TwitterIcon, DiscordIcon } from '@/components/icons';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 
 interface LinkItem {
   labelKey: string;
@@ -17,33 +17,33 @@ interface FooterLinks {
 }
 
 export function Footer() {
-  const t = useTranslations('footer');
+  const { t } = useTranslation();
   const currentYear = new Date().getFullYear();
 
   const links: FooterLinks = {
     platform: [
-      { labelKey: 'links.tasks', href: '/tasks' },
-      { labelKey: 'links.agents', href: '/agents' },
-      { labelKey: 'links.bounties', href: '/bounties' },
-      { labelKey: 'links.leaderboard', href: '/leaderboard' },
+      { labelKey: 'footer.links.tasks', href: '/tasks' },
+      { labelKey: 'footer.links.agents', href: '/agents' },
+      { labelKey: 'footer.links.bounties', href: '/bounties' },
+      { labelKey: 'footer.links.leaderboard', href: '/leaderboard' },
     ],
     developers: [
-      { labelKey: 'links.documentation', href: '/docs' },
-      { labelKey: 'links.apiReference', href: '/docs/api' },
-      { labelKey: 'links.cliGuide', href: '/docs/cli' },
-      { labelKey: 'links.sdk', href: '/docs/sdk' },
+      { labelKey: 'footer.links.documentation', href: '/docs' },
+      { labelKey: 'footer.links.apiReference', href: '/docs/api' },
+      { labelKey: 'footer.links.cliGuide', href: '/docs/cli' },
+      { labelKey: 'footer.links.sdk', href: '/docs/sdk' },
     ],
     resources: [
-      { labelKey: 'links.github', href: 'https://github.com/appmeee/ClawFreelance' },
-      { labelKey: 'links.contributing', href: '/contributing' },
-      { labelKey: 'links.security', href: '/security' },
-      { labelKey: 'links.status', href: '/status' },
+      { labelKey: 'footer.links.github', href: 'https://github.com/appmeee/ClawFreelance' },
+      { labelKey: 'footer.links.contributing', href: '/contributing' },
+      { labelKey: 'footer.links.security', href: '/security' },
+      { labelKey: 'footer.links.status', href: '/status' },
     ],
     legal: [
-      { labelKey: 'links.license', href: '/license' },
-      { labelKey: 'links.privacy', href: '/privacy' },
-      { labelKey: 'links.terms', href: '/terms' },
-      { labelKey: 'links.agentConduct', href: '/agent-conduct' },
+      { labelKey: 'footer.links.license', href: '/license' },
+      { labelKey: 'footer.links.privacy', href: '/privacy' },
+      { labelKey: 'footer.links.terms', href: '/terms' },
+      { labelKey: 'footer.links.agentConduct', href: '/agent-conduct' },
     ],
   };
 
@@ -63,7 +63,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
-              {t('tagline')}
+              {t('footer.tagline')}
             </p>
             {/* Social links */}
             <div className="flex gap-4">
@@ -99,7 +99,7 @@ export function Footer() {
 
           {/* Link columns */}
           <div>
-            <h4 className="font-semibold text-sm mb-4">{t('platform')}</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('footer.platform')}</h4>
             <ul className="space-y-2">
               {links.platform.map((link) => (
                 <li key={link.href}>
@@ -116,7 +116,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-sm mb-4">{t('developers')}</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('footer.developers')}</h4>
             <ul className="space-y-2">
               {links.developers.map((link) => (
                 <li key={link.href}>
@@ -133,7 +133,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-sm mb-4">{t('resources')}</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('footer.resources')}</h4>
             <ul className="space-y-2">
               {links.resources.map((link) => (
                 <li key={link.href}>
@@ -141,7 +141,9 @@ export function Footer() {
                     href={link.href}
                     className="text-sm transition-colors hover:text-[var(--accent-cyan)]"
                     style={{ color: 'var(--text-secondary)' }}
-                    {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                    {...(link.href.startsWith('http')
+                      ? { target: '_blank', rel: 'noopener noreferrer' }
+                      : {})}
                   >
                     {t(link.labelKey)}
                   </Link>
@@ -151,7 +153,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-sm mb-4">{t('legal')}</h4>
+            <h4 className="font-semibold text-sm mb-4">{t('footer.legal')}</h4>
             <ul className="space-y-2">
               {links.legal.map((link) => (
                 <li key={link.href}>
@@ -178,9 +180,9 @@ export function Footer() {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h4 className="font-semibold mb-1">{t('cli.title')}</h4>
+              <h4 className="font-semibold mb-1">{t('footer.cli.title')}</h4>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {t('cli.description')}
+                {t('footer.cli.description')}
               </p>
             </div>
             <div
@@ -201,10 +203,10 @@ export function Footer() {
           style={{ borderColor: 'var(--border-subtle)' }}
         >
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            {t('copyright', { year: currentYear })}
+            {t('footer.copyright', { year: currentYear })}
           </p>
           <p className="text-sm font-mono" style={{ color: 'var(--text-muted)' }}>
-            {t('builtBy')}
+            {t('footer.builtBy')}
           </p>
         </div>
       </div>

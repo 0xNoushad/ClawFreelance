@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { HealthIcon } from '@/components/icons';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 
 interface ServiceStatus {
   name: string;
@@ -28,7 +28,7 @@ const recentIncidents = [
 ];
 
 export default function StatusPage() {
-  const t = useTranslations('statusPage');
+  const { t } = useTranslation();
   const services = mockServices;
   const [lastUpdate, setLastUpdate] = useState(new Date().toISOString());
 
@@ -49,10 +49,10 @@ export default function StatusPage() {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               <HealthIcon size={36} className="inline mr-3" style={{ color: 'var(--status-success)' }} />
-              {t('title')}
+              {t('statusPage.title')}
             </h1>
             <p className="mb-8" style={{ color: 'var(--text-secondary)' }}>
-              {t('description')}
+              {t('statusPage.description')}
             </p>
 
             {/* Overall Status */}
@@ -66,10 +66,10 @@ export default function StatusPage() {
                 }} />
                 <div>
                   <h2 className="text-xl font-semibold">
-                    {allOperational ? t('allOperational') : t('someIssues')}
+                    {allOperational ? t('statusPage.allOperational') : t('statusPage.someIssues')}
                   </h2>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    {t('lastUpdated')} {new Date(lastUpdate).toLocaleTimeString()}
+                    {t('statusPage.lastUpdated')} {new Date(lastUpdate).toLocaleTimeString()}
                   </p>
                 </div>
               </div>
@@ -78,9 +78,9 @@ export default function StatusPage() {
             {/* Services Grid */}
             <div className="rounded-xl border overflow-hidden mb-8" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
               <div className="grid grid-cols-12 gap-4 px-6 py-4 text-sm font-medium border-b" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                <div className="col-span-5">{t('tableHeaders.service')}</div>
-                <div className="col-span-3">{t('tableHeaders.status')}</div>
-                <div className="col-span-4 text-right">{t('tableHeaders.latency')}</div>
+                <div className="col-span-5">{t('statusPage.tableHeaders.service')}</div>
+                <div className="col-span-3">{t('statusPage.tableHeaders.status')}</div>
+                <div className="col-span-4 text-right">{t('statusPage.tableHeaders.latency')}</div>
               </div>
               {services.map(service => (
                 <div key={service.name} className="grid grid-cols-12 gap-4 px-6 py-4 items-center border-b last:border-b-0" style={{ borderColor: 'var(--border-subtle)' }}>
@@ -96,7 +96,7 @@ export default function StatusPage() {
                         background: service.status === 'operational' ? 'var(--status-success)' :
                                    service.status === 'degraded' ? 'var(--accent-amber)' : 'var(--status-error)'
                       }} />
-                      {t(`serviceStatus.${service.status}`)}
+                      {t(`statusPage.serviceStatus.${service.status}`)}
                     </span>
                   </div>
                   <div className="col-span-4 text-right font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -110,23 +110,23 @@ export default function StatusPage() {
             <div className="grid md:grid-cols-3 gap-4 mb-8">
               <div className="rounded-xl border p-6 text-center" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                 <div className="font-mono text-3xl font-bold mb-1" style={{ color: 'var(--status-success)' }}>99.95%</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('stats.uptime')}</div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('statusPage.stats.uptime')}</div>
               </div>
               <div className="rounded-xl border p-6 text-center" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                 <div className="font-mono text-3xl font-bold mb-1" style={{ color: 'var(--accent-cyan)' }}>48ms</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('stats.avgResponse')}</div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('statusPage.stats.avgResponse')}</div>
               </div>
               <div className="rounded-xl border p-6 text-center" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                 <div className="font-mono text-3xl font-bold mb-1" style={{ color: 'var(--accent-amber)' }}>0</div>
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('stats.activeIncidents')}</div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('statusPage.stats.activeIncidents')}</div>
               </div>
             </div>
 
             {/* Recent Incidents */}
             <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
-              <h2 className="text-xl font-semibold mb-4">{t('recentIncidents')}</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('statusPage.recentIncidents')}</h2>
               {recentIncidents.length === 0 ? (
-                <p style={{ color: 'var(--text-secondary)' }}>{t('noIncidents')}</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('statusPage.noIncidents')}</p>
               ) : (
                 <div className="space-y-4">
                   {recentIncidents.map((incident, i) => (

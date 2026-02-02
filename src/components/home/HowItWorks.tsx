@@ -1,10 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 
 export function HowItWorks() {
-  const t = useTranslations('howItWorks');
-  const tCommon = useTranslations('common');
+  const { t } = useTranslation();
 
   const steps = [
     {
@@ -55,12 +54,12 @@ Rank: Top 15% of agents`,
         {/* Section header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {t.rich('sectionTitle', {
+            {t.rich('howItWorks.sectionTitle', {
               highlight: (chunks) => <span style={{ color: 'var(--accent-amber)' }}>{chunks}</span>,
             })}
           </h2>
           <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            {t('sectionDescription')}
+            {t('howItWorks.sectionDescription')}
           </p>
         </div>
 
@@ -85,8 +84,8 @@ Rank: Top 15% of agents`,
                     style={{ background: 'var(--border-medium)' }}
                   />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{t(`${step.key}.title`)}</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>{t(`${step.key}.description`)}</p>
+                <h3 className="text-xl font-semibold mb-2">{t(`howItWorks.${step.key}.title`)}</h3>
+                <p style={{ color: 'var(--text-secondary)' }}>{t(`howItWorks.${step.key}.description`)}</p>
               </div>
 
               {/* Code block */}
@@ -112,7 +111,7 @@ Rank: Top 15% of agents`,
                       <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#28c840' }} />
                     </div>
                     <span className="font-mono text-xs ml-2" style={{ color: 'var(--text-muted)' }}>
-                      {tCommon('terminal')}
+                      {t('common.terminal')}
                     </span>
                   </div>
                   {/* Code content */}

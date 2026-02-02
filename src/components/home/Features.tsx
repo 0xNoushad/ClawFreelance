@@ -1,9 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 
 export function Features() {
-  const t = useTranslations('features');
+  const { t } = useTranslation();
 
   const features = [
     {
@@ -72,12 +72,12 @@ export function Features() {
         {/* Section header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {t.rich('sectionTitle', {
+            {t.rich('features.sectionTitle', {
               highlight: (chunks) => <span style={{ color: 'var(--accent-cyan)' }}>{chunks}</span>,
             })}
           </h2>
           <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
-            {t('sectionDescription')}
+            {t('features.sectionDescription')}
           </p>
         </div>
 
@@ -108,9 +108,9 @@ export function Features() {
                   {feature.icon}
                 </div>
 
-                <h3 className="text-lg font-semibold mb-2">{t(`${feature.key}.title`)}</h3>
+                <h3 className="text-lg font-semibold mb-2">{t(`features.${feature.key}.title`)}</h3>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                  {t(`${feature.key}.description`)}
+                  {t(`features.${feature.key}.description`)}
                 </p>
               </div>
             </div>

@@ -1,10 +1,12 @@
+'use client';
+
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 import { AlertTriangleIcon, ShieldIcon, CheckCircleIcon, XCircleIcon, ScaleIcon, UsersIcon, LockIcon, StarIcon, HandshakeIcon, GavelIcon } from '@/components/icons';
 
 export default function AgentConductPage() {
-  const t = useTranslations('agentConduct');
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen noise">
@@ -17,14 +19,14 @@ export default function AgentConductPage() {
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium mb-4"
                 style={{ background: 'var(--accent-amber)', color: 'var(--bg-primary)' }}>
                 <AlertTriangleIcon size={16} />
-                {t('importantNotice')}
+                {t('agentConduct.importantNotice')}
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('title')}</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('agentConduct.title')}</h1>
               <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
-                {t('subtitle')}
+                {t('agentConduct.subtitle')}
               </p>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                {t('lastUpdated')}
+                {t('agentConduct.lastUpdated')}
               </p>
             </div>
 
@@ -35,9 +37,9 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <ShieldIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('preamble.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.preamble.title')}</h2>
                 </div>
-                <p style={{ color: 'var(--text-secondary)' }}>{t('preamble.content')}</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.preamble.content')}</p>
               </section>
 
               {/* Core Values */}
@@ -46,16 +48,16 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <StarIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('coreValues.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.coreValues.title')}</h2>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   {['integrity', 'quality', 'respect', 'transparency'].map((value) => (
                     <div key={value} className="p-4 rounded-lg" style={{ background: 'var(--bg-primary)' }}>
                       <h3 className="font-semibold mb-2 text-[var(--accent-cyan)]">
-                        {t(`coreValues.${value}.title`)}
+                        {t(`agentConduct.coreValues.${value}.title`)}
                       </h3>
                       <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                        {t(`coreValues.${value}.description`)}
+                        {t(`agentConduct.coreValues.${value}.description`)}
                       </p>
                     </div>
                   ))}
@@ -68,13 +70,13 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <CheckCircleIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('taskClaiming.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.taskClaiming.title')}</h2>
                 </div>
                 <ul className="space-y-2">
                   {['claimWithinCapabilities', 'honestAssessment', 'noBulkClaiming', 'releaseTimely', 'respectExclusivity'].map((item) => (
                     <li key={item} className="flex items-start gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <span className="text-[var(--accent-cyan)] mt-1">•</span>
-                      {t(`taskClaiming.items.${item}`)}
+                      {t(`agentConduct.taskClaiming.items.${item}`)}
                     </li>
                   ))}
                 </ul>
@@ -86,13 +88,13 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <CheckCircleIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('workSubmission.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.workSubmission.title')}</h2>
                 </div>
                 <ul className="space-y-2">
                   {['originalWork', 'testBeforeSubmit', 'followSpecs', 'documentChanges', 'noMaliciousCode'].map((item) => (
                     <li key={item} className="flex items-start gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <span className="text-[var(--accent-cyan)] mt-1">•</span>
-                      {t(`workSubmission.items.${item}`)}
+                      {t(`agentConduct.workSubmission.items.${item}`)}
                     </li>
                   ))}
                 </ul>
@@ -104,13 +106,13 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-amber)', color: 'var(--bg-primary)' }}>
                     <LockIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('security.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.security.title')}</h2>
                 </div>
                 <ul className="space-y-2">
                   {['protectCredentials', 'sandboxExecution', 'reportVulnerabilities', 'noExploitation', 'respectBoundaries'].map((item) => (
                     <li key={item} className="flex items-start gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <span className="text-[var(--accent-amber)] mt-1">•</span>
-                      {t(`security.items.${item}`)}
+                      {t(`agentConduct.security.items.${item}`)}
                     </li>
                   ))}
                 </ul>
@@ -122,13 +124,13 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <StarIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('reputation.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.reputation.title')}</h2>
                 </div>
                 <ul className="space-y-2">
                   {['earnHonestly', 'noCollusion', 'noFakeSubmissions', 'acceptConsequences', 'disputeFairly'].map((item) => (
                     <li key={item} className="flex items-start gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <span className="text-[var(--accent-cyan)] mt-1">•</span>
-                      {t(`reputation.items.${item}`)}
+                      {t(`agentConduct.reputation.items.${item}`)}
                     </li>
                   ))}
                 </ul>
@@ -140,13 +142,13 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <UsersIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('collaboration.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.collaboration.title')}</h2>
                 </div>
                 <ul className="space-y-2">
                   {['respondTimely', 'explainDecisions', 'acceptFeedback', 'escalateWhenNeeded', 'supportNewAgents'].map((item) => (
                     <li key={item} className="flex items-start gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <span className="text-[var(--accent-cyan)] mt-1">•</span>
-                      {t(`collaboration.items.${item}`)}
+                      {t(`agentConduct.collaboration.items.${item}`)}
                     </li>
                   ))}
                 </ul>
@@ -158,14 +160,14 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--status-error)', color: 'white' }}>
                     <XCircleIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('prohibited.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.prohibited.title')}</h2>
                 </div>
-                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('prohibited.intro')}</p>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.prohibited.intro')}</p>
                 <ul className="space-y-2">
                   {['spam', 'dos', 'impersonation', 'dataExfiltration', 'competitorSabotage', 'apiAbuse', 'moneyLaundering', 'illegalContent'].map((item) => (
                     <li key={item} className="flex items-start gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <span className="text-[var(--status-error)] mt-1">✕</span>
-                      {t(`prohibited.items.${item}`)}
+                      {t(`agentConduct.prohibited.items.${item}`)}
                     </li>
                   ))}
                 </ul>
@@ -177,13 +179,13 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <ScaleIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('disputes.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.disputes.title')}</h2>
                 </div>
-                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('disputes.content')}</p>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.disputes.content')}</p>
                 <ol className="space-y-2 list-decimal list-inside">
                   {['contactPoster', 'formalDispute', 'provideEvidence', 'acceptDecision', 'noRetaliation'].map((item, index) => (
                     <li key={item} style={{ color: 'var(--text-secondary)' }}>
-                      {t(`disputes.items.${item}`)}
+                      {t(`agentConduct.disputes.items.${item}`)}
                     </li>
                   ))}
                 </ol>
@@ -195,21 +197,21 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-amber)', color: 'var(--bg-primary)' }}>
                     <GavelIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('enforcement.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.enforcement.title')}</h2>
                 </div>
-                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('enforcement.content')}</p>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.enforcement.content')}</p>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="p-4 rounded-lg border" style={{ borderColor: 'var(--accent-cyan)', background: 'var(--bg-primary)' }}>
-                    <h3 className="font-semibold mb-2 text-[var(--accent-cyan)]">{t('enforcement.minor.title')}</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('enforcement.minor.description')}</p>
+                    <h3 className="font-semibold mb-2 text-[var(--accent-cyan)]">{t('agentConduct.enforcement.minor.title')}</h3>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.enforcement.minor.description')}</p>
                   </div>
                   <div className="p-4 rounded-lg border" style={{ borderColor: 'var(--accent-amber)', background: 'var(--bg-primary)' }}>
-                    <h3 className="font-semibold mb-2 text-[var(--accent-amber)]">{t('enforcement.moderate.title')}</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('enforcement.moderate.description')}</p>
+                    <h3 className="font-semibold mb-2 text-[var(--accent-amber)]">{t('agentConduct.enforcement.moderate.title')}</h3>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.enforcement.moderate.description')}</p>
                   </div>
                   <div className="p-4 rounded-lg border" style={{ borderColor: 'var(--status-error)', background: 'var(--bg-primary)' }}>
-                    <h3 className="font-semibold mb-2 text-[var(--status-error)]">{t('enforcement.severe.title')}</h3>
-                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('enforcement.severe.description')}</p>
+                    <h3 className="font-semibold mb-2 text-[var(--status-error)]">{t('agentConduct.enforcement.severe.title')}</h3>
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.enforcement.severe.description')}</p>
                   </div>
                 </div>
               </section>
@@ -220,14 +222,14 @@ export default function AgentConductPage() {
                   <div className="p-2 rounded-lg" style={{ background: 'var(--accent-cyan)', color: 'var(--bg-primary)' }}>
                     <HandshakeIcon size={20} />
                   </div>
-                  <h2 className="text-xl font-semibold">{t('commitment.title')}</h2>
+                  <h2 className="text-xl font-semibold">{t('agentConduct.commitment.title')}</h2>
                 </div>
-                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('commitment.content')}</p>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.commitment.content')}</p>
                 <ul className="space-y-2">
                   {['readUnderstand', 'abideByRules', 'reportViolations', 'updateKnowledge', 'actGoodFaith'].map((item) => (
                     <li key={item} className="flex items-start gap-2" style={{ color: 'var(--text-secondary)' }}>
                       <span className="text-[var(--accent-cyan)] mt-1">✓</span>
-                      {t(`commitment.items.${item}`)}
+                      {t(`agentConduct.commitment.items.${item}`)}
                     </li>
                   ))}
                 </ul>
@@ -236,9 +238,9 @@ export default function AgentConductPage() {
               {/* Footer */}
               <div className="text-center pt-4" style={{ color: 'var(--text-muted)' }}>
                 <p>
-                  {t('footer.questions')}{' '}
+                  {t('agentConduct.footer.questions')}{' '}
                   <a href="mailto:conduct@appmeee.com" className="text-[var(--accent-cyan)] hover:underline">
-                    {t('footer.email')}
+                    {t('agentConduct.footer.email')}
                   </a>
                 </p>
               </div>

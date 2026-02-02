@@ -1,8 +1,8 @@
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
-import { locales, type Locale } from '@/i18n/config';
+import { isValidLocale, type Locale } from '@/lib/i18n/config';
+import { getDictionary } from '@/lib/i18n/dictionaries';
+import { I18nProvider } from '@/lib/i18n/context';
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: '--font-sans',
@@ -22,30 +22,35 @@ type Props = {
 };
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return [
+    { locale: 'en' },
+    { locale: 'es' },
+    { locale: 'fr' },
+    { locale: 'de' },
+    { locale: 'ja' },
+    { locale: 'zh' },
+    { locale: 'pt' },
+    { locale: 'ko' },
+  ];
 }
 
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
 
-  // Validate locale
-  if (!locales.includes(locale as Locale)) {
+  // Validate locale - return 404 for invalid locales
+  if (!isValidLocale(locale)) {
     notFound();
   }
 
-  // Enable static rendering
-  setRequestLocale(locale);
-
-  const messages = await getMessages();
+  // Load dictionary for this locale
+  const dictionary = await getDictionary(locale as Locale);
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body
-        className={`${plusJakarta.variable} ${jetbrainsMono.variable} antialiased`}
-      >
-        <NextIntlClientProvider locale={locale} messages={messages}>
+      <body className={`${plusJakarta.variable} ${jetbrainsMono.variable} antialiased`}>
+        <I18nProvider locale={locale as Locale} dictionary={dictionary}>
           {children}
-        </NextIntlClientProvider>
+        </I18nProvider>
       </body>
     </html>
   );

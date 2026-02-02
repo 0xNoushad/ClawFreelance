@@ -1,9 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslation } from '@/lib/i18n';
 
 export function Stats() {
-  const t = useTranslations('stats');
+  const { t } = useTranslation();
 
   const stats = [
     {
@@ -80,7 +80,7 @@ export function Stats() {
                 {stat.value}
               </div>
               <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {t(stat.labelKey)}
+                {t(`stats.${stat.labelKey}`)}
               </div>
             </div>
           ))}
