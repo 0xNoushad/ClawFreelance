@@ -2,10 +2,10 @@
 -- Row Level Security (RLS) Policies
 -- ClawFreelance - Agent Marketplace
 -- ============================================
--- This migration enables RLS on all tables and creates
--- secure policies. By default, nothing is accessible to
--- anonymous users. The service_role has full access for
--- backend operations.
+-- SECURITY HARDENED VERSION
+--
+-- Design principle: DENY by default, explicit ALLOW
+-- All sensitive write operations go through service_role backend
 -- ============================================
 
 -- ============================================
@@ -20,88 +20,47 @@ ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.api_keys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
--- ============================================
--- SERVICE ROLE POLICIES (Full Access)
--- The service_role bypasses RLS by default in Supabase,
--- but we add explicit policies for clarity.
--- ============================================
-
--- Agents: Service role full access
-CREATE POLICY "service_role_agents_all" ON public.agents
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- Tasks: Service role full access
-CREATE POLICY "service_role_tasks_all" ON public.tasks
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- Task Claims: Service role full access
-CREATE POLICY "service_role_task_claims_all" ON public.task_claims
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- Reputation Events: Service role full access
-CREATE POLICY "service_role_reputation_events_all" ON public.reputation_events
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- Payments: Service role full access
-CREATE POLICY "service_role_payments_all" ON public.payments
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- API Keys: Service role full access
-CREATE POLICY "service_role_api_keys_all" ON public.api_keys
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
-
--- Audit Logs: Service role full access
-CREATE POLICY "service_role_audit_logs_all" ON public.audit_logs
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
+-- Force RLS for table owners (extra security layer)
+ALTER TABLE public.agents FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.tasks FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.task_claims FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.reputation_events FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.payments FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.api_keys FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_logs FORCE ROW LEVEL SECURITY;
 
 -- ============================================
--- ANON ROLE POLICIES (Public Read-Only for Select Tables)
--- Anonymous users can only read public data.
+-- ANON ROLE POLICIES (Minimal Public Access)
+-- Anonymous users get read-only access to public data only
 -- ============================================
 
--- Agents: Anon can read active agent profiles (public leaderboard)
-CREATE POLICY "anon_agents_select" ON public.agents
+-- Agents: Anon can only read active agent PUBLIC profiles
+-- Excludes sensitive fields via column-level access in views if needed
+CREATE POLICY "anon_agents_select_active" ON public.agents
   FOR SELECT
   TO anon
   USING (status = 'active');
 
--- Tasks: Anon can read open tasks (public task board)
-CREATE POLICY "anon_tasks_select" ON public.tasks
+-- Tasks: Anon can only read open tasks (public task board)
+CREATE POLICY "anon_tasks_select_open" ON public.tasks
   FOR SELECT
   TO anon
-  USING (status IN ('open', 'claimed', 'in_progress', 'completed'));
+  USING (status = 'open');
 
--- Reputation Events: Anon can read (transparency/audit trail)
-CREATE POLICY "anon_reputation_events_select" ON public.reputation_events
+-- Reputation Events: Anon can only see positive completed events
+-- Excludes failure events for privacy
+CREATE POLICY "anon_reputation_events_select_positive" ON public.reputation_events
   FOR SELECT
   TO anon
-  USING (true);
+  USING (
+    event_type IN ('task_completed', 'dispute_won')
+    AND points_delta > 0
+  );
 
--- Task Claims: Anon CANNOT read (privacy of who claimed what)
+-- Task Claims: Anon CANNOT read (who claimed what is private)
 -- No policy = no access
 
--- Payments: Anon CANNOT read (financial privacy)
+-- Payments: Anon CANNOT read (financial data is private)
 -- No policy = no access
 
 -- API Keys: Anon CANNOT read (security critical)
@@ -112,62 +71,60 @@ CREATE POLICY "anon_reputation_events_select" ON public.reputation_events
 
 -- ============================================
 -- AUTHENTICATED ROLE POLICIES
--- Authenticated users (via Supabase Auth) get more access.
--- These will be refined as auth is implemented.
+-- Authenticated users (via Supabase Auth) get scoped access
+-- IMPORTANT: Until auth.uid() is linked to agents, keep restrictive
 -- ============================================
 
--- Agents: Authenticated can read all active agents
-CREATE POLICY "authenticated_agents_select" ON public.agents
+-- Agents: Authenticated can read active agent profiles
+CREATE POLICY "authenticated_agents_select_active" ON public.agents
   FOR SELECT
   TO authenticated
   USING (status = 'active');
 
--- Agents: Authenticated can insert (register as agent)
--- Note: Additional validation should happen in the backend
-CREATE POLICY "authenticated_agents_insert" ON public.agents
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
+-- Agents: NO direct insert/update/delete for authenticated
+-- All agent management goes through service_role backend
+-- This prevents Sybil attacks and ensures proper validation
 
--- Tasks: Authenticated can read all non-cancelled tasks
-CREATE POLICY "authenticated_tasks_select" ON public.tasks
+-- Tasks: Authenticated can read non-cancelled tasks
+CREATE POLICY "authenticated_tasks_select_visible" ON public.tasks
   FOR SELECT
   TO authenticated
-  USING (status != 'cancelled');
+  USING (status NOT IN ('cancelled'));
 
--- Tasks: Authenticated can create tasks
-CREATE POLICY "authenticated_tasks_insert" ON public.tasks
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
+-- Tasks: NO direct insert/update/delete for authenticated
+-- All task management goes through service_role backend
+-- This ensures proper ownership validation
 
--- Task Claims: Authenticated can read their own claims
--- Note: Uses auth.uid() to match with agent lookup
-CREATE POLICY "authenticated_task_claims_select" ON public.task_claims
+-- Task Claims: Authenticated CANNOT read others' claims
+-- This is INTENTIONALLY restrictive until auth-to-agent binding exists
+-- Frontend should use API endpoints that filter appropriately
+CREATE POLICY "authenticated_task_claims_select_none" ON public.task_claims
   FOR SELECT
   TO authenticated
-  USING (true);  -- Refined when auth is linked to agents
+  USING (false);  -- Deny all direct access, use API
 
--- Task Claims: Authenticated can create claims
-CREATE POLICY "authenticated_task_claims_insert" ON public.task_claims
-  FOR INSERT
-  TO authenticated
-  WITH CHECK (true);
+-- Task Claims: NO direct insert/update/delete
+-- All claim operations go through service_role backend
 
--- Reputation Events: Authenticated can read all
-CREATE POLICY "authenticated_reputation_events_select" ON public.reputation_events
+-- Reputation Events: Authenticated can read positive events only
+CREATE POLICY "authenticated_reputation_events_select_positive" ON public.reputation_events
   FOR SELECT
   TO authenticated
-  USING (true);
+  USING (
+    event_type IN ('task_completed', 'dispute_won', 'peer_review')
+    AND points_delta >= 0
+  );
 
--- Payments: Authenticated can view (will be refined)
-CREATE POLICY "authenticated_payments_select" ON public.payments
+-- Payments: Authenticated CANNOT read any payments directly
+-- This prevents financial data exposure
+-- Use API endpoints with proper authorization
+CREATE POLICY "authenticated_payments_select_none" ON public.payments
   FOR SELECT
   TO authenticated
-  USING (true);  -- Refined when auth is linked to agents
+  USING (false);  -- Deny all direct access, use API
 
--- API Keys: Authenticated CANNOT access via RLS
--- API keys are managed through secure backend endpoints only
+-- API Keys: Authenticated CANNOT access
+-- API keys are managed ONLY through service_role backend
 -- No policy = no access
 
 -- Audit Logs: Authenticated CANNOT access
@@ -175,19 +132,73 @@ CREATE POLICY "authenticated_payments_select" ON public.payments
 -- No policy = no access
 
 -- ============================================
--- SECURITY NOTES
+-- SERVICE ROLE ACCESS
+-- Note: service_role bypasses RLS by default in Supabase
+-- No explicit policies needed, but documented here for clarity
 -- ============================================
--- 1. All write operations (INSERT/UPDATE/DELETE) for sensitive
---    tables go through the service_role backend, not directly
---    from the client.
+
+-- The backend application uses service_role for all operations:
+-- - Agent registration with proper validation
+-- - Task creation with ownership verification
+-- - Claim management with authorization checks
+-- - Payment processing with audit trails
+-- - API key management with secure hashing
+
+-- ============================================
+-- FUTURE: AUTH-TO-AGENT BINDING
+-- When implementing Supabase Auth integration:
 --
--- 2. API keys table has NO client access - managed server-side only.
+-- 1. Add auth_user_id column to agents table:
+--    ALTER TABLE public.agents ADD COLUMN auth_user_id uuid REFERENCES auth.users(id);
 --
--- 3. Audit logs have NO client access - admin/system only.
+-- 2. Create helper function:
+--    CREATE FUNCTION auth.get_agent_id() RETURNS uuid AS $$
+--      SELECT id FROM public.agents WHERE auth_user_id = auth.uid() LIMIT 1
+--    $$ LANGUAGE sql STABLE SECURITY DEFINER;
 --
--- 4. Payments have restricted access - users see only their own
---    (to be refined when auth is linked to agent IDs).
+-- 3. Update policies to use auth.get_agent_id():
+--    CREATE POLICY "authenticated_task_claims_select_own" ON public.task_claims
+--      FOR SELECT TO authenticated
+--      USING (agent_id = auth.get_agent_id());
 --
--- 5. The authenticated policies assume Supabase Auth integration.
---    If using custom auth, requests should use service_role.
+--    CREATE POLICY "authenticated_payments_select_own" ON public.payments
+--      FOR SELECT TO authenticated
+--      USING (agent_id = auth.get_agent_id());
+-- ============================================
+
+-- ============================================
+-- ADDITIONAL SECURITY CONSTRAINTS
+-- ============================================
+
+-- Ensure reputation_score cannot be negative
+ALTER TABLE public.agents
+  ADD CONSTRAINT reputation_score_non_negative
+  CHECK (reputation_score >= 0);
+
+-- Ensure reward_amount cannot be negative
+ALTER TABLE public.tasks
+  ADD CONSTRAINT reward_amount_non_negative
+  CHECK (reward_amount >= 0);
+
+-- Ensure payment amount cannot be negative
+ALTER TABLE public.payments
+  ADD CONSTRAINT payment_amount_non_negative
+  CHECK (amount >= 0);
+
+-- Ensure points_delta is within reasonable bounds
+ALTER TABLE public.reputation_events
+  ADD CONSTRAINT points_delta_bounded
+  CHECK (points_delta BETWEEN -1000 AND 1000);
+
+-- ============================================
+-- SECURITY AUDIT NOTES
+-- ============================================
+-- 1. ALL write operations MUST go through service_role backend
+-- 2. API keys table has ZERO client access
+-- 3. Audit logs have ZERO client access
+-- 4. Payments have ZERO direct client access (use API)
+-- 5. Task claims have ZERO direct client access (use API)
+-- 6. Negative events (failures, disputes lost) are hidden from public
+-- 7. Only open tasks visible to anonymous users
+-- 8. Database constraints prevent invalid data states
 -- ============================================
