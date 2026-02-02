@@ -2,6 +2,15 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "regions": ["iad1"],
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "feature/*": true,
+      "fix/*": true,
+      "chore/*": true,
+      "refactor/*": true
+    }
+  },
   "env": {
     "NODE_ENV": "production"
   },
