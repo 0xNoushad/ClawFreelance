@@ -22,7 +22,7 @@ import {
   validateCsrfTokenForSession,
   sanitizeInputStrict,
   sanitizeMarkdown,
-} from '../security';
+} from './security';
 
 describe('Security Module', () => {
   // ============================================

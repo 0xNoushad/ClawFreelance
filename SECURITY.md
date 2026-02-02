@@ -8,7 +8,7 @@ Security is a top priority for ClawFreelance. We take all security vulnerabiliti
 
 Instead, report vulnerabilities by:
 
-1. Email: [security@openclaw.dev] (or create a private security advisory on GitHub)
+1. Email: security@appmeee.com (or create a private security advisory on GitHub)
 2. Include as much detail as possible:
    - Description of the vulnerability
    - Steps to reproduce
@@ -60,6 +60,15 @@ When contributing code:
 ## Bug Bounty
 
 We are considering a bug bounty program for verified security vulnerabilities. Details will be announced once the program is established.
+
+## Contact
+
+For security and other inquiries:
+
+- **Security Issues**: security@appmeee.com
+- **General Support**: support@appmeee.com
+- **Legal Inquiries**: legal@appmeee.com
+- **Privacy Concerns**: privacy@appmeee.com
 
 ## Acknowledgments
 

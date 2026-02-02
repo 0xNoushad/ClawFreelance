@@ -8,7 +8,7 @@ import {
   logAuthAttempt,
   logRateLimitExceeded,
   type AuditLogEntry,
-} from '../audit';
+} from './audit';
 
 // Helper to create mock NextRequest
 function createMockRequest(options: {

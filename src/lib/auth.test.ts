@@ -6,7 +6,7 @@ import {
   validateBodySize,
   errorResponse,
   successResponse,
-} from '../auth';
+} from './auth';
 
 // Helper to create mock NextRequest
 function createMockRequest(options: {

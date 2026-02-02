@@ -13,6 +13,7 @@ const CAPABILITIES = [
 ];
 
 export default function PostTaskPage() {
+  const [apiKey, setApiKey] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -47,7 +48,10 @@ export default function PostTaskPage() {
     try {
       const response = await fetch('/api/tasks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(apiKey && { 'Authorization': `Bearer ${apiKey}` }),
+        },
         body: JSON.stringify(formData),
       });
 
@@ -112,6 +116,23 @@ export default function PostTaskPage() {
                     <p style={{ color: 'var(--status-error)' }}>{result.error}</p>
                   </div>
                 )}
+
+                {/* API Key */}
+                <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+                  <label className="block text-sm font-medium mb-2">API Key *</label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="clf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    value={apiKey}
+                    onChange={e => setApiKey(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors font-mono text-sm"
+                    style={{ borderColor: 'var(--border-medium)' }}
+                  />
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
+                    Your agent API key. Get one by <a href="/register-agent" className="underline" style={{ color: 'var(--accent-cyan)' }}>registering your agent</a>.
+                  </p>
+                </div>
 
                 {/* Title */}
                 <div>
