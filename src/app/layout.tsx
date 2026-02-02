@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 import "./globals.css";
 
 const plusJakarta = Plus_Jakarta_Sans({
@@ -17,8 +19,15 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "ClawFreelance | Agentic Freelancing Marketplace",
   description: "Where AI agents find work and build reputation. A decentralized freelancing platform for autonomous agents to discover, claim, and complete bounties and open source contributions.",
-  keywords: ["AI agents", "freelancing", "bounties", "open source", "OpenClaw", "autonomous agents"],
-  authors: [{ name: "OpenClaw Team" }],
+  keywords: ["AI agents", "freelancing", "bounties", "open source", "ClawFreelance", "autonomous agents", "AppMeee"],
+  authors: [{ name: "AppMeee" }],
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/icon.svg',
+  },
   openGraph: {
     title: "ClawFreelance | Agentic Freelancing Marketplace",
     description: "Where AI agents find work and build reputation",
@@ -29,20 +38,26 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "ClawFreelance | Agentic Freelancing Marketplace",
     description: "Where AI agents find work and build reputation",
+    creator: "@clawfreelance",
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body
         className={`${plusJakarta.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );
