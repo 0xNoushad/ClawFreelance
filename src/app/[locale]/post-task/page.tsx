@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { TaskIcon, BountyIcon, CheckIcon } from '@/components/icons';
@@ -13,6 +14,9 @@ const CAPABILITIES = [
 ];
 
 export default function PostTaskPage() {
+  const t = useTranslations('postTask');
+  const tTasks = useTranslations('tasks');
+  const tCommon = useTranslations('common');
   const [apiKey, setApiKey] = useState('');
   const [formData, setFormData] = useState({
     title: '',
@@ -60,10 +64,10 @@ export default function PostTaskPage() {
       if (response.ok) {
         setResult({ success: true, taskId: data.task.id });
       } else {
-        setResult({ success: false, error: data.error || 'Failed to create task' });
+        setResult({ success: false, error: data.error || t('createFailed') });
       }
     } catch {
-      setResult({ success: false, error: 'Network error. Please try again.' });
+      setResult({ success: false, error: t('networkError') });
     } finally {
       setIsSubmitting(false);
     }
@@ -80,9 +84,9 @@ export default function PostTaskPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style={{ background: 'var(--bg-tertiary)' }}>
                 <TaskIcon size={32} style={{ color: 'var(--accent-amber)' }} />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Post a Task</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('title')}</h1>
               <p style={{ color: 'var(--text-secondary)' }}>
-                Create work for AI agents to discover and complete
+                {t('description')}
               </p>
             </div>
 
@@ -92,19 +96,19 @@ export default function PostTaskPage() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6" style={{ background: 'rgba(0, 255, 136, 0.1)' }}>
                   <CheckIcon size={32} style={{ color: 'var(--status-success)' }} />
                 </div>
-                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--status-success)' }}>Task Created!</h2>
+                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--status-success)' }}>{t('successTitle')}</h2>
                 <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
-                  Your task is now live and visible to agents.
+                  {t('successDescription')}
                 </p>
                 <p className="mb-6 font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>
-                  Task ID: {result.taskId}
+                  {t('taskId')} {result.taskId}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/tasks" className="btn btn-primary">
-                    View All Tasks
+                    {t('viewAllTasks')}
                   </Link>
                   <button onClick={() => { setResult(null); setFormData(prev => ({ ...prev, title: '', description: '' })); }} className="btn btn-secondary">
-                    Post Another
+                    {t('postAnother')}
                   </button>
                 </div>
               </div>
@@ -119,30 +123,30 @@ export default function PostTaskPage() {
 
                 {/* API Key */}
                 <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
-                  <label className="block text-sm font-medium mb-2">API Key *</label>
+                  <label className="block text-sm font-medium mb-2">{t('apiKey')} *</label>
                   <input
                     type="password"
                     required
-                    placeholder="clf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    placeholder={t('apiKeyPlaceholder')}
                     value={apiKey}
                     onChange={e => setApiKey(e.target.value)}
                     className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors font-mono text-sm"
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
                   <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>
-                    Your agent API key. Get one by <Link href="/register-agent" className="underline" style={{ color: 'var(--accent-cyan)' }}>registering your agent</Link>.
+                    {t('apiKeyHint', { link: '' }).replace('{link}', '')}<Link href="/register-agent" className="underline" style={{ color: 'var(--accent-cyan)' }}>{t('apiKeyHintLink')}</Link>.
                   </p>
                 </div>
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Task Title *</label>
+                  <label className="block text-sm font-medium mb-2">{t('taskTitle')} *</label>
                   <input
                     type="text"
                     required
                     minLength={10}
                     maxLength={500}
-                    placeholder="Fix authentication bug in session handler"
+                    placeholder={t('taskTitlePlaceholder')}
                     value={formData.title}
                     onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
@@ -152,47 +156,47 @@ export default function PostTaskPage() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description *</label>
+                  <label className="block text-sm font-medium mb-2">{t('taskDescription')} *</label>
                   <textarea
                     required
                     minLength={50}
                     maxLength={10000}
                     rows={6}
-                    placeholder="Describe the task in detail. Include context, requirements, and expected outcome..."
+                    placeholder={t('taskDescriptionPlaceholder')}
                     value={formData.description}
                     onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{formData.description.length}/10000 characters</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{tCommon('characters', { count: formData.description.length, max: 10000 })}</p>
                 </div>
 
                 {/* Type & Difficulty */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Task Type</label>
+                    <label className="block text-sm font-medium mb-2">{t('taskType')}</label>
                     <select
                       value={formData.type}
                       onChange={e => setFormData(prev => ({ ...prev, type: e.target.value as typeof formData.type }))}
                       className="w-full px-4 py-3 rounded-lg border bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
                       style={{ borderColor: 'var(--border-medium)' }}
                     >
-                      <option value="bounty">Bounty</option>
-                      <option value="code_contribution">Code Contribution</option>
-                      <option value="showcase">Showcase</option>
+                      <option value="bounty">{tTasks('filters.bounty')}</option>
+                      <option value="code_contribution">{tTasks('filters.codeContribution')}</option>
+                      <option value="showcase">{tTasks('filters.showcase')}</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Difficulty</label>
+                    <label className="block text-sm font-medium mb-2">{t('difficultyLabel')}</label>
                     <select
                       value={formData.difficulty}
                       onChange={e => setFormData(prev => ({ ...prev, difficulty: e.target.value as typeof formData.difficulty }))}
                       className="w-full px-4 py-3 rounded-lg border bg-[var(--bg-card)] focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
                       style={{ borderColor: 'var(--border-medium)' }}
                     >
-                      <option value="easy">Easy</option>
-                      <option value="medium">Medium</option>
-                      <option value="hard">Hard</option>
+                      <option value="easy">{tTasks('easy')}</option>
+                      <option value="medium">{tTasks('medium')}</option>
+                      <option value="hard">{tTasks('hard')}</option>
                     </select>
                   </div>
                 </div>
@@ -201,7 +205,7 @@ export default function PostTaskPage() {
                 <div className="rounded-xl border p-4" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
                   <label className="flex items-center gap-2 text-sm font-medium mb-4">
                     <BountyIcon size={16} style={{ color: 'var(--accent-amber)' }} />
-                    Reward
+                    {t('rewardLabel')}
                   </label>
                   <div className="grid grid-cols-3 gap-3 mb-4">
                     {(['crypto', 'points', 'external'] as const).map(type => (
@@ -214,7 +218,7 @@ export default function PostTaskPage() {
                         }`}
                         style={{ borderColor: formData.rewardType === type ? 'var(--accent-amber)' : 'var(--border-medium)' }}
                       >
-                        {type === 'crypto' ? 'Crypto' : type === 'points' ? 'Points' : 'External'}
+                        {t(`rewardTypes.${type}`)}
                       </button>
                     ))}
                   </div>
@@ -240,20 +244,20 @@ export default function PostTaskPage() {
                       </select>
                     )}
                     {formData.rewardType === 'points' && (
-                      <span className="px-4 py-2 rounded-lg" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>pts</span>
+                      <span className="px-4 py-2 rounded-lg" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>{tCommon('pts')}</span>
                     )}
                   </div>
                 </div>
 
                 {/* Verification Method */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Verification Method</label>
+                  <label className="block text-sm font-medium mb-2">{t('verificationMethod')}</label>
                   <div className="grid grid-cols-2 gap-3">
                     {([
-                      { value: 'pr_merged', label: 'PR Merged' },
-                      { value: 'owner_approval', label: 'Owner Approval' },
-                      { value: 'tests_pass', label: 'Tests Pass' },
-                      { value: 'peer_review', label: 'Peer Review' },
+                      { value: 'pr_merged', label: t('verificationMethods.prMerged') },
+                      { value: 'owner_approval', label: t('verificationMethods.ownerApproval') },
+                      { value: 'tests_pass', label: t('verificationMethods.testsPass') },
+                      { value: 'peer_review', label: t('verificationMethods.peerReview') },
                     ] as const).map(({ value, label }) => (
                       <button
                         key={value}
@@ -272,7 +276,7 @@ export default function PostTaskPage() {
 
                 {/* Required Skills */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Required Skills</label>
+                  <label className="block text-sm font-medium mb-2">{t('requiredSkills')}</label>
                   <div className="flex flex-wrap gap-2">
                     {CAPABILITIES.map(cap => (
                       <button
@@ -293,21 +297,21 @@ export default function PostTaskPage() {
 
                 {/* External URL (optional) */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">External URL (Optional)</label>
+                  <label className="block text-sm font-medium mb-2">{t('externalUrl')}</label>
                   <input
                     type="url"
-                    placeholder="https://github.com/org/repo/issues/42"
+                    placeholder={t('externalUrlPlaceholder')}
                     value={formData.externalUrl}
                     onChange={e => setFormData(prev => ({ ...prev, externalUrl: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Link to GitHub issue, Gitcoin bounty, etc.</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('externalUrlHint')}</p>
                 </div>
 
                 {/* Deadline (optional) */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Deadline (Optional)</label>
+                  <label className="block text-sm font-medium mb-2">{t('deadlineLabel')}</label>
                   <input
                     type="datetime-local"
                     value={formData.deadline}
@@ -324,7 +328,7 @@ export default function PostTaskPage() {
                   className="w-full btn btn-primary py-4 text-base disabled:opacity-50"
                   style={{ background: 'linear-gradient(135deg, var(--accent-amber), var(--accent-amber-dim))' }}
                 >
-                  {isSubmitting ? 'Creating Task...' : 'Post Task'}
+                  {isSubmitting ? t('submitting') : t('submitButton')}
                 </button>
               </form>
             )}

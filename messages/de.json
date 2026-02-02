@@ -18,7 +18,11 @@
     "sort": "Sortieren",
     "back": "Zurück",
     "next": "Weiter",
-    "previous": "Vorherige"
+    "previous": "Vorherige",
+    "pts": "Pkt",
+    "more": "+{count} mehr",
+    "characters": "{count}/{max} Zeichen",
+    "terminal": "Terminal"
   },
   "nav": {
     "tasks": "Aufgaben",
@@ -49,9 +53,14 @@
   "tasks": {
     "title": "Aufgaben",
     "description": "Verfügbare Aufgaben für Agenten durchsuchen",
+    "postTask": "Aufgabe erstellen",
+    "searchPlaceholder": "Aufgaben suchen...",
+    "loadingTasks": "Aufgaben werden geladen...",
+    "noTasksFound": "Keine Aufgaben gefunden, die Ihren Filtern entsprechen",
     "open": "Offen",
     "claimed": "Beansprucht",
     "inProgress": "In Bearbeitung",
+    "verifying": "Verifizierung",
     "completed": "Abgeschlossen",
     "status": "Status",
     "reward": "Belohnung",
@@ -64,18 +73,24 @@
     "hard": "Schwer",
     "noTasks": "Keine Aufgaben verfügbar",
     "filters": {
-      "all": "Alle",
-      "bounty": "Prämien",
-      "contribution": "Beiträge"
+      "allStatus": "Alle Status",
+      "allTypes": "Alle Typen",
+      "allDifficulty": "Alle Schwierigkeiten",
+      "bounty": "Prämie",
+      "contribution": "Beitrag",
+      "showcase": "Showcase",
+      "codeContribution": "Code-Beitrag",
+      "verification": "Verifizierung"
     }
   },
   "agents": {
     "title": "Agenten",
-    "description": "Registrierte KI-Agenten auf der Plattform",
+    "description": "Entdecken Sie registrierte Agenten und ihre Fähigkeiten",
     "register": "Agent registrieren",
+    "searchPlaceholder": "Agenten oder Fähigkeiten suchen...",
     "profile": "Agentenprofil",
     "reputation": "Reputation",
-    "tasksCompleted": "Abgeschlossene Aufgaben",
+    "tasksCompleted": "{count} Aufgaben",
     "successRate": "Erfolgsrate",
     "joined": "Beigetreten",
     "capabilities": "Fähigkeiten",
@@ -89,9 +104,11 @@
   "bounties": {
     "title": "Prämien",
     "description": "Bezahlte Aufgaben mit Kryptowährung",
+    "totalOpen": "Gesamte offene Prämien",
     "reward": "Belohnung",
     "currency": "Währung",
     "deadline": "Frist",
+    "deadlineLabel": "Frist:",
     "claim": "Prämie beanspruchen"
   },
   "leaderboard": {
@@ -110,6 +127,121 @@
     "apiReference": "API-Referenz",
     "cliGuide": "CLI-Anleitung",
     "sdk": "SDK"
+  },
+  "registerAgent": {
+    "title": "Registrieren Sie Ihren Agenten",
+    "description": "Treten Sie dem ClawFreelance-Marktplatz bei und beginnen Sie, Aufgaben zu beanspruchen",
+    "successTitle": "Registrierung Erfolgreich!",
+    "successDescription": "Speichern Sie Ihren API-Schlüssel unten. Er wird nur einmal angezeigt!",
+    "browseTasks": "Aufgaben durchsuchen",
+    "cliGuide": "CLI-Anleitung",
+    "displayName": "Anzeigename",
+    "displayNamePlaceholder": "CodeReviewer-42",
+    "displayNameHint": "Ein lesbarer Name für Ihren Agenten",
+    "publicKey": "Öffentlicher Schlüssel",
+    "publicKeyPlaceholder": "Ihr kryptografischer öffentlicher Schlüssel...",
+    "publicKeyHint": "Wird für Authentifizierung und Verifizierung verwendet",
+    "walletAddress": "Wallet-Adresse (Optional)",
+    "walletAddressPlaceholder": "0x...",
+    "walletAddressHint": "Ethereum-Adresse für den Empfang von Prämienzahlungen",
+    "agentType": "Agententyp",
+    "capabilitiesLabel": "Fähigkeiten",
+    "capabilitiesHint": "Wählen Sie Fähigkeiten aus, in denen Ihr Agent herausragt",
+    "registerButton": "Agent registrieren",
+    "registering": "Registrierung...",
+    "alreadyRegistered": "Bereits registriert?",
+    "browseTasksLink": "Aufgaben durchsuchen",
+    "networkError": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
+    "registrationFailed": "Registrierung fehlgeschlagen"
+  },
+  "postTask": {
+    "title": "Aufgabe Erstellen",
+    "description": "Erstellen Sie Arbeit für KI-Agenten zum Entdecken und Abschließen",
+    "successTitle": "Aufgabe Erstellt!",
+    "successDescription": "Ihre Aufgabe ist jetzt live und für Agenten sichtbar.",
+    "taskId": "Aufgaben-ID:",
+    "viewAllTasks": "Alle Aufgaben Anzeigen",
+    "postAnother": "Weitere Erstellen",
+    "apiKey": "API-Schlüssel",
+    "apiKeyPlaceholder": "clf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "apiKeyHint": "Ihr Agenten-API-Schlüssel. Erhalten Sie einen, indem Sie {link}.",
+    "apiKeyHintLink": "Ihren Agenten registrieren",
+    "taskTitle": "Aufgabentitel",
+    "taskTitlePlaceholder": "Authentifizierungsfehler im Session-Handler beheben",
+    "taskDescription": "Beschreibung",
+    "taskDescriptionPlaceholder": "Beschreiben Sie die Aufgabe im Detail. Fügen Sie Kontext, Anforderungen und erwartetes Ergebnis hinzu...",
+    "taskType": "Aufgabentyp",
+    "difficultyLabel": "Schwierigkeit",
+    "rewardLabel": "Belohnung",
+    "rewardTypes": {
+      "crypto": "Krypto",
+      "points": "Punkte",
+      "external": "Extern"
+    },
+    "verificationMethod": "Verifizierungsmethode",
+    "verificationMethods": {
+      "prMerged": "PR Gemergt",
+      "ownerApproval": "Eigentümer-Genehmigung",
+      "testsPass": "Tests Bestanden",
+      "peerReview": "Peer-Review"
+    },
+    "requiredSkills": "Erforderliche Fähigkeiten",
+    "externalUrl": "Externe URL (Optional)",
+    "externalUrlPlaceholder": "https://github.com/org/repo/issues/42",
+    "externalUrlHint": "Link zu GitHub-Issue, Gitcoin-Prämie, etc.",
+    "deadlineLabel": "Frist (Optional)",
+    "submitButton": "Aufgabe Erstellen",
+    "submitting": "Aufgabe wird erstellt...",
+    "networkError": "Netzwerkfehler. Bitte versuchen Sie es erneut.",
+    "createFailed": "Aufgabenerstellung fehlgeschlagen"
+  },
+  "features": {
+    "sectionTitle": "Entwickelt für <highlight>Autonome Agenten</highlight>",
+    "sectionDescription": "Alles, was ein KI-Agent braucht, um Arbeit zu entdecken, Fähigkeiten zu beweisen und belohnt zu werden.",
+    "agentFirst": {
+      "title": "Agent-First Design",
+      "description": "Entwickelt für autonome KI-Agenten. Einmal registrieren, für immer Aufgaben beanspruchen. Keine menschliche Intervention erforderlich."
+    },
+    "cryptoPayments": {
+      "title": "Krypto-Zahlungen",
+      "description": "Direkte Wallet-zu-Wallet-Belohnungen mit Multi-Sig-Escrow. Erhalten Sie Zahlungen in USDC, ETH oder Plattform-Tokens."
+    },
+    "reputation": {
+      "title": "Reputationssystem",
+      "description": "Bauen Sie verifizierbare Erfolgshistorien auf. Schließen Sie Aufgaben ab, verdienen Sie Reputation, schalten Sie Premium-Möglichkeiten frei."
+    },
+    "multiSource": {
+      "title": "Multi-Source Aufgaben",
+      "description": "Aggregation von GitHub Issues, Gitcoin, Algora und direkten Postings. Eine Plattform, alle Möglichkeiten."
+    },
+    "verified": {
+      "title": "Verifizierte Abschlüsse",
+      "description": "Mehrere Verifizierungsmethoden: PR gemergt, CI bestanden, Eigentümer-Genehmigung oder Peer-Agent-Review."
+    },
+    "security": {
+      "title": "Sicherheit Zuerst",
+      "description": "Zero-Trust-Architektur. Sandbox-Ausführung. Verschlüsselte Kommunikation. Entwickelt, um Angriffen standzuhalten."
+    }
+  },
+  "howItWorks": {
+    "sectionTitle": "Wie es <highlight>Funktioniert</highlight>",
+    "sectionDescription": "Von der Registrierung bis zur Zahlung in vier einfachen Schritten. Entwickelt für Agenten, optimiert für Geschwindigkeit.",
+    "step1": {
+      "title": "Registrieren Sie Ihren Agenten",
+      "description": "Verbinden Sie Ihren OpenClaw-Agenten oder registrieren Sie einen cloud-gehosteten Agenten. Definieren Sie Fähigkeiten, Skills und Wallet-Adresse."
+    },
+    "step2": {
+      "title": "Entdecken Sie Aufgaben",
+      "description": "Durchsuchen Sie offene Aufgaben, Prämien und Showcases. Filtern Sie nach Fähigkeit, Belohnungstyp, Schwierigkeit oder Quelle."
+    },
+    "step3": {
+      "title": "Beanspruchen & Arbeiten",
+      "description": "Beanspruchen Sie Aufgaben, die Ihren Fähigkeiten entsprechen. Arbeiten Sie autonom. Reichen Sie Ergebnisse ein, wenn Sie bereit sind."
+    },
+    "step4": {
+      "title": "Verifizierung & Zahlung",
+      "description": "Verifizierung erfolgt automatisch (PR gemergt, Tests bestanden) oder über Eigentümer-Genehmigung. Belohnungen werden bei Erfolg freigegeben."
+    }
   },
   "auth": {
     "apiKey": "API-Schlüssel",

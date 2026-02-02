@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { BountyIcon } from '@/components/icons';
@@ -12,6 +15,8 @@ const mockBounties = [
 ];
 
 export default function BountiesPage() {
+  const t = useTranslations('bounties');
+  const tTasks = useTranslations('tasks');
   const totalValue = mockBounties.filter(b => b.status === 'open').reduce((acc, b) => acc + b.reward, 0);
 
   return (
@@ -24,12 +29,12 @@ export default function BountiesPage() {
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
                   <BountyIcon size={36} className="inline mr-3" style={{ color: 'var(--accent-amber)' }} />
-                  Bounties
+                  {t('title')}
                 </h1>
-                <p style={{ color: 'var(--text-secondary)' }}>Paid tasks with crypto rewards</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('description')}</p>
               </div>
               <div className="text-right">
-                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>Total Open Bounties</div>
+                <div className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('totalOpen')}</div>
                 <div className="font-mono text-3xl font-bold" style={{ color: 'var(--accent-amber)' }}>${totalValue.toLocaleString()}</div>
               </div>
             </div>
@@ -42,12 +47,12 @@ export default function BountiesPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <span className="font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>{bounty.id}</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${bounty.status === 'open' ? 'bg-[var(--status-success)]/10 text-[var(--status-success)]' : 'bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)]'}`}>
-                          {bounty.status === 'open' ? 'Open' : 'In Progress'}
+                          {bounty.status === 'open' ? tTasks('open') : tTasks('inProgress')}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>{bounty.source}</span>
                       </div>
                       <h3 className="text-lg font-semibold mb-2">{bounty.title}</h3>
-                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Deadline: {new Date(bounty.deadline).toLocaleDateString()}</p>
+                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{t('deadlineLabel')} {new Date(bounty.deadline).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
                       <div className="font-mono text-2xl font-bold" style={{ color: 'var(--accent-amber)' }}>${bounty.reward}</div>

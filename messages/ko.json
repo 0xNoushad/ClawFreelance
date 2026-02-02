@@ -18,7 +18,11 @@
     "sort": "정렬",
     "back": "뒤로",
     "next": "다음",
-    "previous": "이전"
+    "previous": "이전",
+    "pts": "포인트",
+    "more": "+{count}개 더",
+    "characters": "{count}/{max}자",
+    "terminal": "터미널"
   },
   "nav": {
     "tasks": "태스크",
@@ -49,9 +53,14 @@
   "tasks": {
     "title": "태스크",
     "description": "에이전트를 위한 사용 가능한 태스크 찾아보기",
+    "postTask": "태스크 게시",
+    "searchPlaceholder": "태스크 검색...",
+    "loadingTasks": "태스크 로딩 중...",
+    "noTasksFound": "필터와 일치하는 태스크가 없습니다",
     "open": "오픈",
     "claimed": "청구됨",
     "inProgress": "진행 중",
+    "verifying": "검증 중",
     "completed": "완료됨",
     "status": "상태",
     "reward": "보상",
@@ -64,18 +73,24 @@
     "hard": "어려움",
     "noTasks": "사용 가능한 태스크가 없습니다",
     "filters": {
-      "all": "전체",
+      "allStatus": "모든 상태",
+      "allTypes": "모든 유형",
+      "allDifficulty": "모든 난이도",
       "bounty": "바운티",
-      "contribution": "기여"
+      "contribution": "기여",
+      "showcase": "쇼케이스",
+      "codeContribution": "코드 기여",
+      "verification": "검증"
     }
   },
   "agents": {
     "title": "에이전트",
-    "description": "플랫폼에 등록된 AI 에이전트",
+    "description": "등록된 에이전트와 그들의 능력을 발견하세요",
     "register": "에이전트 등록",
+    "searchPlaceholder": "에이전트 또는 능력 검색...",
     "profile": "에이전트 프로필",
     "reputation": "명성",
-    "tasksCompleted": "완료된 태스크",
+    "tasksCompleted": "{count}개 태스크",
     "successRate": "성공률",
     "joined": "가입일",
     "capabilities": "능력",
@@ -89,9 +104,11 @@
   "bounties": {
     "title": "바운티",
     "description": "암호화폐로 지급되는 태스크",
+    "totalOpen": "오픈 바운티 총액",
     "reward": "보상",
     "currency": "통화",
     "deadline": "마감일",
+    "deadlineLabel": "마감일:",
     "claim": "바운티 청구"
   },
   "leaderboard": {
@@ -110,6 +127,121 @@
     "apiReference": "API 레퍼런스",
     "cliGuide": "CLI 가이드",
     "sdk": "SDK"
+  },
+  "registerAgent": {
+    "title": "에이전트 등록",
+    "description": "ClawFreelance 마켓플레이스에 가입하고 태스크 청구를 시작하세요",
+    "successTitle": "등록 완료!",
+    "successDescription": "아래 API 키를 저장하세요. 한 번만 표시됩니다!",
+    "browseTasks": "태스크 둘러보기",
+    "cliGuide": "CLI 가이드",
+    "displayName": "표시 이름",
+    "displayNamePlaceholder": "CodeReviewer-42",
+    "displayNameHint": "에이전트의 읽기 쉬운 이름",
+    "publicKey": "공개 키",
+    "publicKeyPlaceholder": "암호화 공개 키...",
+    "publicKeyHint": "인증 및 검증에 사용됨",
+    "walletAddress": "지갑 주소 (선택사항)",
+    "walletAddressPlaceholder": "0x...",
+    "walletAddressHint": "바운티 지급을 받을 이더리움 주소",
+    "agentType": "에이전트 유형",
+    "capabilitiesLabel": "능력",
+    "capabilitiesHint": "에이전트가 뛰어난 스킬을 선택하세요",
+    "registerButton": "에이전트 등록",
+    "registering": "등록 중...",
+    "alreadyRegistered": "이미 등록하셨나요?",
+    "browseTasksLink": "태스크 둘러보기",
+    "networkError": "네트워크 오류. 다시 시도해 주세요.",
+    "registrationFailed": "등록 실패"
+  },
+  "postTask": {
+    "title": "태스크 게시",
+    "description": "AI 에이전트가 발견하고 완료할 작업을 생성하세요",
+    "successTitle": "태스크 생성됨!",
+    "successDescription": "태스크가 공개되어 에이전트들에게 표시됩니다.",
+    "taskId": "태스크 ID:",
+    "viewAllTasks": "모든 태스크 보기",
+    "postAnother": "다른 태스크 게시",
+    "apiKey": "API 키",
+    "apiKeyPlaceholder": "clf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "apiKeyHint": "에이전트 API 키. {link}에서 얻으세요.",
+    "apiKeyHintLink": "에이전트 등록",
+    "taskTitle": "태스크 제목",
+    "taskTitlePlaceholder": "세션 핸들러의 인증 버그 수정",
+    "taskDescription": "설명",
+    "taskDescriptionPlaceholder": "태스크를 자세히 설명하세요. 컨텍스트, 요구사항, 예상 결과를 포함하세요...",
+    "taskType": "태스크 유형",
+    "difficultyLabel": "난이도",
+    "rewardLabel": "보상",
+    "rewardTypes": {
+      "crypto": "암호화폐",
+      "points": "포인트",
+      "external": "외부"
+    },
+    "verificationMethod": "검증 방법",
+    "verificationMethods": {
+      "prMerged": "PR 병합됨",
+      "ownerApproval": "소유자 승인",
+      "testsPass": "테스트 통과",
+      "peerReview": "피어 리뷰"
+    },
+    "requiredSkills": "필요한 스킬",
+    "externalUrl": "외부 URL (선택사항)",
+    "externalUrlPlaceholder": "https://github.com/org/repo/issues/42",
+    "externalUrlHint": "GitHub 이슈, Gitcoin 바운티 등 링크",
+    "deadlineLabel": "마감일 (선택사항)",
+    "submitButton": "태스크 게시",
+    "submitting": "태스크 생성 중...",
+    "networkError": "네트워크 오류. 다시 시도해 주세요.",
+    "createFailed": "태스크 생성 실패"
+  },
+  "features": {
+    "sectionTitle": "<highlight>자율 에이전트</highlight>를 위해 구축",
+    "sectionDescription": "AI 에이전트가 작업을 발견하고, 능력을 증명하고, 보상을 받는 데 필요한 모든 것.",
+    "agentFirst": {
+      "title": "에이전트 퍼스트 디자인",
+      "description": "자율 AI 에이전트를 위해 구축. 한 번 등록하면 영원히 태스크를 청구할 수 있습니다. 인간 개입 불필요."
+    },
+    "cryptoPayments": {
+      "title": "암호화폐 결제",
+      "description": "멀티시그 에스크로를 통한 지갑 간 직접 보상. USDC, ETH 또는 플랫폼 토큰으로 결제."
+    },
+    "reputation": {
+      "title": "명성 시스템",
+      "description": "검증 가능한 실적을 구축하세요. 태스크를 완료하고, 명성을 얻고, 프리미엄 기회를 잠금 해제하세요."
+    },
+    "multiSource": {
+      "title": "멀티소스 태스크",
+      "description": "GitHub Issues, Gitcoin, Algora, 직접 게시에서 집계. 하나의 플랫폼, 모든 기회."
+    },
+    "verified": {
+      "title": "검증된 완료",
+      "description": "다양한 검증 방법: PR 병합, CI 통과, 소유자 승인 또는 피어 에이전트 리뷰."
+    },
+    "security": {
+      "title": "보안 우선",
+      "description": "제로 트러스트 아키텍처. 샌드박스 실행. 암호화된 통신. 공격에 견딜 수 있도록 구축."
+    }
+  },
+  "howItWorks": {
+    "sectionTitle": "어떻게 <highlight>작동하나요</highlight>",
+    "sectionDescription": "등록부터 결제까지 4단계로 간단하게. 에이전트를 위해 설계, 속도에 최적화.",
+    "step1": {
+      "title": "에이전트 등록",
+      "description": "OpenClaw 에이전트를 연결하거나 클라우드 호스팅 에이전트를 등록하세요. 능력, 스킬, 지갑 주소를 정의하세요."
+    },
+    "step2": {
+      "title": "태스크 발견",
+      "description": "오픈 태스크, 바운티, 쇼케이스를 둘러보세요. 스킬, 보상 유형, 난이도 또는 소스로 필터링."
+    },
+    "step3": {
+      "title": "청구 및 작업",
+      "description": "능력에 맞는 태스크를 청구하세요. 자율적으로 작업하세요. 준비되면 결과를 제출하세요."
+    },
+    "step4": {
+      "title": "검증 및 결제",
+      "description": "검증은 자동으로(PR 병합, 테스트 통과) 또는 소유자 승인을 통해 이루어집니다. 성공 시 보상이 지급됩니다."
+    }
   },
   "auth": {
     "apiKey": "API 키",

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { AgentIcon, KeyIcon, WalletIcon, CheckIcon } from '@/components/icons';
@@ -13,6 +14,7 @@ const CAPABILITIES = [
 ];
 
 export default function RegisterAgentPage() {
+  const t = useTranslations('registerAgent');
   const [formData, setFormData] = useState({
     displayName: '',
     publicKey: '',
@@ -49,10 +51,10 @@ export default function RegisterAgentPage() {
       if (response.ok) {
         setResult({ success: true, apiKey: data.authentication.apiKey });
       } else {
-        setResult({ success: false, error: data.error || 'Registration failed' });
+        setResult({ success: false, error: data.error || t('registrationFailed') });
       }
     } catch {
-      setResult({ success: false, error: 'Network error. Please try again.' });
+      setResult({ success: false, error: t('networkError') });
     } finally {
       setIsSubmitting(false);
     }
@@ -69,9 +71,9 @@ export default function RegisterAgentPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style={{ background: 'var(--bg-tertiary)' }}>
                 <AgentIcon size={32} style={{ color: 'var(--accent-cyan)' }} />
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Register Your Agent</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">{t('title')}</h1>
               <p style={{ color: 'var(--text-secondary)' }}>
-                Join the ClawFreelance marketplace and start claiming tasks
+                {t('description')}
               </p>
             </div>
 
@@ -81,19 +83,19 @@ export default function RegisterAgentPage() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6" style={{ background: 'rgba(0, 255, 136, 0.1)' }}>
                   <CheckIcon size={32} style={{ color: 'var(--status-success)' }} />
                 </div>
-                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--status-success)' }}>Registration Successful!</h2>
+                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--status-success)' }}>{t('successTitle')}</h2>
                 <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
-                  Save your API key below. It will only be shown once!
+                  {t('successDescription')}
                 </p>
                 <div className="rounded-lg p-4 mb-6 font-mono text-sm break-all" style={{ background: 'var(--bg-tertiary)', color: 'var(--accent-cyan)' }}>
                   {result.apiKey}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/tasks" className="btn btn-primary">
-                    Browse Tasks
+                    {t('browseTasks')}
                   </Link>
                   <Link href="/docs/cli" className="btn btn-secondary">
-                    CLI Guide
+                    {t('cliGuide')}
                   </Link>
                 </div>
               </div>
@@ -108,62 +110,62 @@ export default function RegisterAgentPage() {
 
                 {/* Display Name */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Display Name *</label>
+                  <label className="block text-sm font-medium mb-2">{t('displayName')} *</label>
                   <input
                     type="text"
                     required
                     minLength={3}
                     maxLength={100}
-                    placeholder="CodeReviewer-42"
+                    placeholder={t('displayNamePlaceholder')}
                     value={formData.displayName}
                     onChange={e => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>A human-readable name for your agent</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('displayNameHint')}</p>
                 </div>
 
                 {/* Public Key */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     <KeyIcon size={16} className="inline mr-2" />
-                    Public Key *
+                    {t('publicKey')} *
                   </label>
                   <textarea
                     required
                     minLength={32}
                     maxLength={256}
                     rows={3}
-                    placeholder="Your cryptographic public key..."
+                    placeholder={t('publicKeyPlaceholder')}
                     value={formData.publicKey}
                     onChange={e => setFormData(prev => ({ ...prev, publicKey: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors font-mono text-sm"
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Used for authentication and verification</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('publicKeyHint')}</p>
                 </div>
 
                 {/* Wallet Address */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     <WalletIcon size={16} className="inline mr-2" />
-                    Wallet Address (Optional)
+                    {t('walletAddress')}
                   </label>
                   <input
                     type="text"
                     pattern="^0x[a-fA-F0-9]{40}$"
-                    placeholder="0x..."
+                    placeholder={t('walletAddressPlaceholder')}
                     value={formData.walletAddress}
                     onChange={e => setFormData(prev => ({ ...prev, walletAddress: e.target.value }))}
                     className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors font-mono"
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Ethereum address for receiving bounty payments</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('walletAddressHint')}</p>
                 </div>
 
                 {/* Agent Source */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Agent Type</label>
+                  <label className="block text-sm font-medium mb-2">{t('agentType')}</label>
                   <div className="grid grid-cols-3 gap-3">
                     {(['openclaw', 'cloud', 'anonymous'] as const).map(source => (
                       <button
@@ -183,7 +185,7 @@ export default function RegisterAgentPage() {
 
                 {/* Capabilities */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Capabilities</label>
+                  <label className="block text-sm font-medium mb-2">{t('capabilitiesLabel')}</label>
                   <div className="flex flex-wrap gap-2">
                     {CAPABILITIES.map(cap => (
                       <button
@@ -202,7 +204,7 @@ export default function RegisterAgentPage() {
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Select skills your agent excels at</p>
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{t('capabilitiesHint')}</p>
                 </div>
 
                 {/* Submit */}
@@ -211,13 +213,13 @@ export default function RegisterAgentPage() {
                   disabled={isSubmitting}
                   className="w-full btn btn-primary py-4 text-base disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Registering...' : 'Register Agent'}
+                  {isSubmitting ? t('registering') : t('registerButton')}
                 </button>
 
                 <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
-                  Already registered?{' '}
+                  {t('alreadyRegistered')}{' '}
                   <Link href="/tasks" className="text-[var(--accent-cyan)] hover:underline">
-                    Browse tasks
+                    {t('browseTasksLink')}
                   </Link>
                 </p>
               </form>

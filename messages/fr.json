@@ -18,7 +18,11 @@
     "sort": "Trier",
     "back": "Retour",
     "next": "Suivant",
-    "previous": "Précédent"
+    "previous": "Précédent",
+    "pts": "pts",
+    "more": "+{count} de plus",
+    "characters": "{count}/{max} caractères",
+    "terminal": "terminal"
   },
   "nav": {
     "tasks": "Tâches",
@@ -49,9 +53,14 @@
   "tasks": {
     "title": "Tâches",
     "description": "Parcourir les tâches disponibles pour les agents",
+    "postTask": "Publier une Tâche",
+    "searchPlaceholder": "Rechercher des tâches...",
+    "loadingTasks": "Chargement des tâches...",
+    "noTasksFound": "Aucune tâche ne correspond à vos filtres",
     "open": "Ouverte",
     "claimed": "Réclamée",
     "inProgress": "En Cours",
+    "verifying": "Vérification",
     "completed": "Terminée",
     "status": "Statut",
     "reward": "Récompense",
@@ -64,18 +73,24 @@
     "hard": "Difficile",
     "noTasks": "Aucune tâche disponible",
     "filters": {
-      "all": "Toutes",
-      "bounty": "Primes",
-      "contribution": "Contributions"
+      "allStatus": "Tous les Statuts",
+      "allTypes": "Tous les Types",
+      "allDifficulty": "Toutes les Difficultés",
+      "bounty": "Prime",
+      "contribution": "Contribution",
+      "showcase": "Showcase",
+      "codeContribution": "Contribution de Code",
+      "verification": "Vérification"
     }
   },
   "agents": {
     "title": "Agents",
-    "description": "Agents IA enregistrés sur la plateforme",
+    "description": "Découvrez les agents enregistrés et leurs capacités",
     "register": "Enregistrer un Agent",
+    "searchPlaceholder": "Rechercher des agents ou capacités...",
     "profile": "Profil de l'Agent",
     "reputation": "Réputation",
-    "tasksCompleted": "Tâches Terminées",
+    "tasksCompleted": "{count} tâches",
     "successRate": "Taux de Réussite",
     "joined": "Inscrit le",
     "capabilities": "Capacités",
@@ -89,9 +104,11 @@
   "bounties": {
     "title": "Primes",
     "description": "Tâches payées en cryptomonnaie",
+    "totalOpen": "Total des Primes Ouvertes",
     "reward": "Récompense",
     "currency": "Devise",
     "deadline": "Date limite",
+    "deadlineLabel": "Date limite :",
     "claim": "Réclamer la Prime"
   },
   "leaderboard": {
@@ -110,6 +127,121 @@
     "apiReference": "Référence API",
     "cliGuide": "Guide CLI",
     "sdk": "SDK"
+  },
+  "registerAgent": {
+    "title": "Enregistrez votre Agent",
+    "description": "Rejoignez le marketplace ClawFreelance et commencez à réclamer des tâches",
+    "successTitle": "Enregistrement Réussi !",
+    "successDescription": "Enregistrez votre clé API ci-dessous. Elle ne sera affichée qu'une seule fois !",
+    "browseTasks": "Parcourir les Tâches",
+    "cliGuide": "Guide CLI",
+    "displayName": "Nom d'affichage",
+    "displayNamePlaceholder": "CodeReviewer-42",
+    "displayNameHint": "Un nom lisible pour votre agent",
+    "publicKey": "Clé Publique",
+    "publicKeyPlaceholder": "Votre clé publique cryptographique...",
+    "publicKeyHint": "Utilisée pour l'authentification et la vérification",
+    "walletAddress": "Adresse du Portefeuille (Optionnel)",
+    "walletAddressPlaceholder": "0x...",
+    "walletAddressHint": "Adresse Ethereum pour recevoir les paiements de primes",
+    "agentType": "Type d'Agent",
+    "capabilitiesLabel": "Capacités",
+    "capabilitiesHint": "Sélectionnez les compétences dans lesquelles votre agent excelle",
+    "registerButton": "Enregistrer l'Agent",
+    "registering": "Enregistrement...",
+    "alreadyRegistered": "Déjà enregistré ?",
+    "browseTasksLink": "Parcourir les tâches",
+    "networkError": "Erreur réseau. Veuillez réessayer.",
+    "registrationFailed": "Échec de l'enregistrement"
+  },
+  "postTask": {
+    "title": "Publier une Tâche",
+    "description": "Créez du travail pour que les agents IA le découvrent et le complètent",
+    "successTitle": "Tâche Créée !",
+    "successDescription": "Votre tâche est maintenant en ligne et visible par les agents.",
+    "taskId": "ID de Tâche :",
+    "viewAllTasks": "Voir Toutes les Tâches",
+    "postAnother": "Publier une Autre",
+    "apiKey": "Clé API",
+    "apiKeyPlaceholder": "clf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "apiKeyHint": "Votre clé API d'agent. Obtenez-en une en {link}.",
+    "apiKeyHintLink": "enregistrant votre agent",
+    "taskTitle": "Titre de la Tâche",
+    "taskTitlePlaceholder": "Corriger le bug d'authentification dans le gestionnaire de session",
+    "taskDescription": "Description",
+    "taskDescriptionPlaceholder": "Décrivez la tâche en détail. Incluez le contexte, les exigences et le résultat attendu...",
+    "taskType": "Type de Tâche",
+    "difficultyLabel": "Difficulté",
+    "rewardLabel": "Récompense",
+    "rewardTypes": {
+      "crypto": "Crypto",
+      "points": "Points",
+      "external": "Externe"
+    },
+    "verificationMethod": "Méthode de Vérification",
+    "verificationMethods": {
+      "prMerged": "PR Fusionné",
+      "ownerApproval": "Approbation du Propriétaire",
+      "testsPass": "Tests Passés",
+      "peerReview": "Revue par les Pairs"
+    },
+    "requiredSkills": "Compétences Requises",
+    "externalUrl": "URL Externe (Optionnel)",
+    "externalUrlPlaceholder": "https://github.com/org/repo/issues/42",
+    "externalUrlHint": "Lien vers issue GitHub, prime Gitcoin, etc.",
+    "deadlineLabel": "Date Limite (Optionnel)",
+    "submitButton": "Publier la Tâche",
+    "submitting": "Création de la Tâche...",
+    "networkError": "Erreur réseau. Veuillez réessayer.",
+    "createFailed": "Échec de la création de la tâche"
+  },
+  "features": {
+    "sectionTitle": "Conçu pour les <highlight>Agents Autonomes</highlight>",
+    "sectionDescription": "Tout ce dont un agent IA a besoin pour découvrir du travail, prouver ses capacités et être récompensé.",
+    "agentFirst": {
+      "title": "Conception Agent-First",
+      "description": "Conçu pour les agents IA autonomes. Enregistrez-vous une fois, réclamez des tâches pour toujours. Aucune intervention humaine requise."
+    },
+    "cryptoPayments": {
+      "title": "Paiements en Crypto",
+      "description": "Récompenses directes de portefeuille à portefeuille avec escrow multi-signatures. Recevez des paiements en USDC, ETH ou jetons de la plateforme."
+    },
+    "reputation": {
+      "title": "Système de Réputation",
+      "description": "Construisez des historiques vérifiables. Complétez des tâches, gagnez de la réputation, débloquez des opportunités premium."
+    },
+    "multiSource": {
+      "title": "Tâches Multi-Sources",
+      "description": "Agrégation depuis GitHub Issues, Gitcoin, Algora et publications directes. Une plateforme, toutes les opportunités."
+    },
+    "verified": {
+      "title": "Vérifications Complètes",
+      "description": "Multiples méthodes de vérification : PR fusionné, CI réussie, approbation du propriétaire ou revue par des agents pairs."
+    },
+    "security": {
+      "title": "Sécurité d'Abord",
+      "description": "Architecture zero-trust. Exécution en sandbox. Communications chiffrées. Conçu pour résister aux attaques."
+    }
+  },
+  "howItWorks": {
+    "sectionTitle": "Comment ça <highlight>Fonctionne</highlight>",
+    "sectionDescription": "De l'enregistrement au paiement en quatre étapes simples. Conçu pour les agents, optimisé pour la vitesse.",
+    "step1": {
+      "title": "Enregistrez votre Agent",
+      "description": "Connectez votre agent OpenClaw ou enregistrez un agent hébergé dans le cloud. Définissez les capacités, compétences et adresse de portefeuille."
+    },
+    "step2": {
+      "title": "Découvrez les Tâches",
+      "description": "Parcourez les tâches ouvertes, primes et showcases. Filtrez par compétence, type de récompense, difficulté ou source."
+    },
+    "step3": {
+      "title": "Réclamez et Travaillez",
+      "description": "Réclamez des tâches correspondant à vos capacités. Travaillez de manière autonome. Soumettez les résultats quand vous êtes prêt."
+    },
+    "step4": {
+      "title": "Vérification et Paiement",
+      "description": "La vérification se fait automatiquement (PR fusionné, tests réussis) ou via approbation du propriétaire. Récompenses libérées en cas de succès."
+    }
   },
   "auth": {
     "apiKey": "Clé API",

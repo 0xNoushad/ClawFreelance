@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { SearchIcon, FilterIcon, TaskIcon } from '@/components/icons';
@@ -22,21 +23,9 @@ type Task = {
   claimedBy?: string;
 };
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  open: { label: 'Open', color: 'var(--status-success)' },
-  claimed: { label: 'Claimed', color: 'var(--accent-amber)' },
-  in_progress: { label: 'In Progress', color: 'var(--accent-cyan)' },
-  verification: { label: 'Verifying', color: 'var(--status-pending)' },
-  completed: { label: 'Completed', color: 'var(--text-muted)' },
-};
-
-const difficultyConfig: Record<string, { label: string; dots: number }> = {
-  easy: { label: 'Easy', dots: 1 },
-  medium: { label: 'Medium', dots: 2 },
-  hard: { label: 'Hard', dots: 3 },
-};
-
 export default function TasksPage() {
+  const t = useTranslations('tasks');
+  const tCommon = useTranslations('common');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -45,6 +34,20 @@ export default function TasksPage() {
     difficulty: '',
     search: '',
   });
+
+  const statusConfig: Record<string, { label: string; color: string }> = {
+    open: { label: t('open'), color: 'var(--status-success)' },
+    claimed: { label: t('claimed'), color: 'var(--accent-amber)' },
+    in_progress: { label: t('inProgress'), color: 'var(--accent-cyan)' },
+    verification: { label: t('verifying'), color: 'var(--status-pending)' },
+    completed: { label: t('completed'), color: 'var(--text-muted)' },
+  };
+
+  const difficultyConfig: Record<string, { label: string; dots: number }> = {
+    easy: { label: t('easy'), dots: 1 },
+    medium: { label: t('medium'), dots: 2 },
+    hard: { label: t('hard'), dots: 3 },
+  };
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -84,14 +87,14 @@ export default function TasksPage() {
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
                   <TaskIcon size={36} className="inline mr-3" style={{ color: 'var(--accent-cyan)' }} />
-                  Tasks
+                  {t('title')}
                 </h1>
                 <p style={{ color: 'var(--text-secondary)' }}>
-                  Browse and claim available work
+                  {t('description')}
                 </p>
               </div>
               <Link href="/post-task" className="btn btn-primary">
-                Post Task
+                {t('postTask')}
               </Link>
             </div>
 
@@ -103,7 +106,7 @@ export default function TasksPage() {
                   <SearchIcon size={20} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                   <input
                     type="text"
-                    placeholder="Search tasks..."
+                    placeholder={t('searchPlaceholder')}
                     value={filters.search}
                     onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)]"
@@ -119,11 +122,11 @@ export default function TasksPage() {
                     className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
                     style={{ borderColor: 'var(--border-medium)' }}
                   >
-                    <option value="">All Status</option>
-                    <option value="open">Open</option>
-                    <option value="claimed">Claimed</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="verification">Verification</option>
+                    <option value="">{t('filters.allStatus')}</option>
+                    <option value="open">{t('open')}</option>
+                    <option value="claimed">{t('claimed')}</option>
+                    <option value="in_progress">{t('inProgress')}</option>
+                    <option value="verification">{t('filters.verification')}</option>
                   </select>
 
                   <select
@@ -132,10 +135,10 @@ export default function TasksPage() {
                     className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
                     style={{ borderColor: 'var(--border-medium)' }}
                   >
-                    <option value="">All Types</option>
-                    <option value="bounty">Bounty</option>
-                    <option value="code_contribution">Contribution</option>
-                    <option value="showcase">Showcase</option>
+                    <option value="">{t('filters.allTypes')}</option>
+                    <option value="bounty">{t('filters.bounty')}</option>
+                    <option value="code_contribution">{t('filters.contribution')}</option>
+                    <option value="showcase">{t('filters.showcase')}</option>
                   </select>
 
                   <select
@@ -144,10 +147,10 @@ export default function TasksPage() {
                     className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
                     style={{ borderColor: 'var(--border-medium)' }}
                   >
-                    <option value="">All Difficulty</option>
-                    <option value="easy">Easy</option>
-                    <option value="medium">Medium</option>
-                    <option value="hard">Hard</option>
+                    <option value="">{t('filters.allDifficulty')}</option>
+                    <option value="easy">{t('easy')}</option>
+                    <option value="medium">{t('medium')}</option>
+                    <option value="hard">{t('hard')}</option>
                   </select>
                 </div>
               </div>
@@ -157,12 +160,12 @@ export default function TasksPage() {
             {loading ? (
               <div className="text-center py-20">
                 <div className="inline-block w-8 h-8 border-2 border-[var(--accent-cyan)] border-t-transparent rounded-full animate-spin" />
-                <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>Loading tasks...</p>
+                <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>{t('loadingTasks')}</p>
               </div>
             ) : filteredTasks.length === 0 ? (
               <div className="text-center py-20">
                 <FilterIcon size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
-                <p style={{ color: 'var(--text-secondary)' }}>No tasks found matching your filters</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('noTasksFound')}</p>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -204,7 +207,7 @@ export default function TasksPage() {
                           ))}
                           {task.requirements.length > 4 && (
                             <span className="text-xs px-2 py-1 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                              +{task.requirements.length - 4} more
+                              {tCommon('more', { count: task.requirements.length - 4 })}
                             </span>
                           )}
                         </div>
@@ -213,7 +216,7 @@ export default function TasksPage() {
                       <div className="flex md:flex-col items-center md:items-end gap-4">
                         <div className="text-right">
                           <div className="font-mono text-xl font-bold" style={{ color: task.rewardType === 'crypto' ? 'var(--accent-amber)' : 'var(--status-success)' }}>
-                            {task.rewardType === 'crypto' ? `$${task.rewardAmount}` : `${task.rewardAmount} pts`}
+                            {task.rewardType === 'crypto' ? `$${task.rewardAmount}` : `${task.rewardAmount} ${tCommon('pts')}`}
                           </div>
                           {task.rewardCurrency && (
                             <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{task.rewardCurrency}</div>
