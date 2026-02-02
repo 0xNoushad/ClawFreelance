@@ -416,3 +416,82 @@ export const HealthIcon = createIcon(
     <path d="M8 12h2l1 2l2-4l1 2h2" strokeLinecap="round" strokeLinejoin="round" />
   </>
 );
+
+// ============================================================================
+// Additional Icons - For Agent Code of Conduct page
+// ============================================================================
+
+// Alert Triangle - Warning indicator
+export const AlertTriangleIcon = createIcon(
+  <>
+    <path d="M12 3L2 21h20L12 3z" strokeLinejoin="round" />
+    <path d="M12 9v5" strokeLinecap="round" />
+    <circle cx="12" cy="17" r="1" fill="currentColor" />
+  </>
+);
+
+// Check Circle - Success/completion indicator
+export const CheckCircleIcon = createIcon(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M8 12l3 3l5-6" strokeLinecap="round" strokeLinejoin="round" />
+  </>
+);
+
+// X Circle - Error/prohibited indicator
+export const XCircleIcon = createIcon(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M15 9l-6 6M9 9l6 6" strokeLinecap="round" />
+  </>
+);
+
+// Scale - Justice/balance for dispute resolution
+export const ScaleIcon = createIcon(
+  <>
+    <path d="M12 2v20" strokeLinecap="round" />
+    <path d="M4 6h16" strokeLinecap="round" />
+    <path d="M4 6l-2 8c0 2 2 3 4 3s4-1 4-3l-2-8" strokeLinejoin="round" />
+    <path d="M20 6l2 8c0 2-2 3-4 3s-4-1-4-3l2-8" strokeLinejoin="round" />
+    <circle cx="12" cy="6" r="2" fill="currentColor" />
+  </>
+);
+
+// Users - Collaboration/team icon
+export const UsersIcon = createIcon(
+  <>
+    <circle cx="9" cy="7" r="4" />
+    <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" strokeLinecap="round" />
+    <circle cx="17" cy="7" r="3" opacity="0.7" />
+    <path d="M21 21v-2a3 3 0 0 0-3-3h-1" strokeLinecap="round" opacity="0.7" />
+  </>
+);
+
+// Star - Rating/reputation icon
+export const StarIcon = createIcon(
+  <>
+    <path d="M12 2l3 6.5l7 .5l-5 4.5l1.5 7l-6.5-3.5l-6.5 3.5l1.5-7l-5-4.5l7-.5l3-6.5z" strokeLinejoin="round" />
+  </>
+);
+
+// Handshake - Agreement/commitment icon
+export const HandshakeIcon = createIcon(
+  <>
+    <path d="M11 17l-5-5l2-2l3 3l6-6l2 2l-8 8z" strokeLinejoin="round" />
+    <path d="M2 10l4-4l4 4" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22 10l-4-4l-4 4" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M6 6v12M18 6v12" strokeLinecap="round" />
+  </>
+);
+
+// Gavel - Enforcement/moderation icon
+export const GavelIcon = createIcon(
+  <>
+    <path d="M14 4l6 6l-2 2l-6-6l2-2z" strokeLinejoin="round" />
+    <path d="M4 14l6 6l-2 2l-6-6l2-2z" strokeLinejoin="round" />
+    <path d="M10 10l4 4" strokeLinecap="round" />
+    <path d="M18 18l4 4" strokeLinecap="round" />
+    <circle cx="7" cy="17" r="1.5" fill="currentColor" />
+    <circle cx="17" cy="7" r="1.5" fill="currentColor" />
+  </>
+);
