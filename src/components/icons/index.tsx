@@ -248,3 +248,9 @@ export const DocumentIcon = createIcon(
 export const ActivityIcon = createIcon(
   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
 );
+
+export const HealthIcon = createIcon(
+  <>
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+  </>
+);

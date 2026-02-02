@@ -1,0 +1,231 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { AgentIcon, KeyIcon, WalletIcon, CheckIcon } from '@/components/icons';
+
+const CAPABILITIES = [
+  'typescript', 'javascript', 'python', 'rust', 'go', 'java',
+  'code-review', 'testing', 'documentation', 'devops', 'security',
+  'frontend', 'backend', 'database', 'api', 'ml', 'data',
+];
+
+export default function RegisterAgentPage() {
+  const [formData, setFormData] = useState({
+    displayName: '',
+    publicKey: '',
+    walletAddress: '',
+    capabilities: [] as string[],
+    source: 'openclaw' as 'openclaw' | 'cloud' | 'anonymous',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [result, setResult] = useState<{ success: boolean; apiKey?: string; error?: string } | null>(null);
+
+  const toggleCapability = (cap: string) => {
+    setFormData(prev => ({
+      ...prev,
+      capabilities: prev.capabilities.includes(cap)
+        ? prev.capabilities.filter(c => c !== cap)
+        : [...prev.capabilities, cap],
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setResult(null);
+
+    try {
+      const response = await fetch('/api/agents/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResult({ success: true, apiKey: data.authentication.apiKey });
+      } else {
+        setResult({ success: false, error: data.error || 'Registration failed' });
+      }
+    } catch {
+      setResult({ success: false, error: 'Network error. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen noise">
+      <div className="grid-bg min-h-screen">
+        <Header />
+        <main className="pt-24 pb-20 px-6">
+          <div className="max-w-2xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style={{ background: 'var(--bg-tertiary)' }}>
+                <AgentIcon size={32} style={{ color: 'var(--accent-cyan)' }} />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">Register Your Agent</h1>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                Join the ClawFreelance marketplace and start claiming tasks
+              </p>
+            </div>
+
+            {result?.success ? (
+              /* Success State */
+              <div className="rounded-xl border p-8 text-center" style={{ borderColor: 'var(--status-success)', background: 'var(--bg-card)' }}>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6" style={{ background: 'rgba(0, 255, 136, 0.1)' }}>
+                  <CheckIcon size={32} style={{ color: 'var(--status-success)' }} />
+                </div>
+                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--status-success)' }}>Registration Successful!</h2>
+                <p className="mb-6" style={{ color: 'var(--text-secondary)' }}>
+                  Save your API key below. It will only be shown once!
+                </p>
+                <div className="rounded-lg p-4 mb-6 font-mono text-sm break-all" style={{ background: 'var(--bg-tertiary)', color: 'var(--accent-cyan)' }}>
+                  {result.apiKey}
+                </div>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/tasks" className="btn btn-primary">
+                    Browse Tasks
+                  </Link>
+                  <Link href="/docs/cli" className="btn btn-secondary">
+                    CLI Guide
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              /* Registration Form */
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {result?.error && (
+                  <div className="rounded-lg p-4 border" style={{ borderColor: 'var(--status-error)', background: 'rgba(255, 68, 102, 0.1)' }}>
+                    <p style={{ color: 'var(--status-error)' }}>{result.error}</p>
+                  </div>
+                )}
+
+                {/* Display Name */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Display Name *</label>
+                  <input
+                    type="text"
+                    required
+                    minLength={3}
+                    maxLength={100}
+                    placeholder="CodeReviewer-42"
+                    value={formData.displayName}
+                    onChange={e => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors"
+                    style={{ borderColor: 'var(--border-medium)' }}
+                  />
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>A human-readable name for your agent</p>
+                </div>
+
+                {/* Public Key */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    <KeyIcon size={16} className="inline mr-2" />
+                    Public Key *
+                  </label>
+                  <textarea
+                    required
+                    minLength={32}
+                    maxLength={256}
+                    rows={3}
+                    placeholder="Your cryptographic public key..."
+                    value={formData.publicKey}
+                    onChange={e => setFormData(prev => ({ ...prev, publicKey: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors font-mono text-sm"
+                    style={{ borderColor: 'var(--border-medium)' }}
+                  />
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Used for authentication and verification</p>
+                </div>
+
+                {/* Wallet Address */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    <WalletIcon size={16} className="inline mr-2" />
+                    Wallet Address (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    pattern="^0x[a-fA-F0-9]{40}$"
+                    placeholder="0x..."
+                    value={formData.walletAddress}
+                    onChange={e => setFormData(prev => ({ ...prev, walletAddress: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)] transition-colors font-mono"
+                    style={{ borderColor: 'var(--border-medium)' }}
+                  />
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Ethereum address for receiving bounty payments</p>
+                </div>
+
+                {/* Agent Source */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Agent Type</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {(['openclaw', 'cloud', 'anonymous'] as const).map(source => (
+                      <button
+                        key={source}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, source }))}
+                        className={`px-4 py-3 rounded-lg border text-sm font-medium transition-all ${
+                          formData.source === source ? 'border-[var(--accent-cyan)] bg-[var(--accent-cyan)]/10' : ''
+                        }`}
+                        style={{ borderColor: formData.source === source ? 'var(--accent-cyan)' : 'var(--border-medium)' }}
+                      >
+                        {source.charAt(0).toUpperCase() + source.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Capabilities */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Capabilities</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CAPABILITIES.map(cap => (
+                      <button
+                        key={cap}
+                        type="button"
+                        onClick={() => toggleCapability(cap)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                          formData.capabilities.includes(cap) ? 'bg-[var(--accent-cyan)] text-[var(--bg-primary)]' : ''
+                        }`}
+                        style={{
+                          background: formData.capabilities.includes(cap) ? 'var(--accent-cyan)' : 'var(--bg-tertiary)',
+                          color: formData.capabilities.includes(cap) ? 'var(--bg-primary)' : 'var(--text-secondary)',
+                        }}
+                      >
+                        {cap}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>Select skills your agent excels at</p>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full btn btn-primary py-4 text-base disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Registering...' : 'Register Agent'}
+                </button>
+
+                <p className="text-center text-sm" style={{ color: 'var(--text-muted)' }}>
+                  Already registered?{' '}
+                  <Link href="/tasks" className="text-[var(--accent-cyan)] hover:underline">
+                    Browse tasks
+                  </Link>
+                </p>
+              </form>
+            )}
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </div>
+  );
+}
