@@ -186,57 +186,71 @@ export const InfoIcon = createIcon(
 );
 
 // ============================================================================
-// Domain Icons - ClawFreelance-specific with unique identity
+// Domain Icons - Crab-themed character icons
 // ============================================================================
 
-// Agent - Robot crab with antenna (AI agent)
+// Agent - Crab with antenna (mini mascot)
 export const AgentIcon = createIcon(
   <>
     {/* Body */}
-    <ellipse cx="12" cy="14" rx="8" ry="6" />
+    <ellipse cx="12" cy="14" rx="7" ry="5" />
     {/* Antenna */}
-    <path d="M9 8V4M15 8V4" strokeLinecap="round" />
-    <circle cx="9" cy="3" r="1.5" fill="currentColor" />
-    <circle cx="15" cy="3" r="1.5" fill="currentColor" />
+    <path d="M8 9c-2-3-3-5-2-6" strokeLinecap="round" />
+    <path d="M16 9c2-3 3-5 2-6" strokeLinecap="round" />
+    <circle cx="6" cy="3" r="1.5" fill="currentColor" />
+    <circle cx="18" cy="3" r="1.5" fill="currentColor" />
     {/* Eyes */}
-    <circle cx="9" cy="13" r="2" />
-    <circle cx="15" cy="13" r="2" />
-    <circle cx="9.5" cy="12.5" r="0.5" fill="currentColor" />
-    <circle cx="15.5" cy="12.5" r="0.5" fill="currentColor" />
+    <circle cx="9" cy="13" r="1.5" fill="currentColor" />
+    <circle cx="15" cy="13" r="1.5" fill="currentColor" />
     {/* Claws */}
-    <path d="M4 14l-2 2l1 1M20 14l2 2l-1 1" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M5 14l-3 2l2 2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M19 14l3 2l-2 2" strokeLinecap="round" strokeLinejoin="round" />
   </>
 );
 
-// Task - Clipboard with progress indicator
+// Task - Crab claw grabbing/pinching a document
 export const TaskIcon = createIcon(
   <>
-    <rect x="5" y="4" width="14" height="17" rx="2" />
-    <path d="M9 2h6v3H9V2z" strokeLinejoin="round" />
-    <path d="M9 10h6M9 14h4" strokeLinecap="round" opacity="0.5" />
-    <path d="M8 10l1.5 1.5L12 9" strokeLinecap="round" strokeLinejoin="round" />
+    {/* Document */}
+    <rect x="6" y="4" width="12" height="16" rx="2" />
+    <path d="M9 8h6M9 11h6M9 14h4" strokeLinecap="round" opacity="0.6" />
+    {/* Claw grabbing from side */}
+    <path d="M2 10l2-2l2 2l-2 2z" fill="currentColor" />
+    <path d="M2 10h4" strokeLinecap="round" />
   </>
 );
 
-// Bounty - Treasure with glow effect
+// Bounty - Crab with dollar sign on shell
 export const BountyIcon = createIcon(
   <>
-    {/* Coin/treasure chest */}
-    <circle cx="12" cy="12" r="9" />
-    <circle cx="12" cy="12" r="5" opacity="0.3" />
-    {/* Currency symbol stylized as claw */}
-    <path d="M12 7v10" strokeLinecap="round" />
-    <path d="M9 9c0-1 1.5-2 3-2s3 1 3 2c0 2-3 2-3 4c0 1 1.5 2 3 2s3-1 3-2" strokeLinecap="round" />
-    {/* Glow rays */}
-    <path d="M12 2v2M12 20v2M2 12h2M20 12h2" strokeLinecap="round" opacity="0.4" />
+    {/* Crab shell body */}
+    <ellipse cx="12" cy="13" rx="7" ry="5" />
+
+    {/* Dollar sign - S curve with line through */}
+    <path d="M12 10v6" strokeLinecap="round" />
+    <path d="M14 11c0-1-1-1.5-2-1.5s-2 .5-2 1.5c0 1 1 1.5 2 2s2 1 2 2c0 1-1 1.5-2 1.5s-2-.5-2-1.5" strokeLinecap="round" />
+
+    {/* Left claw */}
+    <path d="M5 13l-3-2l2-2" strokeLinecap="round" strokeLinejoin="round" />
+
+    {/* Right claw */}
+    <path d="M19 13l3-2l-2-2" strokeLinecap="round" strokeLinejoin="round" />
+
+    {/* Eye stalks */}
+    <path d="M9 8V6M15 8V6" strokeLinecap="round" />
+    <circle cx="9" cy="5" r="1.5" fill="currentColor" />
+    <circle cx="15" cy="5" r="1.5" fill="currentColor" />
   </>
 );
 
-// Reputation - Star with crab eye
+// Reputation - Star with crab claws reaching for it
 export const ReputationIcon = createIcon(
   <>
-    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87l1.18 6.88L12 17.77l-6.18 3.25L7 14.14l-5-4.87l6.91-1.01L12 2z" strokeLinejoin="round" />
-    <circle cx="12" cy="11" r="2" fill="currentColor" />
+    {/* Star */}
+    <path d="M12 2l2 5h5l-4 3.5l1.5 5.5l-4.5-3l-4.5 3l1.5-5.5L5 7h5l2-5z" strokeLinejoin="round" />
+    {/* Claw accents */}
+    <path d="M3 12l2 1l-1 2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M21 12l-2 1l1 2" strokeLinecap="round" strokeLinejoin="round" />
   </>
 );
 
@@ -295,15 +309,12 @@ export const DiscordIcon = createIcon(
 // Miscellaneous Icons - Custom styled for ClawFreelance
 // ============================================================================
 
-// Terminal with crab-shell frame
+// Terminal - Clean window with prompt
 export const TerminalIcon = createIcon(
   <>
     <rect x="2" y="4" width="20" height="16" rx="2" />
-    <path d="M6 9l4 3l-4 3" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M12 15h6" strokeLinecap="round" />
-    <circle cx="6" cy="7" r="0.5" fill="currentColor" />
-    <circle cx="8.5" cy="7" r="0.5" fill="currentColor" />
-    <circle cx="11" cy="7" r="0.5" fill="currentColor" />
+    <path d="M6 10l4 2l-4 2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M12 14h6" strokeLinecap="round" />
   </>
 );
 
