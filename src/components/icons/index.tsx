@@ -29,13 +29,45 @@ function createIcon(path: React.ReactNode, viewBox = '0 0 24 24') {
   };
 }
 
-// Logo & Branding
+// Logo & Branding - Freelancer Crab with Laptop
 export const ClawLogo = ({ size = 32, ...props }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" {...props}>
-    <circle cx="16" cy="16" r="15" fill="var(--bg-secondary)" stroke="var(--border-medium)" strokeWidth="1" />
-    <path d="M9 6 L12.5 26 L14 26 L11 6 Z" fill="var(--accent-cyan)" />
-    <path d="M14.5 4 L17.5 28 L19 28 L16.5 4 Z" fill="var(--accent-cyan)" />
-    <path d="M21 6 L23.5 26 L22 26 L20 6 Z" fill="var(--accent-cyan)" />
+  <svg width={size} height={size} viewBox="0 0 120 120" fill="none" {...props}>
+    <defs>
+      <linearGradient id="claw-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="var(--accent-cyan)" />
+        <stop offset="100%" stopColor="#00a8bb" />
+      </linearGradient>
+    </defs>
+    {/* Body */}
+    <path d="M60 15 C30 15 15 35 15 52 C15 68 28 82 45 85 L47 92 L53 92 L53 85 C56 86 64 86 67 85 L67 92 L73 92 L75 85 C92 82 105 68 105 52 C105 35 90 15 60 15Z" fill="url(#claw-gradient)" />
+    {/* Left Cybernetic Claw */}
+    <path d="M18 48 L5 38 L0 44 L10 52 L0 62 L5 68 L18 58 Z" fill="url(#claw-gradient)" />
+    <rect x="12" y="46" width="8" height="14" rx="1" fill="url(#claw-gradient)" />
+    {/* Right Cybernetic Claw */}
+    <path d="M102 48 L115 38 L120 44 L110 52 L120 62 L115 68 L102 58 Z" fill="url(#claw-gradient)" />
+    <rect x="100" y="46" width="8" height="14" rx="1" fill="url(#claw-gradient)" />
+    {/* Antenna */}
+    <path d="M42 20 Q32 8 30 14" stroke="var(--accent-cyan)" strokeWidth="3" strokeLinecap="round" />
+    <path d="M78 20 Q88 8 90 14" stroke="var(--accent-cyan)" strokeWidth="3" strokeLinecap="round" />
+    <circle cx="30" cy="14" r="3" fill="var(--accent-cyan)" />
+    <circle cx="90" cy="14" r="3" fill="var(--accent-cyan)" />
+    {/* Eyes */}
+    <circle cx="42" cy="38" r="7" fill="var(--bg-primary)" />
+    <circle cx="78" cy="38" r="7" fill="var(--bg-primary)" />
+    <circle cx="44" cy="37" r="3" fill="#f5fbff" />
+    <circle cx="80" cy="37" r="3" fill="#f5fbff" />
+    {/* Eyebrows */}
+    <path d="M34 30 L48 33" stroke="#00a8bb" strokeWidth="2" strokeLinecap="round" />
+    <path d="M86 30 L72 33" stroke="#00a8bb" strokeWidth="2" strokeLinecap="round" />
+    {/* Mouth - focused expression */}
+    <line x1="52" y1="55" x2="68" y2="55" stroke="var(--bg-primary)" strokeWidth="2.5" strokeLinecap="round" />
+    {/* Laptop */}
+    <rect x="35" y="88" width="50" height="22" rx="2" fill="#1a1a22" />
+    <rect x="38" y="91" width="44" height="16" rx="1" fill="var(--bg-primary)" />
+    <line x1="41" y1="95" x2="52" y2="95" stroke="var(--accent-cyan)" strokeWidth="1.5" />
+    <line x1="41" y1="99" x2="58" y2="99" stroke="#00a8bb" strokeWidth="1.5" />
+    <line x1="41" y1="103" x2="48" y2="103" stroke="var(--accent-cyan)" strokeWidth="1.5" />
+    <path d="M32 110 L35 106 L85 106 L88 110 Z" fill="#1a1a22" />
   </svg>
 );
 
