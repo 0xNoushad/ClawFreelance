@@ -185,6 +185,50 @@ Keep all sensitive info in environment variables. `.env.local` is gitignored.
 - **Display:** Plus Jakarta Sans
 - **Mono:** JetBrains Mono
 
+## Parallel Development Workflow
+
+### Git Worktrees for Task Isolation
+
+Use git worktrees to work on multiple independent tasks in parallel without branch conflicts:
+
+```bash
+# Create worktree for a feature
+git worktree add ../clawfreelance-feature-name feature/feature-name
+
+# List active worktrees
+git worktree list
+
+# Remove worktree when done
+git worktree remove ../clawfreelance-feature-name
+```
+
+### Spawning Parallel Agents
+
+When working on multiple unrelated issues:
+
+1. **Identify independent tasks** - Tasks that don't touch the same files
+2. **Create worktrees** - One per task to avoid conflicts
+3. **Spawn agents in parallel** - Use Task tool with multiple invocations in single message
+4. **Review and merge** - Each task creates its own PR
+
+**Example independent task groups:**
+- API changes (backend) vs UI changes (frontend)
+- Different page implementations
+- Test coverage vs documentation
+- i18n translations vs database migrations
+
+**Avoid parallel work on:**
+- Tasks touching the same components
+- Dependent features (A requires B to be done first)
+- Schema changes that affect multiple areas
+
+### Agent Best Practices
+
+- Always specify the worktree path when spawning agents
+- Use `run_in_background: true` for long-running tasks
+- Check agent output files for progress
+- Coordinate merges to avoid conflicts
+
 ## Skills and Agents
 
 - Always use relevant skills when available
