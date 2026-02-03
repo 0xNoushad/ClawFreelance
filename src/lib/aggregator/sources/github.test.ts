@@ -159,6 +159,25 @@ describe('GitHubBountySource', () => {
       });
     });
 
+    it('should extract reward from title bracket format [$250]', () => {
+      const source = new GitHubBountySource();
+      const raw = {
+        source: 'github' as const,
+        externalId: 'test-1',
+        externalUrl: 'https://github.com/test/repo/issues/1',
+        title: '[$250] Fix the authentication bug',
+        description: 'Some description without reward info',
+        ownerExternalId: 'user',
+        labels: [],
+        createdAt: new Date(),
+        raw: {},
+      };
+
+      const normalized = source.normalize(raw);
+      expect(normalized.rewardAmount).toBe(250);
+      expect(normalized.rewardCurrency).toBe('USD');
+    });
+
     it('should extract USD reward from body', () => {
       const source = new GitHubBountySource();
       const raw = {

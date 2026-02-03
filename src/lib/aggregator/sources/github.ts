@@ -16,6 +16,7 @@ const DEFAULT_BOUNTY_LABELS = [
   'good first issue',
   'paid',
   'reward',
+  'External', // Used by Expensify and others
   'money',
   'gitcoin',
   'funding',
@@ -142,16 +143,24 @@ interface GitHubSearchResponse {
 }
 
 /**
- * Extracts reward amount from issue body or labels
- * Looks for patterns like "$100", "100 USD", "0.1 ETH", etc.
+ * Extracts reward amount from issue title, body, or labels
+ * Looks for patterns like "$100", "[$250]", "100 USD", "0.1 ETH", etc.
  */
 function extractReward(
+  title: string,
   body: string | null,
   labels: Array<{ name: string }>
 ): { amount: number; currency: string } | null {
-  if (!body) return null;
+  // Check title first for bracket patterns like [$250] (used by Expensify)
+  const titleMatch = title.match(/\[\$(\d+(?:,\d{3})*)\]/);
+  if (titleMatch) {
+    return {
+      amount: parseFloat(titleMatch[1].replace(/,/g, '')),
+      currency: 'USD',
+    };
+  }
 
-  // Check labels first for explicit reward amounts
+  // Check labels for explicit reward amounts
   for (const label of labels) {
     const labelMatch = label.name.match(/\$?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(USD|USDC|ETH|BTC)?/i);
     if (labelMatch) {
@@ -161,6 +170,8 @@ function extractReward(
       };
     }
   }
+
+  if (!body) return null;
 
   // Patterns to match in body (crypto first since they're more specific)
   const patterns = [
@@ -300,45 +311,63 @@ export class GitHubBountySource implements BountySource {
 
   /**
    * Fetch bounty issues from a single repository
+   * Makes separate requests per label to avoid GitHub search API limitations
    */
   private async fetchFromRepo(repo: string): Promise<RawBounty[]> {
     const bounties: RawBounty[] = [];
-    const labelQuery = this.config.bountyLabels.map((l) => `label:"${l}"`).join(' OR ');
+    const seenIssues = new Set<number>();
 
-    const query = encodeURIComponent(`repo:${repo} is:issue is:open (${labelQuery})`);
-    const url = `${GITHUB_API_BASE}/search/issues?q=${query}&per_page=100&sort=updated`;
+    // Fetch issues for each bounty label separately
+    // GitHub search doesn't support OR for multiple labels well
+    for (const label of this.config.bountyLabels) {
+      const query = encodeURIComponent(`repo:${repo} is:issue is:open label:"${label}"`);
+      const url = `${GITHUB_API_BASE}/search/issues?q=${query}&per_page=50&sort=updated`;
 
-    try {
-      const response = await this.fetchWithAuth(url);
+      try {
+        const response = await this.fetchWithAuth(url);
 
-      if (!response.ok) {
-        if (response.status === 403) {
-          console.warn(`GitHub rate limit hit for ${repo}`);
-          return [];
+        if (!response.ok) {
+          const text = await response.text();
+          if (response.status === 403) {
+            console.warn(`GitHub rate limit hit for ${repo} (${label}): ${text.slice(0, 100)}`);
+            return bounties; // Return what we have so far
+          }
+          console.warn(
+            `GitHub API error for ${repo} (${label}): ${response.status} - ${text.slice(0, 100)}`
+          );
+          continue; // Skip this label, try next
         }
-        throw new Error(`GitHub API error: ${response.status}`);
-      }
 
-      const data: GitHubSearchResponse = await response.json();
+        const data: GitHubSearchResponse = await response.json();
 
-      for (const issue of data.items) {
-        bounties.push({
-          source: 'github',
-          externalId: `github-${repo}-${issue.number}`,
-          externalUrl: issue.html_url,
-          title: issue.title,
-          description: issue.body || '',
-          ownerExternalId: issue.user.login,
-          ownerName: issue.user.login,
-          labels: issue.labels.map((l) => l.name),
-          createdAt: new Date(issue.created_at),
-          updatedAt: new Date(issue.updated_at),
-          deadline: issue.milestone?.due_on ? new Date(issue.milestone.due_on) : undefined,
-          raw: issue,
-        });
+        for (const issue of data.items) {
+          // Deduplicate issues that match multiple labels
+          if (seenIssues.has(issue.number)) {
+            continue;
+          }
+          seenIssues.add(issue.number);
+
+          bounties.push({
+            source: 'github',
+            externalId: `github-${repo}-${issue.number}`,
+            externalUrl: issue.html_url,
+            title: issue.title,
+            description: issue.body || '',
+            ownerExternalId: issue.user.login,
+            ownerName: issue.user.login,
+            labels: issue.labels.map((l) => l.name),
+            createdAt: new Date(issue.created_at),
+            updatedAt: new Date(issue.updated_at),
+            deadline: issue.milestone?.due_on ? new Date(issue.milestone.due_on) : undefined,
+            raw: issue,
+          });
+        }
+
+        // Small delay between label requests to be nice to API
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      } catch (error) {
+        console.error(`Error fetching ${label} from ${repo}:`, error);
       }
-    } catch (error) {
-      console.error(`Error fetching from ${repo}:`, error);
     }
 
     return bounties;
@@ -372,7 +401,7 @@ export class GitHubBountySource implements BountySource {
   normalize(raw: RawBounty): NormalizedTask {
     const labels = raw.labels || [];
     const labelObjects = labels.map((name) => ({ name }));
-    const reward = extractReward(raw.description, labelObjects);
+    const reward = extractReward(raw.title, raw.description, labelObjects);
 
     return {
       title: raw.title,
