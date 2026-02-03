@@ -2,27 +2,45 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { BountySource, RawBounty, SyncResult } from './types';
 
-// Mock the database module
-vi.mock('@/db', () => ({
-  db: {
-    select: vi.fn(() => ({
-      from: vi.fn(() => ({
-        where: vi.fn(() => ({
-          limit: vi.fn(() => Promise.resolve([])),
-        })),
-        groupBy: vi.fn(() => Promise.resolve([])),
+// Mock db module - using inline factory to avoid hoisting issues
+vi.mock('@/db', () => {
+  const mockSelect = vi.fn(() => ({
+    from: vi.fn(() => ({
+      where: vi.fn(() => ({
+        limit: vi.fn(() => Promise.resolve([])),
+      })),
+      groupBy: vi.fn(() => Promise.resolve([])),
+    })),
+  }));
+
+  const mockInsert = vi.fn(() => ({
+    values: vi.fn(() => ({
+      onConflictDoUpdate: vi.fn(() => ({
+        returning: vi.fn(() =>
+          Promise.resolve([{ id: 'test-id', createdAt: new Date(), updatedAt: new Date() }])
+        ),
       })),
     })),
-    insert: vi.fn(() => ({
-      values: vi.fn(() => Promise.resolve()),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(() => Promise.resolve()),
+  }));
+
+  const mockUpdate = vi.fn(() => ({
+    set: vi.fn(() => ({
+      where: vi.fn(() => ({
+        returning: vi.fn(() => Promise.resolve([{ id: 'test-id' }])),
       })),
     })),
-  },
-}));
+  }));
+
+  return {
+    db: {
+      select: mockSelect,
+      insert: mockInsert,
+      update: mockUpdate,
+    },
+    __mockSelect: mockSelect,
+    __mockUpdate: mockUpdate,
+  };
+});
 
 // Mock the GitHub source
 vi.mock('./sources/github', () => ({
@@ -102,10 +120,20 @@ vi.mock('./sources/github-issues', () => ({
 // Mock the GitHub App Auth
 vi.mock('./github-app-auth', () => ({
   initGitHubAppAuth: vi.fn(() => Promise.resolve()),
+  getGitHubHeaders: vi.fn(() => ({
+    Accept: 'application/vnd.github+json',
+    Authorization: 'Bearer test-token',
+  })),
 }));
 
 // Import after mocking
-import { getSyncStats, markStaleTasks, runSync, syncFromSource } from './sync';
+import {
+  getSyncStats,
+  markStaleTasks,
+  runSync,
+  syncFromSource,
+  updateGitHubTaskStatuses,
+} from './sync';
 
 describe('Sync Engine', () => {
   describe('runSync', () => {
@@ -308,6 +336,30 @@ describe('Sync Engine', () => {
         },
       });
       expect(results.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe('updateGitHubTaskStatuses', () => {
+    const mockFetch = vi.fn();
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+      global.fetch = mockFetch;
+      mockFetch.mockClear();
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it('should return result object with counts', async () => {
+      const result = await updateGitHubTaskStatuses();
+      expect(result).toHaveProperty('completed');
+      expect(result).toHaveProperty('cancelled');
+      expect(result).toHaveProperty('errors');
+      expect(typeof result.completed).toBe('number');
+      expect(typeof result.cancelled).toBe('number');
+      expect(Array.isArray(result.errors)).toBe(true);
     });
   });
 });
