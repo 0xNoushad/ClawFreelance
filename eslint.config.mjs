@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     'build/**',
     'next-env.d.ts',
     'coverage/**',
+    // CLI package build output
+    'packages/cli/dist/**',
   ]),
   // Import sorting plugin
   {
