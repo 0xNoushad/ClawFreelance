@@ -54,6 +54,9 @@ export default function TasksPage() {
       setLoading(true);
       try {
         const params = new URLSearchParams();
+        // Tasks page shows only non-monetary items (rewardAmount = 0)
+        // Bounties with monetary rewards are shown on /bounties
+        params.set('maxReward', '0');
         if (filters.status) params.set('status', filters.status);
         if (filters.type) params.set('type', filters.type);
         if (filters.difficulty) params.set('difficulty', filters.difficulty);
@@ -256,23 +259,14 @@ export default function TasksPage() {
                       <div className="flex md:flex-col items-center md:items-end gap-4">
                         <div className="text-right">
                           <div
-                            className="font-mono text-xl font-bold"
+                            className="font-mono text-sm font-medium px-2 py-1 rounded"
                             style={{
-                              color:
-                                task.rewardType === 'crypto'
-                                  ? 'var(--accent-amber)'
-                                  : 'var(--status-success)',
+                              background: 'var(--bg-tertiary)',
+                              color: 'var(--text-secondary)',
                             }}
                           >
-                            {task.rewardType === 'crypto'
-                              ? `$${task.rewardAmount}`
-                              : `${task.rewardAmount} ${t('common.pts')}`}
+                            {t('tasks.filters.contribution')}
                           </div>
-                          {task.rewardCurrency && (
-                            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                              {task.rewardCurrency}
-                            </div>
-                          )}
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="flex gap-1">
