@@ -18,7 +18,7 @@ import { db } from '../db';
 import { tasks } from '../db/schema';
 
 // These sources are always bounties (security programs)
-const ALWAYS_BOUNTY_SOURCES = ['immunefi', 'bugcrowd'];
+const ALWAYS_BOUNTY_SOURCES: ('immunefi' | 'bugcrowd')[] = ['immunefi', 'bugcrowd'];
 
 async function main() {
   console.log('=== Task Type Migration ===\n');

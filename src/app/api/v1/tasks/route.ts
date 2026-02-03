@@ -28,7 +28,7 @@ const listTasksQuerySchema = z.object({
     .optional(),
   type: z.enum(['code_contribution', 'bounty', 'showcase']).optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
-  source: z.enum(['direct', 'github', 'gitcoin', 'algora', 'agent_discovered']).optional(),
+  source: z.enum(['direct', 'github', 'gitcoin', 'algora', 'agent_discovered', 'immunefi', 'bugcrowd']).optional(),
   minReward: z.coerce.number().min(0).optional(),
   maxReward: z.coerce.number().min(0).optional(),
   capabilities: z.string().max(500).optional(), // comma-separated, with length limit

@@ -69,20 +69,42 @@ export default function BountiesPage() {
   const fetchBounties = async () => {
     setLoading(true);
     try {
-      // Fetch bounties with external rewards (monetary)
-      const params = new URLSearchParams();
-      params.set('minReward', '1');
-      params.set('limit', '500'); // Fetch all, we'll paginate client-side after shuffle
-      params.set('status', 'open');
-      if (filters.type) params.set('type', filters.type);
-      if (filters.difficulty) params.set('difficulty', filters.difficulty);
-      if (filters.source) params.set('source', filters.source);
+      // Fetch all bounties by paginating through API (max 100 per request)
+      const allFetchedBounties: Bounty[] = [];
+      let offset = 0;
+      const limit = 100; // API max is 100
+      let hasMore = true;
 
-      const response = await fetch(`/api/v1/tasks?${params.toString()}`);
-      const data = await response.json();
+      while (hasMore) {
+        const params = new URLSearchParams();
+        params.set('minReward', '1');
+        params.set('limit', String(limit));
+        params.set('offset', String(offset));
+        params.set('status', 'open');
+        if (filters.type) params.set('type', filters.type);
+        if (filters.difficulty) params.set('difficulty', filters.difficulty);
+        if (filters.source) params.set('source', filters.source);
+
+        const response = await fetch(`/api/v1/tasks?${params.toString()}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('API error:', data);
+          break;
+        }
+
+        const tasks = (data.tasks || []) as Bounty[];
+        allFetchedBounties.push(...tasks);
+
+        hasMore = data.pagination?.hasMore ?? false;
+        offset += limit;
+
+        // Safety limit to prevent infinite loops
+        if (offset > 2000) break;
+      }
 
       // Filter to only external rewards and shuffle
-      const externalBounties = ((data.tasks || []) as Bounty[]).filter(
+      const externalBounties = allFetchedBounties.filter(
         (t) => t.rewardType === 'external' || t.rewardAmount > 0
       );
       const shuffled = shuffleArray(externalBounties);
@@ -97,8 +119,8 @@ export default function BountiesPage() {
         offset: 0,
         hasMore: shuffled.length > ITEMS_PER_PAGE,
       });
-    } catch {
-      console.error('Failed to fetch bounties');
+    } catch (error) {
+      console.error('Failed to fetch bounties:', error);
     } finally {
       setLoading(false);
     }
