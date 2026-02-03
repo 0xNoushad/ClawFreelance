@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import {
   checkRateLimit,
@@ -24,6 +24,7 @@ import {
   validateCsrfHeaders,
   sanitizeInputStrict,
   sanitizeMarkdown,
+  getClientIdentifier,
 } from './security';
 
 describe('Security Module', () => {
@@ -124,6 +125,51 @@ describe('Security Module', () => {
         expect(verifyApiKey(key, hash)).toBe(true);
         expect(verifyApiKey(key + 'x', hash)).toBe(false);
       });
+
+      it('should return false for mismatched hash lengths', () => {
+        const { key } = generateApiKey();
+        // Use a shorter hash to trigger the length mismatch check (line 77)
+        const shortHash = 'abcd1234';
+        expect(verifyApiKey(key, shortHash)).toBe(false);
+      });
+    });
+  });
+
+  // ============================================
+  // CLIENT IDENTIFIER TESTS
+  // ============================================
+  describe('getClientIdentifier', () => {
+    function createMockRequestWithHeaders(headers: Record<string, string>): NextRequest {
+      return {
+        headers: new Headers(headers),
+      } as unknown as NextRequest;
+    }
+
+    it('should prefer x-forwarded-for header', () => {
+      const request = createMockRequestWithHeaders({
+        'x-forwarded-for': '203.0.113.50',
+        'x-real-ip': '192.0.2.100',
+      });
+      expect(getClientIdentifier(request)).toBe('203.0.113.50');
+    });
+
+    it('should extract first IP from x-forwarded-for chain', () => {
+      const request = createMockRequestWithHeaders({
+        'x-forwarded-for': '203.0.113.50, 198.51.100.10, 10.0.0.1',
+      });
+      expect(getClientIdentifier(request)).toBe('203.0.113.50');
+    });
+
+    it('should fallback to x-real-ip when x-forwarded-for is missing', () => {
+      const request = createMockRequestWithHeaders({
+        'x-real-ip': '192.0.2.100',
+      });
+      expect(getClientIdentifier(request)).toBe('192.0.2.100');
+    });
+
+    it('should return unknown when no IP headers are present', () => {
+      const request = createMockRequestWithHeaders({});
+      expect(getClientIdentifier(request)).toBe('unknown');
     });
   });
 
@@ -427,6 +473,29 @@ describe('Security Module', () => {
         expect(result.blocked).toBe(false);
       });
     });
+
+    describe('injection detection in content', () => {
+      it('should detect SQL injection in title', () => {
+        const result = validateTaskContent(
+          "SELECT * FROM users; DROP TABLE users;--",
+          "A normal task description"
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.issues.some(i => i.includes('injection'))).toBe(true);
+        expect(result.severity).toBe('high');
+      });
+
+      it('should detect XSS in title', () => {
+        const result = validateTaskContent(
+          "<script>alert('xss')</script> task",
+          "A normal task description"
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.issues.some(i => i.includes('injection'))).toBe(true);
+      });
+    });
   });
 
   // ============================================
@@ -484,6 +553,41 @@ describe('Security Module', () => {
       it('should reject token for unknown session', () => {
         const token = generateCsrfToken();
         expect(validateCsrfTokenForSession('unknown-session', token)).toBe(false);
+      });
+    });
+
+    describe('CSRF token expiration', () => {
+      beforeEach(() => {
+        vi.useFakeTimers();
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+
+      it('should reject expired CSRF tokens', () => {
+        const sessionId = `session-expire-${Date.now()}`;
+        const token = createCsrfTokenForSession(sessionId);
+
+        // Verify token works immediately
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(true);
+
+        // Advance time past the 1 hour expiry
+        vi.advanceTimersByTime(3600001);
+
+        // Token should now be rejected as expired
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(false);
+      });
+
+      it('should accept tokens before expiration', () => {
+        const sessionId = `session-valid-${Date.now()}`;
+        const token = createCsrfTokenForSession(sessionId);
+
+        // Advance time but stay within the 1 hour window
+        vi.advanceTimersByTime(3599999);
+
+        // Token should still be valid
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(true);
       });
     });
   });

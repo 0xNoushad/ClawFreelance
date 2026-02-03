@@ -321,10 +321,17 @@ describe('Audit Module', () => {
   // SENSITIVE DATA REDACTION TESTS
   // ============================================
   describe('Sensitive data handling', () => {
-    it('should handle metadata with sensitive keys', () => {
+    // Note: redactSensitiveData is only applied during console logging,
+    // not on the returned entry. The entry keeps original data for processing.
+    // These tests verify the entry is created correctly and that when logged
+    // to console (via shouldLogToConsole), the redaction code is exercised.
+
+    it('should preserve metadata with sensitive keys in entry', () => {
       const request = createMockRequest();
-      const entry = createAuditLog(request, 'auth.attempt', {
+      // Using 'auth.failure' triggers console logging which exercises redaction
+      const entry = createAuditLog(request, 'auth.failure', {
         resourceType: 'auth',
+        success: false,
         metadata: {
           apiKey: 'secret-key-123',
           password: 'secret-pass',
@@ -332,20 +339,46 @@ describe('Audit Module', () => {
         },
       });
 
-      // Entry should be created successfully
+      // Entry should be created successfully (original data preserved)
       expect(entry).toBeDefined();
       expect(entry.metadata.normalField).toBe('visible');
+      // Original values preserved in entry for processing
+      expect(entry.metadata.apiKey).toBe('secret-key-123');
+      expect(entry.metadata.password).toBe('secret-pass');
     });
 
-    it('should handle nested metadata objects', () => {
+    it('should exercise redaction with various sensitive key patterns', () => {
       const request = createMockRequest();
-      const entry = createAuditLog(request, 'complex.action', {
-        resourceType: 'complex',
+      // 'security.suspicious_activity' triggers console logging
+      const entry = createAuditLog(request, 'security.suspicious_activity', {
+        resourceType: 'security',
+        success: false,
+        metadata: {
+          token: 'jwt-token-value',
+          secret: 'my-secret',
+          authorization: 'Bearer xyz',
+          privateKey: 'rsa-private',
+          safeField: 'not-redacted',
+        },
+      });
+
+      // Entry preserves original values
+      expect(entry.metadata.token).toBe('jwt-token-value');
+      expect(entry.metadata.secret).toBe('my-secret');
+      expect(entry.metadata.safeField).toBe('not-redacted');
+    });
+
+    it('should handle nested metadata objects during logging', () => {
+      const request = createMockRequest();
+      // Using security event to ensure console logging exercises nested redaction
+      const entry = createAuditLog(request, 'security.blocked_request', {
+        resourceType: 'security',
+        success: false,
         metadata: {
           user: {
             name: 'John',
             credentials: {
-              token: 'secret',
+              token: 'secret-token',
             },
           },
         },
@@ -353,6 +386,36 @@ describe('Audit Module', () => {
 
       expect(entry).toBeDefined();
       expect(entry.metadata.user).toBeDefined();
+      const user = entry.metadata.user as { name: string; credentials: { token: string } };
+      expect(user.name).toBe('John');
+      // Original value preserved in entry
+      expect(user.credentials.token).toBe('secret-token');
+    });
+
+    it('should handle deeply nested sensitive data structures', () => {
+      const request = createMockRequest();
+      // 'rate_limit.exceeded' triggers logging
+      const entry = createAuditLog(request, 'rate_limit.exceeded', {
+        resourceType: 'rate_limit',
+        success: false,
+        metadata: {
+          level1: {
+            level2: {
+              level3: {
+                apiKey: 'deep-secret',
+                normalValue: 'visible',
+              },
+            },
+          },
+        },
+      });
+
+      const nested = entry.metadata.level1 as Record<string, unknown>;
+      const level2 = nested.level2 as Record<string, unknown>;
+      const level3 = level2.level3 as Record<string, string>;
+      // Original values preserved in entry
+      expect(level3.apiKey).toBe('deep-secret');
+      expect(level3.normalValue).toBe('visible');
     });
   });
 });
