@@ -5,6 +5,10 @@ import type { BountySource, RawBounty, SyncResult } from './types';
 // Shared mock data that tests can modify
 let mockOpenTasks: Array<{ id: string; externalUrl: string | null }> = [];
 let mockSourceStats: Array<{ source: string; count: number }> = [];
+let mockGitHubBounties: RawBounty[] = [];
+let mockUpsertResult: Array<{ id: string; createdAt: Date; updatedAt: Date }> = [];
+let mockUpsertShouldThrow = false;
+let mockFetchShouldThrow = false;
 
 // Mock db module - using inline factory to avoid hoisting issues
 vi.mock('@/db', () => {
@@ -28,9 +32,16 @@ vi.mock('@/db', () => {
   const mockInsert = vi.fn(() => ({
     values: vi.fn(() => ({
       onConflictDoUpdate: vi.fn(() => ({
-        returning: vi.fn(() =>
-          Promise.resolve([{ id: 'test-id', createdAt: new Date(), updatedAt: new Date() }])
-        ),
+        returning: vi.fn(() => {
+          if (mockUpsertShouldThrow) {
+            return Promise.reject(new Error('Database insert failed'));
+          }
+          if (mockUpsertResult.length > 0) {
+            return Promise.resolve(mockUpsertResult);
+          }
+          const now = new Date();
+          return Promise.resolve([{ id: 'test-id', createdAt: now, updatedAt: now }]);
+        }),
       })),
     })),
   }));
@@ -58,7 +69,12 @@ vi.mock('@/db', () => {
 vi.mock('./sources/github', () => ({
   createGitHubSource: vi.fn(() => ({
     name: 'github',
-    fetch: vi.fn(() => Promise.resolve([])),
+    fetch: vi.fn(() => {
+      if (mockFetchShouldThrow) {
+        return Promise.reject(new Error('Source fetch failed'));
+      }
+      return Promise.resolve(mockGitHubBounties);
+    }),
     normalize: vi.fn((raw: RawBounty) => ({
       title: raw.title,
       description: raw.description,
@@ -152,6 +168,10 @@ describe('Sync Engine', () => {
     // Reset mock data before each test
     mockOpenTasks = [];
     mockSourceStats = [];
+    mockGitHubBounties = [];
+    mockUpsertResult = [];
+    mockUpsertShouldThrow = false;
+    mockFetchShouldThrow = false;
   });
 
   describe('runSync', () => {
@@ -579,6 +599,174 @@ describe('Sync Engine', () => {
     it('should call database update with correct parameters', async () => {
       const result = await markStaleTasks('github', ['https://github.com/test/repo/issues/1']);
       expect(result).toBe(1); // Returns 1 due to mock returning [{ id: 'test-id' }]
+    });
+  });
+
+  describe('syncSource with bounties', () => {
+    it('should process fetched bounties and count created items', async () => {
+      // Set up mock bounties
+      mockGitHubBounties = [
+        {
+          source: 'github',
+          externalId: 'github-test-1',
+          externalUrl: 'https://github.com/test/repo/issues/1',
+          title: 'Test bounty 1',
+          description: 'Description 1',
+          ownerExternalId: 'user1',
+          labels: ['bounty'],
+          createdAt: new Date(),
+          raw: {},
+        },
+      ];
+
+      // Mock upsert returns same createdAt and updatedAt (new record)
+      const now = new Date();
+      mockUpsertResult = [{ id: 'new-id', createdAt: now, updatedAt: now }];
+
+      const result = await syncFromSource('github');
+
+      expect(result.fetched).toBe(1);
+      expect(result.created).toBe(1);
+      expect(result.updated).toBe(0);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should count updated items when timestamps differ', async () => {
+      mockGitHubBounties = [
+        {
+          source: 'github',
+          externalId: 'github-test-1',
+          externalUrl: 'https://github.com/test/repo/issues/1',
+          title: 'Test bounty 1',
+          description: 'Description 1',
+          ownerExternalId: 'user1',
+          labels: ['bounty'],
+          createdAt: new Date(),
+          raw: {},
+        },
+      ];
+
+      // Mock upsert returns different createdAt and updatedAt (updated record)
+      const createdAt = new Date('2025-01-01T00:00:00Z');
+      const updatedAt = new Date('2025-01-15T00:00:00Z');
+      mockUpsertResult = [{ id: 'existing-id', createdAt, updatedAt }];
+
+      const result = await syncFromSource('github');
+
+      expect(result.fetched).toBe(1);
+      expect(result.created).toBe(0);
+      expect(result.updated).toBe(1);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should handle database errors during insert', async () => {
+      mockGitHubBounties = [
+        {
+          source: 'github',
+          externalId: 'github-test-1',
+          externalUrl: 'https://github.com/test/repo/issues/1',
+          title: 'Test bounty 1',
+          description: 'Description 1',
+          ownerExternalId: 'user1',
+          labels: ['bounty'],
+          createdAt: new Date(),
+          raw: {},
+        },
+      ];
+
+      mockUpsertShouldThrow = true;
+
+      const result = await syncFromSource('github');
+
+      expect(result.fetched).toBe(1);
+      expect(result.created).toBe(0);
+      expect(result.updated).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].externalId).toBe('github-test-1');
+      expect(result.errors[0].message).toBe('Database insert failed');
+    });
+
+    it('should process multiple bounties and log progress', async () => {
+      // Create 15 bounties to trigger progress logging
+      mockGitHubBounties = Array.from({ length: 15 }, (_, i) => ({
+        source: 'github' as const,
+        externalId: `github-test-${i + 1}`,
+        externalUrl: `https://github.com/test/repo/issues/${i + 1}`,
+        title: `Test bounty ${i + 1}`,
+        description: `Description ${i + 1}`,
+        ownerExternalId: 'user1',
+        labels: ['bounty'],
+        createdAt: new Date(),
+        raw: {},
+      }));
+
+      const result = await syncFromSource('github');
+
+      expect(result.fetched).toBe(15);
+      expect(result.created).toBe(15);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should handle bounties with various fields', async () => {
+      mockGitHubBounties = [
+        {
+          source: 'github',
+          externalId: 'github-test-1',
+          externalUrl: 'https://github.com/test/repo/issues/1',
+          title: 'Test bounty with deadline',
+          description: 'Has a deadline',
+          ownerExternalId: 'user1',
+          labels: ['bounty', 'typescript'],
+          createdAt: new Date(),
+          deadline: new Date('2025-03-01'),
+          raw: {},
+        },
+      ];
+
+      const result = await syncFromSource('github');
+
+      expect(result.fetched).toBe(1);
+      expect(result.created).toBe(1);
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should handle source fetch errors gracefully', async () => {
+      mockFetchShouldThrow = true;
+
+      const result = await syncFromSource('github');
+
+      expect(result.fetched).toBe(0);
+      expect(result.created).toBe(0);
+      expect(result.updated).toBe(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].externalId).toBe('source-fetch');
+      expect(result.errors[0].message).toBe('Source fetch failed');
+    });
+  });
+
+  describe('runSync with bounties', () => {
+    it('should process bounties through full sync', async () => {
+      mockGitHubBounties = [
+        {
+          source: 'github',
+          externalId: 'github-test-1',
+          externalUrl: 'https://github.com/test/repo/issues/1',
+          title: 'Test bounty',
+          description: 'Description',
+          ownerExternalId: 'user1',
+          labels: ['bounty'],
+          createdAt: new Date(),
+          raw: {},
+        },
+      ];
+
+      const results = await runSync({
+        sources: { github: { enabled: true } },
+      });
+
+      const githubResult = results.find((r) => r.source === 'github');
+      expect(githubResult).toBeDefined();
+      expect(githubResult?.fetched).toBe(1);
     });
   });
 });
