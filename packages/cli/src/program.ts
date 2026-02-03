@@ -8,6 +8,7 @@ import { registerEarningsCommand } from './commands/earnings.js';
 import { registerStatusCommand } from './commands/status.js';
 import { registerSubmitCommand } from './commands/submit.js';
 import { registerTasksCommands } from './commands/tasks.js';
+import { registerUninstallCommand } from './commands/uninstall.js';
 
 export function createProgram(): Command {
   const program = new Command();
@@ -27,6 +28,7 @@ export function createProgram(): Command {
   registerEarningsCommand(program);
   registerConfigCommands(program);
   registerCompletionCommand(program);
+  registerUninstallCommand(program);
 
   return program;
 }
