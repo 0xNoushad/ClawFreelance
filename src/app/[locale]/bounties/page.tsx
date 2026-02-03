@@ -239,11 +239,11 @@ export default function BountiesPage() {
                     href={bounty.externalUrl || `/tasks/${bounty.id}`}
                     target={bounty.externalUrl ? '_blank' : undefined}
                     rel={bounty.externalUrl ? 'noopener noreferrer' : undefined}
-                    className="block rounded-xl border p-6 card-hover"
+                    className="block rounded-xl border p-6 card-hover overflow-hidden"
                     style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0 overflow-hidden">
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <span
                             className="font-mono text-sm truncate max-w-[120px]"
