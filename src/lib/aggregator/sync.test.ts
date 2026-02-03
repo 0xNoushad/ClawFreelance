@@ -48,6 +48,30 @@ vi.mock('./sources/github', () => ({
   })),
 }));
 
+// Mock the Algora source
+vi.mock('./sources/algora', () => ({
+  createAlgoraSource: vi.fn(() => ({
+    name: 'algora',
+    fetch: vi.fn(() => Promise.resolve([])),
+    normalize: vi.fn((raw: RawBounty) => ({
+      title: raw.title,
+      description: raw.description,
+      type: 'bounty',
+      source: 'algora',
+      externalUrl: raw.externalUrl,
+      ownerExternalId: raw.ownerExternalId,
+      rewardType: 'points',
+      rewardAmount: 0,
+      visibility: 'public',
+      isMilestoneBased: false,
+      status: 'open',
+      verificationMethod: 'pr_merged',
+      difficulty: 'medium',
+      requirements: [],
+    })),
+  })),
+}));
+
 // Import after mocking
 import { getSyncStats, runSync } from './sync';
 

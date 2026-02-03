@@ -86,9 +86,11 @@ describe('GitHubBountySource', () => {
     });
 
     it('should handle API rate limits gracefully', async () => {
-      mockFetch.mockResolvedValueOnce({
+      // All label requests return 403 rate limit
+      mockFetch.mockResolvedValue({
         ok: false,
         status: 403,
+        text: async () => 'Rate limit exceeded',
       });
 
       const source = new GitHubBountySource({
@@ -100,9 +102,11 @@ describe('GitHubBountySource', () => {
     });
 
     it('should handle API errors gracefully', async () => {
-      mockFetch.mockResolvedValueOnce({
+      // All label requests return 500
+      mockFetch.mockResolvedValue({
         ok: false,
         status: 500,
+        text: async () => 'Internal server error',
       });
 
       const source = new GitHubBountySource({
@@ -114,7 +118,8 @@ describe('GitHubBountySource', () => {
     });
 
     it('should handle network failures gracefully', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      // All label requests fail with network error
+      mockFetch.mockRejectedValue(new Error('Network error'));
 
       const source = new GitHubBountySource({
         repositories: ['test/repo'],

@@ -3,6 +3,26 @@
  *
  * Fetches issues from GitHub repositories that are labeled as bounties.
  * Supports configurable repositories and bounty label detection.
+ *
+ * ## Rate Limits
+ *
+ * | Auth Method          | Requests/Hour | Notes                           |
+ * |---------------------|---------------|----------------------------------|
+ * | Unauthenticated     | 60            | Very limited, dev only          |
+ * | Personal Access Token| 5,000         | Good for small-medium scale     |
+ * | GitHub App          | 15,000+       | Recommended for production      |
+ *
+ * For production deployments, create a GitHub App:
+ * 1. Go to GitHub Settings > Developer Settings > GitHub Apps
+ * 2. Create new app with "Read-only" access to:
+ *    - Repository contents
+ *    - Issues
+ *    - Metadata
+ * 3. Install on target organization/repos
+ * 4. Use App authentication (JWT + installation token)
+ *
+ * @see https://docs.github.com/en/apps/creating-github-apps
+ * @see https://docs.github.com/en/rest/rate-limit
  */
 
 import type { BountySource, GitHubSourceConfig, NormalizedTask, RawBounty } from '../types';

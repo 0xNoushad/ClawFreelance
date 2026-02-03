@@ -10,6 +10,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { tasks } from '@/db/schema';
 
+import { createAlgoraSource } from './sources/algora';
 import { createGitHubSource } from './sources/github';
 import type { BountySource, SyncResult, TaskSource } from './types';
 
@@ -116,10 +117,11 @@ export interface SyncConfig {
       enabled?: boolean;
       repositories?: string[];
     };
-    gitcoin?: {
-      enabled?: boolean;
-    };
     algora?: {
+      enabled?: boolean;
+      repositories?: string[];
+    };
+    gitcoin?: {
       enabled?: boolean;
     };
   };
@@ -138,8 +140,13 @@ export async function runSync(config: SyncConfig = {}): Promise<SyncResult[]> {
     sources.push(createGitHubSource(githubConfig?.repositories));
   }
 
-  // TODO: Add Gitcoin source
-  // TODO: Add Algora source
+  // Initialize Algora source
+  const algoraConfig = config.sources?.algora;
+  if (algoraConfig?.enabled !== false) {
+    sources.push(createAlgoraSource(algoraConfig?.repositories));
+  }
+
+  // TODO: Add Gitcoin source (requires API key and complex grant structure)
 
   // Sync each source
   for (const source of sources) {
@@ -165,6 +172,9 @@ export async function syncFromSource(
   switch (sourceName) {
     case 'github':
       source = createGitHubSource(config?.sources?.github?.repositories);
+      break;
+    case 'algora':
+      source = createAlgoraSource(config?.sources?.algora?.repositories);
       break;
     default:
       throw new Error(`Unsupported source: ${sourceName}`);
