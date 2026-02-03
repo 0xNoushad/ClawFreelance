@@ -1,17 +1,29 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { BountySource, RawBounty, SyncResult } from './types';
 
+// Shared mock data that tests can modify
+let mockOpenTasks: Array<{ id: string; externalUrl: string | null }> = [];
+let mockSourceStats: Array<{ source: string; count: number }> = [];
+
 // Mock db module - using inline factory to avoid hoisting issues
 vi.mock('@/db', () => {
-  const mockSelect = vi.fn(() => ({
-    from: vi.fn(() => ({
-      where: vi.fn(() => ({
-        limit: vi.fn(() => Promise.resolve([])),
-      })),
-      groupBy: vi.fn(() => Promise.resolve([])),
-    })),
-  }));
+  const createMockSelect = () => {
+    const mockLimit = vi.fn(() => Promise.resolve(mockOpenTasks));
+    const mockGroupBy = vi.fn(() => Promise.resolve(mockSourceStats));
+    const mockWhere = vi.fn(() => ({
+      limit: mockLimit,
+    }));
+    const mockFrom = vi.fn(() => ({
+      where: mockWhere,
+      groupBy: mockGroupBy,
+    }));
+    return vi.fn(() => ({
+      from: mockFrom,
+    }));
+  };
+
+  const mockSelect = createMockSelect();
 
   const mockInsert = vi.fn(() => ({
     values: vi.fn(() => ({
@@ -136,6 +148,12 @@ import {
 } from './sync';
 
 describe('Sync Engine', () => {
+  beforeEach(() => {
+    // Reset mock data before each test
+    mockOpenTasks = [];
+    mockSourceStats = [];
+  });
+
   describe('runSync', () => {
     it('should return results array', async () => {
       const results = await runSync();
@@ -346,6 +364,7 @@ describe('Sync Engine', () => {
     beforeEach(() => {
       global.fetch = mockFetch;
       mockFetch.mockClear();
+      mockOpenTasks = [];
     });
 
     afterEach(() => {
@@ -360,6 +379,206 @@ describe('Sync Engine', () => {
       expect(typeof result.completed).toBe('number');
       expect(typeof result.cancelled).toBe('number');
       expect(Array.isArray(result.errors)).toBe(true);
+    });
+
+    it('should skip tasks with null externalUrl', async () => {
+      mockOpenTasks = [{ id: 'task-1', externalUrl: null }];
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.completed).toBe(0);
+      expect(result.cancelled).toBe(0);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('should skip tasks with non-GitHub URLs', async () => {
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://gitlab.com/owner/repo/issues/1' }];
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.completed).toBe(0);
+      expect(result.cancelled).toBe(0);
+      expect(mockFetch).not.toHaveBeenCalled();
+    });
+
+    it('should mark deleted issues as cancelled (404 response)', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+      });
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.cancelled).toBe(1);
+      expect(result.completed).toBe(0);
+    });
+
+    it('should handle non-404 error responses gracefully', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.cancelled).toBe(0);
+      expect(result.completed).toBe(0);
+    });
+
+    it('should mark completed issues as completed when PR merged', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: 'closed',
+          pull_request: { merged_at: '2025-01-15T00:00:00Z' },
+          body: 'Some description',
+        }),
+      });
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.completed).toBe(1);
+      expect(result.cancelled).toBe(0);
+    });
+
+    it('should mark completed issues as completed when body contains merged', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: 'closed',
+          body: 'This issue was merged via PR #456',
+          state_reason: null,
+        }),
+      });
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.completed).toBe(1);
+      expect(result.cancelled).toBe(0);
+    });
+
+    it('should mark completed issues as completed when state_reason is completed', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: 'closed',
+          body: 'Regular description',
+          state_reason: 'completed',
+        }),
+      });
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.completed).toBe(1);
+      expect(result.cancelled).toBe(0);
+    });
+
+    it('should mark closed but not merged issues as cancelled', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: 'closed',
+          body: 'Closing this issue as won\'t fix',
+          state_reason: 'not_planned',
+        }),
+      });
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.cancelled).toBe(1);
+      expect(result.completed).toBe(0);
+    });
+
+    it('should handle fetch errors gracefully', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]).toContain('Failed to check');
+    });
+
+    it('should not update still-open issues', async () => {
+      mockOpenTasks = [
+        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
+      ];
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          state: 'open',
+          body: 'Still working on this',
+        }),
+      });
+
+      const result = await updateGitHubTaskStatuses();
+
+      expect(result.completed).toBe(0);
+      expect(result.cancelled).toBe(0);
+      expect(result.errors).toHaveLength(0);
+    });
+  });
+
+  describe('getSyncStats with data', () => {
+    it('should aggregate stats from multiple sources', async () => {
+      mockSourceStats = [
+        { source: 'github', count: 10 },
+        { source: 'algora', count: 5 },
+        { source: 'immunefi', count: 3 },
+      ];
+
+      const stats = await getSyncStats();
+
+      expect(stats.totalTasks).toBe(18);
+      expect(stats.bySource).toEqual({
+        github: 10,
+        algora: 5,
+        immunefi: 3,
+      });
+    });
+
+    it('should handle single source', async () => {
+      mockSourceStats = [{ source: 'github', count: 25 }];
+
+      const stats = await getSyncStats();
+
+      expect(stats.totalTasks).toBe(25);
+      expect(stats.bySource).toEqual({ github: 25 });
+    });
+  });
+
+  describe('markStaleTasks with URLs', () => {
+    it('should call database update with correct parameters', async () => {
+      const result = await markStaleTasks('github', ['https://github.com/test/repo/issues/1']);
+      expect(result).toBe(1); // Returns 1 due to mock returning [{ id: 'test-id' }]
     });
   });
 });
