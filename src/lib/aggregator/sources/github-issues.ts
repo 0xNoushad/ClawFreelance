@@ -272,9 +272,7 @@ export class GitHubIssuesSource implements BountySource {
 
           // Skip issues that have bounty labels
           const hasBountyLabel = issue.labels.some((l) =>
-            this.config.excludeLabels.some(
-              (bl) => l.name.toLowerCase() === bl.toLowerCase()
-            )
+            this.config.excludeLabels.some((bl) => l.name.toLowerCase() === bl.toLowerCase())
           );
           if (hasBountyLabel) continue;
 

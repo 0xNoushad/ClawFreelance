@@ -92,9 +92,7 @@
         "agents_public_key_unique": {
           "name": "agents_public_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "public_key"
-          ]
+          "columns": ["public_key"]
         }
       },
       "policies": {},
@@ -170,12 +168,8 @@
           "name": "api_keys_agent_id_agents_id_fk",
           "tableFrom": "api_keys",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -185,9 +179,7 @@
         "api_keys_key_hash_unique": {
           "name": "api_keys_key_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "key_hash"
-          ]
+          "columns": ["key_hash"]
         }
       },
       "policies": {},
@@ -359,12 +351,8 @@
           "name": "payments_task_id_tasks_id_fk",
           "tableFrom": "payments",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -372,12 +360,8 @@
           "name": "payments_agent_id_agents_id_fk",
           "tableFrom": "payments",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -385,12 +369,8 @@
           "name": "payments_milestone_id_task_milestones_id_fk",
           "tableFrom": "payments",
           "tableTo": "task_milestones",
-          "columnsFrom": [
-            "milestone_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["milestone_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -457,12 +437,8 @@
           "name": "reputation_events_agent_id_agents_id_fk",
           "tableFrom": "reputation_events",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -470,12 +446,8 @@
           "name": "reputation_events_task_id_tasks_id_fk",
           "tableFrom": "reputation_events",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -555,12 +527,8 @@
           "name": "task_claims_task_id_tasks_id_fk",
           "tableFrom": "task_claims",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -568,12 +536,8 @@
           "name": "task_claims_agent_id_agents_id_fk",
           "tableFrom": "task_claims",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -647,12 +611,8 @@
           "name": "task_invites_task_id_tasks_id_fk",
           "tableFrom": "task_invites",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -660,12 +620,8 @@
           "name": "task_invites_agent_id_agents_id_fk",
           "tableFrom": "task_invites",
           "tableTo": "agents",
-          "columnsFrom": [
-            "agent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["agent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -675,9 +631,7 @@
         "task_invites_invite_code_unique": {
           "name": "task_invites_invite_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "invite_code"
-          ]
+          "columns": ["invite_code"]
         }
       },
       "policies": {},
@@ -754,12 +708,8 @@
           "name": "task_milestones_task_id_tasks_id_fk",
           "tableFrom": "task_milestones",
           "tableTo": "tasks",
-          "columnsFrom": [
-            "task_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["task_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -943,12 +893,8 @@
           "name": "tasks_owner_id_agents_id_fk",
           "tableFrom": "tasks",
           "tableTo": "agents",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -964,80 +910,42 @@
     "public.agent_source": {
       "name": "agent_source",
       "schema": "public",
-      "values": [
-        "openclaw",
-        "cloud",
-        "anonymous"
-      ]
+      "values": ["openclaw", "cloud", "anonymous"]
     },
     "public.agent_status": {
       "name": "agent_status",
       "schema": "public",
-      "values": [
-        "active",
-        "suspended",
-        "banned"
-      ]
+      "values": ["active", "suspended", "banned"]
     },
     "public.claim_status": {
       "name": "claim_status",
       "schema": "public",
-      "values": [
-        "active",
-        "completed",
-        "abandoned",
-        "rejected"
-      ]
+      "values": ["active", "completed", "abandoned", "rejected"]
     },
     "public.difficulty": {
       "name": "difficulty",
       "schema": "public",
-      "values": [
-        "easy",
-        "medium",
-        "hard"
-      ]
+      "values": ["easy", "medium", "hard"]
     },
     "public.milestone_status": {
       "name": "milestone_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "in_progress",
-        "verification",
-        "completed",
-        "disputed"
-      ]
+      "values": ["pending", "in_progress", "verification", "completed", "disputed"]
     },
     "public.payment_status": {
       "name": "payment_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "escrow",
-        "released",
-        "refunded"
-      ]
+      "values": ["pending", "escrow", "released", "refunded"]
     },
     "public.reputation_event_type": {
       "name": "reputation_event_type",
       "schema": "public",
-      "values": [
-        "task_completed",
-        "task_failed",
-        "peer_review",
-        "dispute_won",
-        "dispute_lost"
-      ]
+      "values": ["task_completed", "task_failed", "peer_review", "dispute_won", "dispute_lost"]
     },
     "public.reward_type": {
       "name": "reward_type",
       "schema": "public",
-      "values": [
-        "crypto",
-        "external",
-        "points"
-      ]
+      "values": ["crypto", "external", "points"]
     },
     "public.task_source": {
       "name": "task_source",
@@ -1068,30 +976,17 @@
     "public.task_type": {
       "name": "task_type",
       "schema": "public",
-      "values": [
-        "code_contribution",
-        "bounty",
-        "showcase"
-      ]
+      "values": ["code_contribution", "bounty", "showcase"]
     },
     "public.task_visibility": {
       "name": "task_visibility",
       "schema": "public",
-      "values": [
-        "public",
-        "private",
-        "unlisted"
-      ]
+      "values": ["public", "private", "unlisted"]
     },
     "public.verification_method": {
       "name": "verification_method",
       "schema": "public",
-      "values": [
-        "pr_merged",
-        "owner_approval",
-        "tests_pass",
-        "peer_review"
-      ]
+      "values": ["pr_merged", "owner_approval", "tests_pass", "peer_review"]
     }
   },
   "schemas": {},

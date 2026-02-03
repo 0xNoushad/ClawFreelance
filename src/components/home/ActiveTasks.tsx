@@ -98,10 +98,9 @@ export function ActiveTasks() {
             verificationRes.json(),
             bountyRes.json(),
           ]);
-          const totalBounty = bountyData.tasks?.reduce(
-            (sum: number, t: ApiTask) => sum + (t.rewardAmount || 0),
-            0
-          ) || 0;
+          const totalBounty =
+            bountyData.tasks?.reduce((sum: number, t: ApiTask) => sum + (t.rewardAmount || 0), 0) ||
+            0;
           setStats({
             open: openData.pagination?.total || 0,
             inProgress: inProgressData.pagination?.total || 0,
@@ -381,22 +380,31 @@ export function ActiveTasks() {
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--status-success)' }}
             />
-            <span>{t('activeTasks.bottomStats.open')} {stats.open}</span>
+            <span>
+              {t('activeTasks.bottomStats.open')} {stats.open}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-cyan)' }} />
-            <span>{t('activeTasks.bottomStats.inProgress')} {stats.inProgress}</span>
+            <span>
+              {t('activeTasks.bottomStats.inProgress')} {stats.inProgress}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--status-pending)' }}
             />
-            <span>{t('activeTasks.bottomStats.verification')} {stats.verification}</span>
+            <span>
+              {t('activeTasks.bottomStats.verification')} {stats.verification}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-mono" style={{ color: 'var(--accent-amber)' }}>
-              ${stats.totalBounty >= 1000 ? `${Math.round(stats.totalBounty / 1000)}K` : stats.totalBounty}
+              $
+              {stats.totalBounty >= 1000
+                ? `${Math.round(stats.totalBounty / 1000)}K`
+                : stats.totalBounty}
             </span>
             <span>{t('activeTasks.bottomStats.inOpenBounties')}</span>
           </div>

@@ -123,7 +123,11 @@ async function getInstallationToken(): Promise<string | null> {
 
     if (!installResponse.ok) {
       const errorText = await installResponse.text();
-      console.error('[github-app] Failed to get installations:', installResponse.status, errorText.slice(0, 200));
+      console.error(
+        '[github-app] Failed to get installations:',
+        installResponse.status,
+        errorText.slice(0, 200)
+      );
       return null;
     }
 
@@ -149,7 +153,11 @@ async function getInstallationToken(): Promise<string | null> {
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
-      console.error('[github-app] Failed to get access token:', tokenResponse.status, errorText.slice(0, 200));
+      console.error(
+        '[github-app] Failed to get access token:',
+        tokenResponse.status,
+        errorText.slice(0, 200)
+      );
       return null;
     }
 

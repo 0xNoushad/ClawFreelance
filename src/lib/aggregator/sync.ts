@@ -46,7 +46,9 @@ async function syncSource(source: BountySource): Promise<SyncResult> {
     for (const raw of rawBounties) {
       processed++;
       if (processed % logInterval === 0 || processed === rawBounties.length) {
-        console.log(`[sync] ${source.name}: ${processed}/${rawBounties.length} (created=${result.created} updated=${result.updated} errors=${result.errors.length})`);
+        console.log(
+          `[sync] ${source.name}: ${processed}/${rawBounties.length} (created=${result.created} updated=${result.updated} errors=${result.errors.length})`
+        );
       }
       try {
         const normalized = source.normalize(raw);

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { getSyncStats, runSync, type SyncConfig,updateGitHubTaskStatuses } from '@/lib/aggregator';
+import { getSyncStats, runSync, type SyncConfig, updateGitHubTaskStatuses } from '@/lib/aggregator';
 import { POPULAR_BOUNTY_REPOS } from '@/lib/aggregator/sources/github';
 
 // Schema for sync request

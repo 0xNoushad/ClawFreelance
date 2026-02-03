@@ -108,7 +108,9 @@ export class ImmunefiBountySource implements BountySource {
 
     console.log('[immunefi] Fetching program list...');
     const programSlugs = await this.getProgramList();
-    console.log(`[immunefi] Found ${programSlugs.length} programs, fetching top ${this.config.maxPrograms}...`);
+    console.log(
+      `[immunefi] Found ${programSlugs.length} programs, fetching top ${this.config.maxPrograms}...`
+    );
 
     const bounties: RawBounty[] = [];
     let fetched = 0;
@@ -117,7 +119,11 @@ export class ImmunefiBountySource implements BountySource {
     const BATCH_SIZE = 10;
     const BATCH_DELAY = 1000;
 
-    for (let i = 0; i < programSlugs.length && fetched < (this.config.maxPrograms || 100); i += BATCH_SIZE) {
+    for (
+      let i = 0;
+      i < programSlugs.length && fetched < (this.config.maxPrograms || 100);
+      i += BATCH_SIZE
+    ) {
       const batch = programSlugs.slice(i, i + BATCH_SIZE);
 
       const results = await Promise.all(batch.map((slug) => this.fetchProgram(slug)));

@@ -49,7 +49,9 @@ export class BugcrowdBountySource implements BountySource {
     }
 
     // TODO: Implement Bugcrowd API integration
-    console.log('[bugcrowd] API integration pending - credentials configured but fetch not implemented');
+    console.log(
+      '[bugcrowd] API integration pending - credentials configured but fetch not implemented'
+    );
     return [];
   }
 

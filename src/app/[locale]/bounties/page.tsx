@@ -45,11 +45,7 @@ async function getBounties() {
   return bounties;
 }
 
-export default async function BountiesPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
+export default async function BountiesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const dict = await getDictionary(locale as Locale);
   const bounties = await getBounties();
@@ -102,9 +98,7 @@ export default async function BountiesPage({
                   style={{ color: 'var(--text-muted)' }}
                 />
                 <h3 className="text-lg font-medium mb-2">No bounties available</h3>
-                <p style={{ color: 'var(--text-muted)' }}>
-                  Check back soon for new opportunities
-                </p>
+                <p style={{ color: 'var(--text-muted)' }}>Check back soon for new opportunities</p>
               </div>
             ) : (
               <div className="grid gap-4">
@@ -145,10 +139,7 @@ export default async function BountiesPage({
                             </span>
                           )}
                           {bounty.externalUrl && (
-                            <span
-                              className="text-xs"
-                              style={{ color: 'var(--text-muted)' }}
-                            >
+                            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                               External
                             </span>
                           )}

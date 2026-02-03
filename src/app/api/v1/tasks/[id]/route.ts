@@ -8,10 +8,7 @@ import { checkRateLimit, getClientIdentifier, isIpBlocked } from '@/lib/security
 /**
  * GET /api/v1/tasks/[id] - Get a single task by ID
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   // Check if IP is blocked
@@ -42,38 +39,25 @@ export async function GET(
   // Validate UUID format
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(id)) {
-    return NextResponse.json(
-      { error: 'Invalid task ID format' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid task ID format' }, { status: 400 });
   }
 
   try {
     console.log('[tasks/[id]] Fetching task:', id);
 
-    const result = await db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.id, id))
-      .limit(1);
+    const result = await db.select().from(tasks).where(eq(tasks.id, id)).limit(1);
 
     console.log('[tasks/[id]] Query result:', result.length, 'rows');
 
     if (result.length === 0) {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
     const task = result[0];
 
     // Don't return private tasks to unauthenticated users
     if (task.visibility === 'private') {
-      return NextResponse.json(
-        { error: 'Task not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -88,7 +72,10 @@ export async function GET(
   } catch (error) {
     console.error('[tasks/[id]] Error fetching task:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch task', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Failed to fetch task',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }
