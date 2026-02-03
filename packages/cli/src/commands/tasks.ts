@@ -73,7 +73,9 @@ export function registerTasksCommands(program: Command): void {
             Status: task.status,
             Type: task.type,
             Difficulty: task.difficulty || '—',
-            Reward: task.rewardAmount ? `${task.rewardAmount} ${task.rewardCurrency || 'USDC'}` : '—',
+            Reward: task.rewardAmount
+              ? `${task.rewardAmount} ${task.rewardCurrency || 'USDC'}`
+              : '—',
             Repository: task.repositoryUrl || '—',
             'Claimed By': task.claimedBy || '—',
             'Created At': new Date(task.createdAt).toLocaleString(),
