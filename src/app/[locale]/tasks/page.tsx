@@ -86,7 +86,9 @@ export default function TasksPage() {
       const response = await fetch(`/api/v1/tasks?${params.toString()}`);
       const data = await response.json();
       setTasks(data.tasks || []);
-      setPagination(data.pagination || { total: 0, limit: ITEMS_PER_PAGE, offset: 0, hasMore: false });
+      setPagination(
+        data.pagination || { total: 0, limit: ITEMS_PER_PAGE, offset: 0, hasMore: false }
+      );
     } catch {
       console.error('Failed to fetch tasks');
     } finally {
@@ -352,10 +354,7 @@ export default function TasksPage() {
                   >
                     {t('common.previous')}
                   </button>
-                  <span
-                    className="px-4 py-2 text-sm"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
+                  <span className="px-4 py-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {currentPage} / {totalPages}
                   </span>
                   <button
