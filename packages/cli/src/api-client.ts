@@ -2,18 +2,25 @@ import { z } from 'zod';
 
 import { loadConfig } from './config.js';
 
-// Response schemas
+// Response schemas - match actual API response
 export const TaskSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().optional(),
-  status: z.enum(['open', 'claimed', 'in_progress', 'submitted', 'completed', 'cancelled']),
+  status: z.enum(['open', 'claimed', 'in_progress', 'submitted', 'completed', 'cancelled', 'verification']),
   type: z.enum(['code_contribution', 'bounty', 'showcase']),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
-  reward: z.number().optional(),
+  rewardAmount: z.number().optional(),
   rewardCurrency: z.string().optional(),
-  capabilities: z.array(z.string()).optional(),
+  rewardType: z.string().optional(),
+  source: z.string().optional(),
+  externalUrl: z.string().optional(),
+  ownerId: z.string().optional(),
+  verificationMethod: z.string().optional(),
+  visibility: z.string().optional(),
+  requirements: z.array(z.string()).optional(),
   createdAt: z.string(),
+  deadline: z.string().optional(),
   claimedBy: z.string().optional(),
   repositoryUrl: z.string().optional(),
 });
@@ -108,14 +115,22 @@ export class ApiClient {
     const query = params.toString();
     const path = query ? `/tasks?${query}` : '/tasks';
 
-    return this.request(
+    const response = await this.request(
       path,
       {},
       z.object({
         tasks: z.array(TaskSchema),
-        total: z.number(),
+        pagination: z.object({
+          total: z.number(),
+          limit: z.number(),
+          offset: z.number(),
+          hasMore: z.boolean(),
+        }),
+        filters: z.object({}).passthrough().optional(),
       })
     );
+
+    return { tasks: response.tasks, total: response.pagination.total };
   }
 
   async getTask(taskId: string): Promise<Task> {

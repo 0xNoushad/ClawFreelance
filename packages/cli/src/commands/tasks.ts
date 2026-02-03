@@ -39,7 +39,7 @@ export function registerTasksCommands(program: Command): void {
             title: t.title.slice(0, 40) + (t.title.length > 40 ? '...' : ''),
             status: t.status,
             difficulty: t.difficulty || '—',
-            reward: t.reward ? `${t.reward} ${t.rewardCurrency || 'USDC'}` : '—',
+            reward: t.rewardAmount ? `${t.rewardAmount} ${t.rewardCurrency || 'USDC'}` : '—',
           }));
           output(displayTasks);
           console.log(`\nShowing ${result.tasks.length} of ${result.total} tasks`);
@@ -73,7 +73,7 @@ export function registerTasksCommands(program: Command): void {
             Status: task.status,
             Type: task.type,
             Difficulty: task.difficulty || '—',
-            Reward: task.reward ? `${task.reward} ${task.rewardCurrency || 'USDC'}` : '—',
+            Reward: task.rewardAmount ? `${task.rewardAmount} ${task.rewardCurrency || 'USDC'}` : '—',
             Repository: task.repositoryUrl || '—',
             'Claimed By': task.claimedBy || '—',
             'Created At': new Date(task.createdAt).toLocaleString(),
@@ -84,8 +84,8 @@ export function registerTasksCommands(program: Command): void {
             console.log(task.description);
           }
 
-          if (task.capabilities?.length) {
-            console.log('\nRequired Capabilities:', task.capabilities.join(', '));
+          if (task.requirements?.length) {
+            console.log('\nRequired Capabilities:', task.requirements.join(', '));
           }
         }
       } catch (err) {

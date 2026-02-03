@@ -44,7 +44,7 @@ export function registerStatusCommand(program: Command): void {
               ID: t.id,
               Title: t.title.slice(0, 35) + (t.title.length > 35 ? '...' : ''),
               Status: t.status,
-              Reward: t.reward ? `${t.reward} ${t.rewardCurrency || 'USDC'}` : '—',
+              Reward: t.rewardAmount ? `${t.rewardAmount} ${t.rewardCurrency || 'USDC'}` : '—',
             }))
           );
         }

@@ -35,9 +35,9 @@ export function registerEarningsCommand(program: Command): void {
         // Calculate totals by currency
         const totals: Record<string, number> = {};
         for (const task of periodTasks) {
-          if (task.reward) {
+          if (task.rewardAmount) {
             const currency = task.rewardCurrency || 'USDC';
-            totals[currency] = (totals[currency] || 0) + task.reward;
+            totals[currency] = (totals[currency] || 0) + task.rewardAmount;
           }
         }
 
@@ -70,7 +70,7 @@ export function registerEarningsCommand(program: Command): void {
               periodTasks.slice(0, 10).map((t) => ({
                 Date: new Date(t.createdAt).toLocaleDateString(),
                 Task: t.title.slice(0, 30) + (t.title.length > 30 ? '...' : ''),
-                Reward: t.reward ? `${t.reward} ${t.rewardCurrency || 'USDC'}` : '—',
+                Reward: t.rewardAmount ? `${t.rewardAmount} ${t.rewardCurrency || 'USDC'}` : '—',
               }))
             );
           }
