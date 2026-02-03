@@ -46,7 +46,7 @@ export default function PostTaskPage() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/tasks', {
+      const response = await fetch('/api/v1/tasks', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

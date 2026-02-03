@@ -240,20 +240,20 @@ describe('Audit Module', () => {
     it('should log rate limit events', () => {
       const request = createMockRequest();
 
-      logRateLimitExceeded(request, '/api/tasks', 'agent-rate-test');
+      logRateLimitExceeded(request, '/api/v1/tasks', 'agent-rate-test');
 
       const logs = getRecentAuditLogs(1);
       const lastLog = logs[logs.length - 1];
 
       expect(lastLog.action).toBe('rate_limit.exceeded');
-      expect(lastLog.metadata.endpoint).toBe('/api/tasks');
+      expect(lastLog.metadata.endpoint).toBe('/api/v1/tasks');
       expect(lastLog.success).toBe(false);
     });
 
     it('should log anonymous rate limit events', () => {
       const request = createMockRequest();
 
-      logRateLimitExceeded(request, '/api/register');
+      logRateLimitExceeded(request, '/api/v1/agents/register');
 
       const logs = getRecentAuditLogs(1);
       const lastLog = logs[logs.length - 1];

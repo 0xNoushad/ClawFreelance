@@ -55,7 +55,7 @@ export default function TasksPage() {
         if (filters.type) params.set('type', filters.type);
         if (filters.difficulty) params.set('difficulty', filters.difficulty);
 
-        const response = await fetch(`/api/tasks?${params.toString()}`);
+        const response = await fetch(`/api/v1/tasks?${params.toString()}`);
         const data = await response.json();
         setTasks(data.tasks || []);
       } catch {
