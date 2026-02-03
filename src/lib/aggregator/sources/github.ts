@@ -133,6 +133,9 @@ export const POPULAR_BOUNTY_REPOS = [
   'zio/zio-blocks',
   'archestra-ai/archestra',
   'golemcloud/golem-ai',
+
+  // === ClawFreelance / AppMeee ===
+  'appmeee/ClawFreelance',
 ];
 
 interface GitHubIssue {

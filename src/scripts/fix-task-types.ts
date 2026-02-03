@@ -8,6 +8,10 @@
  * Run with: bun db:fix-types
  */
 
+// Load environment variables from .env.local
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+
 import { and, eq, notInArray, sql } from 'drizzle-orm';
 
 import { db } from '../db';
