@@ -25,6 +25,7 @@ import {
   sanitizeInputStrict,
   sanitizeMarkdown,
   getClientIdentifier,
+  cleanupExpiredCsrfTokens,
 } from './security';
 
 describe('Security Module', () => {
@@ -588,6 +589,23 @@ describe('Security Module', () => {
 
         // Token should still be valid
         expect(validateCsrfTokenForSession(sessionId, token)).toBe(true);
+      });
+
+      it('should cleanup expired tokens when cleanupExpiredCsrfTokens is called', () => {
+        const sessionId = `session-cleanup-${Date.now()}`;
+        const token = createCsrfTokenForSession(sessionId);
+
+        // Verify token works initially
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(true);
+
+        // Advance time past expiration
+        vi.advanceTimersByTime(3600001);
+
+        // Run cleanup
+        cleanupExpiredCsrfTokens();
+
+        // Token should now be invalid (cleaned up)
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(false);
       });
     });
   });
