@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import {
   createAuditLog,
@@ -321,14 +321,12 @@ describe('Audit Module', () => {
   // DEVELOPMENT MODE LOGGING TESTS
   // ============================================
   describe('Development mode logging', () => {
-    const originalEnv = process.env.NODE_ENV;
-
     afterEach(() => {
-      process.env.NODE_ENV = originalEnv;
+      vi.unstubAllEnvs();
     });
 
     it('should log all entries when NODE_ENV is development', () => {
-      process.env.NODE_ENV = 'development';
+      vi.stubEnv('NODE_ENV', 'development');
       const consoleSpy = vi.spyOn(console, 'info');
 
       const request = createMockRequest();
@@ -345,7 +343,7 @@ describe('Audit Module', () => {
     });
 
     it('should not log successful non-security actions in production', () => {
-      process.env.NODE_ENV = 'production';
+      vi.stubEnv('NODE_ENV', 'production');
       const consoleSpy = vi.spyOn(console, 'info');
 
       const request = createMockRequest();
