@@ -35,8 +35,25 @@ jobs:
       - name: Type check
         run: bun run tsc --noEmit
 
-      - name: Run tests
-        run: bun run test:run
+      - name: Run tests with coverage
+        run: bun run test:run --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=json
+
+      - name: Check coverage threshold (80%)
+        run: |
+          COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+          echo "Line coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "Coverage is below 80% threshold!"
+            exit 1
+          fi
+          echo "Coverage meets 80% threshold ✓"
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
 
   build:
     name: Build

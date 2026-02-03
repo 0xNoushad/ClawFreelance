@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { NextRequest } from 'next/server';
 import {
   checkRateLimit,
   generateApiKey,
@@ -20,8 +21,11 @@ import {
   validateTaskContent,
   createCsrfTokenForSession,
   validateCsrfTokenForSession,
+  validateCsrfHeaders,
   sanitizeInputStrict,
   sanitizeMarkdown,
+  getClientIdentifier,
+  cleanupExpiredCsrfTokens,
 } from './security';
 
 describe('Security Module', () => {
@@ -122,6 +126,51 @@ describe('Security Module', () => {
         expect(verifyApiKey(key, hash)).toBe(true);
         expect(verifyApiKey(key + 'x', hash)).toBe(false);
       });
+
+      it('should return false for mismatched hash lengths', () => {
+        const { key } = generateApiKey();
+        // Use a shorter hash to trigger the length mismatch check (line 77)
+        const shortHash = 'abcd1234';
+        expect(verifyApiKey(key, shortHash)).toBe(false);
+      });
+    });
+  });
+
+  // ============================================
+  // CLIENT IDENTIFIER TESTS
+  // ============================================
+  describe('getClientIdentifier', () => {
+    function createMockRequestWithHeaders(headers: Record<string, string>): NextRequest {
+      return {
+        headers: new Headers(headers),
+      } as unknown as NextRequest;
+    }
+
+    it('should prefer x-forwarded-for header', () => {
+      const request = createMockRequestWithHeaders({
+        'x-forwarded-for': '203.0.113.50',
+        'x-real-ip': '192.0.2.100',
+      });
+      expect(getClientIdentifier(request)).toBe('203.0.113.50');
+    });
+
+    it('should extract first IP from x-forwarded-for chain', () => {
+      const request = createMockRequestWithHeaders({
+        'x-forwarded-for': '203.0.113.50, 198.51.100.10, 10.0.0.1',
+      });
+      expect(getClientIdentifier(request)).toBe('203.0.113.50');
+    });
+
+    it('should fallback to x-real-ip when x-forwarded-for is missing', () => {
+      const request = createMockRequestWithHeaders({
+        'x-real-ip': '192.0.2.100',
+      });
+      expect(getClientIdentifier(request)).toBe('192.0.2.100');
+    });
+
+    it('should return unknown when no IP headers are present', () => {
+      const request = createMockRequestWithHeaders({});
+      expect(getClientIdentifier(request)).toBe('unknown');
     });
   });
 
@@ -392,6 +441,58 @@ describe('Security Module', () => {
       });
     });
 
+    describe('severity escalation', () => {
+      it('should not downgrade severity when multiple issues exist', () => {
+        // This task has SQL injection (high) AND excessive URLs (medium)
+        // Severity should stay at 'high', not downgrade to 'medium'
+        const description = Array(15).fill("https://example.com/link").join(" ");
+        const result = validateTaskContent(
+          "SELECT * FROM users; DROP TABLE users;--",
+          description
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.severity).toBe('high');
+        expect(result.issues.length).toBeGreaterThan(1);
+      });
+
+      it('should keep critical severity when spam is also detected', () => {
+        // Malware task (critical) with excessive caps (low)
+        const result = validateTaskContent(
+          "Build a keylogger",
+          "CREATE MALWARE THAT CAPTURES ALL KEYSTROKES AND SENDS THEM TO A SERVER IMMEDIATELY"
+        );
+
+        expect(result.severity).toBe('critical');
+        expect(result.blocked).toBe(true);
+      });
+
+      it('should keep high severity when suspicious URL is also detected', () => {
+        // SQL injection in description (medium) with suspicious URL (low)
+        // But injection in title should be high
+        const result = validateTaskContent(
+          "<script>alert('xss')</script>",
+          "Normal description",
+          "https://bit.ly/suspicious"
+        );
+
+        expect(result.severity).toBe('high');
+        expect(result.issues.length).toBeGreaterThan(1);
+      });
+
+      it('should keep medium severity when low severity issue is also found', () => {
+        // Description injection (medium) with excessive caps (low)
+        const result = validateTaskContent(
+          "Normal title",
+          "SELECT * FROM users WHERE id=1; THIS IS ALL CAPS DESCRIPTION THAT IS VERY LONG AND CONTAINS INJECTION"
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.severity).toBe('medium');
+        expect(result.issues.length).toBeGreaterThan(1);
+      });
+    });
+
     describe('legitimate tasks', () => {
       it('should pass normal development tasks', () => {
         const result = validateTaskContent(
@@ -423,6 +524,29 @@ describe('Security Module', () => {
 
         expect(result.valid).toBe(true);
         expect(result.blocked).toBe(false);
+      });
+    });
+
+    describe('injection detection in content', () => {
+      it('should detect SQL injection in title', () => {
+        const result = validateTaskContent(
+          "SELECT * FROM users; DROP TABLE users;--",
+          "A normal task description"
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.issues.some(i => i.includes('injection'))).toBe(true);
+        expect(result.severity).toBe('high');
+      });
+
+      it('should detect XSS in title', () => {
+        const result = validateTaskContent(
+          "<script>alert('xss')</script> task",
+          "A normal task description"
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.issues.some(i => i.includes('injection'))).toBe(true);
       });
     });
   });
@@ -482,6 +606,58 @@ describe('Security Module', () => {
       it('should reject token for unknown session', () => {
         const token = generateCsrfToken();
         expect(validateCsrfTokenForSession('unknown-session', token)).toBe(false);
+      });
+    });
+
+    describe('CSRF token expiration', () => {
+      beforeEach(() => {
+        vi.useFakeTimers();
+      });
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+
+      it('should reject expired CSRF tokens', () => {
+        const sessionId = `session-expire-${Date.now()}`;
+        const token = createCsrfTokenForSession(sessionId);
+
+        // Verify token works immediately
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(true);
+
+        // Advance time past the 1 hour expiry
+        vi.advanceTimersByTime(3600001);
+
+        // Token should now be rejected as expired
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(false);
+      });
+
+      it('should accept tokens before expiration', () => {
+        const sessionId = `session-valid-${Date.now()}`;
+        const token = createCsrfTokenForSession(sessionId);
+
+        // Advance time but stay within the 1 hour window
+        vi.advanceTimersByTime(3599999);
+
+        // Token should still be valid
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(true);
+      });
+
+      it('should cleanup expired tokens when cleanupExpiredCsrfTokens is called', () => {
+        const sessionId = `session-cleanup-${Date.now()}`;
+        const token = createCsrfTokenForSession(sessionId);
+
+        // Verify token works initially
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(true);
+
+        // Advance time past expiration
+        vi.advanceTimersByTime(3600001);
+
+        // Run cleanup
+        cleanupExpiredCsrfTokens();
+
+        // Token should now be invalid (cleaned up)
+        expect(validateCsrfTokenForSession(sessionId, token)).toBe(false);
       });
     });
   });
@@ -629,6 +805,70 @@ describe('Security Module', () => {
 
     it.each(safeInputs)('should not flag safe: %s', (input) => {
       expect(containsSuspiciousContent(input)).toBe(false);
+    });
+  });
+
+  // ============================================
+  // CSRF HEADER VALIDATION TESTS
+  // ============================================
+  describe('validateCsrfHeaders', () => {
+    function createMockRequestWithHeaders(headers: Record<string, string>): NextRequest {
+      return {
+        headers: new Headers(headers),
+      } as unknown as NextRequest;
+    }
+
+    it('should accept valid origin header', () => {
+      const request = createMockRequestWithHeaders({ origin: 'https://example.com' });
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(true);
+    });
+
+    it('should reject invalid origin header', () => {
+      const request = createMockRequestWithHeaders({ origin: 'https://evil.com' });
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(false);
+    });
+
+    it('should check referer when origin is missing', () => {
+      const request = createMockRequestWithHeaders({ referer: 'https://example.com/page' });
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(true);
+    });
+
+    it('should reject when both origin and referer are missing', () => {
+      const request = createMockRequestWithHeaders({});
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(false);
+    });
+
+    it('should support multiple allowed origins', () => {
+      const request = createMockRequestWithHeaders({ origin: 'https://app.example.com' });
+      expect(validateCsrfHeaders(request, ['https://example.com', 'https://app.example.com'])).toBe(true);
+    });
+  });
+
+  // ============================================
+  // SANITIZE INPUT STRICT EDGE CASES
+  // ============================================
+  describe('sanitizeInputStrict edge cases', () => {
+    it('should truncate input longer than 10000 characters', () => {
+      const longInput = 'a'.repeat(15000);
+      const result = sanitizeInputStrict(longInput);
+      expect(result.length).toBe(10000);
+    });
+
+    it('should handle input at exactly 10000 characters', () => {
+      const exactInput = 'b'.repeat(10000);
+      const result = sanitizeInputStrict(exactInput);
+      expect(result.length).toBe(10000);
+    });
+  });
+
+  // ============================================
+  // SANITIZE MARKDOWN EDGE CASES
+  // ============================================
+  describe('sanitizeMarkdown edge cases', () => {
+    it('should truncate markdown longer than 50000 characters', () => {
+      const longMarkdown = '# Title\n' + 'content '.repeat(10000);
+      const result = sanitizeMarkdown(longMarkdown);
+      expect(result.length).toBeLessThanOrEqual(50000);
     });
   });
 });

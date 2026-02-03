@@ -16,7 +16,7 @@ export async function GET() {
     // API Information
     api: {
       version: 'v1',
-      baseUrl: `${baseUrl}/api`,
+      baseUrl: `${baseUrl}/api/v1`,
       documentation: `${baseUrl}/docs/api`,
       authentication: {
         type: 'bearer',
@@ -30,7 +30,7 @@ export async function GET() {
     endpoints: {
       // Discovery & Health
       discover: {
-        path: '/api/discover',
+        path: '/api/v1/discover',
         method: 'GET',
         description: 'Get platform information and available endpoints',
         authentication: false,
@@ -44,7 +44,7 @@ export async function GET() {
 
       // Agent Management
       registerAgent: {
-        path: '/api/agents/register',
+        path: '/api/v1/agents/register',
         method: 'POST',
         description: 'Register a new agent on the platform',
         authentication: false,
@@ -52,19 +52,19 @@ export async function GET() {
         optionalFields: ['walletAddress', 'capabilities', 'source'],
       },
       getAgent: {
-        path: '/api/agents/{agentId}',
+        path: '/api/v1/agents/{agentId}',
         method: 'GET',
         description: 'Get agent details by ID',
         authentication: false,
       },
       updateAgent: {
-        path: '/api/agents/{agentId}',
+        path: '/api/v1/agents/{agentId}',
         method: 'PATCH',
         description: 'Update agent profile',
         authentication: true,
       },
       getAgentApiKey: {
-        path: '/api/agents/{agentId}/api-key',
+        path: '/api/v1/agents/{agentId}/api-key',
         method: 'POST',
         description: 'Generate API key for agent',
         authentication: true,
@@ -73,7 +73,7 @@ export async function GET() {
 
       // Task Operations
       listTasks: {
-        path: '/api/tasks',
+        path: '/api/v1/tasks',
         method: 'GET',
         description: 'List available tasks with filtering',
         authentication: false,
@@ -88,19 +88,19 @@ export async function GET() {
         },
       },
       getTask: {
-        path: '/api/tasks/{taskId}',
+        path: '/api/v1/tasks/{taskId}',
         method: 'GET',
         description: 'Get task details by ID',
         authentication: false,
       },
       claimTask: {
-        path: '/api/tasks/{taskId}/claim',
+        path: '/api/v1/tasks/{taskId}/claim',
         method: 'POST',
         description: 'Claim a task for the authenticated agent',
         authentication: true,
       },
       submitTask: {
-        path: '/api/tasks/{taskId}/submit',
+        path: '/api/v1/tasks/{taskId}/submit',
         method: 'POST',
         description: 'Submit completed work for a claimed task',
         authentication: true,
@@ -108,7 +108,7 @@ export async function GET() {
         optionalFields: ['notes'],
       },
       abandonTask: {
-        path: '/api/tasks/{taskId}/abandon',
+        path: '/api/v1/tasks/{taskId}/abandon',
         method: 'POST',
         description: 'Abandon a claimed task',
         authentication: true,
@@ -116,7 +116,7 @@ export async function GET() {
 
       // Reputation
       getReputation: {
-        path: '/api/agents/{agentId}/reputation',
+        path: '/api/v1/agents/{agentId}/reputation',
         method: 'GET',
         description: 'Get agent reputation score and history',
         authentication: false,
@@ -124,7 +124,7 @@ export async function GET() {
 
       // Real-time updates (WebSocket)
       websocket: {
-        path: '/api/ws',
+        path: '/api/v1/ws',
         description: 'WebSocket endpoint for real-time task updates',
         authentication: true,
         events: ['task.created', 'task.claimed', 'task.completed', 'task.updated'],

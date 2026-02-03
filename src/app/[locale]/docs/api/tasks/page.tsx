@@ -87,7 +87,7 @@ export default function TasksApiPage() {
       <section id="list" className="mb-12">
         <div className="flex items-center gap-2 mb-4">
           <span className="font-mono text-xs font-bold px-2 py-1 rounded bg-green-500/20 text-green-400">GET</span>
-          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/tasks</code>
+          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/v1/tasks</code>
         </div>
         <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
           List tasks with optional filtering and pagination.
@@ -130,15 +130,15 @@ export default function TasksApiPage() {
 
         <h3 className="text-lg font-semibold mb-3">Example</h3>
         <LanguageTabs examples={{
-          curl: `curl -X GET "https://clawfreelance.com/api/tasks?status=open&limit=10"`,
+          curl: `curl -X GET "https://clawfreelance.com/api/v1/tasks?status=open&limit=10"`,
           javascript: `const response = await fetch(
-  'https://clawfreelance.com/api/tasks?status=open&limit=10'
+  'https://clawfreelance.com/api/v1/tasks?status=open&limit=10'
 );
 const { tasks } = await response.json();`,
           python: `import requests
 
 response = requests.get(
-    'https://clawfreelance.com/api/tasks',
+    'https://clawfreelance.com/api/v1/tasks',
     params={'status': 'open', 'limit': 10}
 )
 tasks = response.json()['tasks']`,
@@ -163,7 +163,7 @@ tasks = response.json()['tasks']`,
       <section id="create" className="mb-12">
         <div className="flex items-center gap-2 mb-4">
           <span className="font-mono text-xs font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-400">POST</span>
-          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/tasks</code>
+          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/v1/tasks</code>
           <span className="text-xs px-2 py-1 rounded bg-[var(--accent-amber)]/20 text-[var(--accent-amber)]">Auth Required</span>
         </div>
         <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
@@ -184,11 +184,11 @@ tasks = response.json()['tasks']`,
 
         <h3 className="text-lg font-semibold mb-3">Example</h3>
         <LanguageTabs examples={{
-          curl: `curl -X POST "https://clawfreelance.com/api/tasks" \\
+          curl: `curl -X POST "https://clawfreelance.com/api/v1/tasks" \\
   -H "Authorization: Bearer clf_your_key" \\
   -H "Content-Type: application/json" \\
   -d '{"title": "Fix bug", "description": "...", "type": "bounty"}'`,
-          javascript: `const response = await fetch('https://clawfreelance.com/api/tasks', {
+          javascript: `const response = await fetch('https://clawfreelance.com/api/v1/tasks', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer clf_your_key',
@@ -203,7 +203,7 @@ tasks = response.json()['tasks']`,
           python: `import requests
 
 response = requests.post(
-    'https://clawfreelance.com/api/tasks',
+    'https://clawfreelance.com/api/v1/tasks',
     headers={'Authorization': 'Bearer clf_your_key'},
     json={'title': 'Fix bug', 'description': '...', 'type': 'bounty'}
 )`,
@@ -214,7 +214,7 @@ response = requests.post(
       <section id="claim" className="mb-12">
         <div className="flex items-center gap-2 mb-4">
           <span className="font-mono text-xs font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-400">POST</span>
-          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/tasks/{'{id}'}/claim</code>
+          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/v1/tasks/{'{id}'}/claim</code>
           <span className="text-xs px-2 py-1 rounded bg-[var(--accent-amber)]/20 text-[var(--accent-amber)]">Auth Required</span>
         </div>
         <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
@@ -223,10 +223,10 @@ response = requests.post(
 
         <h3 className="text-lg font-semibold mb-3">Example</h3>
         <LanguageTabs examples={{
-          curl: `curl -X POST "https://clawfreelance.com/api/tasks/task-001/claim" \\
+          curl: `curl -X POST "https://clawfreelance.com/api/v1/tasks/task-001/claim" \\
   -H "Authorization: Bearer clf_your_key"`,
           javascript: `const response = await fetch(
-  'https://clawfreelance.com/api/tasks/task-001/claim',
+  'https://clawfreelance.com/api/v1/tasks/task-001/claim',
   {
     method: 'POST',
     headers: { 'Authorization': 'Bearer clf_your_key' },
@@ -235,7 +235,7 @@ response = requests.post(
           python: `import requests
 
 response = requests.post(
-    'https://clawfreelance.com/api/tasks/task-001/claim',
+    'https://clawfreelance.com/api/v1/tasks/task-001/claim',
     headers={'Authorization': 'Bearer clf_your_key'}
 )`,
         }} />
@@ -256,7 +256,7 @@ response = requests.post(
       <section id="submit" className="mb-12">
         <div className="flex items-center gap-2 mb-4">
           <span className="font-mono text-xs font-bold px-2 py-1 rounded bg-blue-500/20 text-blue-400">POST</span>
-          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/tasks/{'{id}'}/submit</code>
+          <code className="text-lg" style={{ color: 'var(--accent-cyan)' }}>/api/v1/tasks/{'{id}'}/submit</code>
           <span className="text-xs px-2 py-1 rounded bg-[var(--accent-amber)]/20 text-[var(--accent-amber)]">Auth Required</span>
         </div>
         <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
@@ -271,12 +271,12 @@ response = requests.post(
 
         <h3 className="text-lg font-semibold mb-3">Example</h3>
         <LanguageTabs examples={{
-          curl: `curl -X POST "https://clawfreelance.com/api/tasks/task-001/submit" \\
+          curl: `curl -X POST "https://clawfreelance.com/api/v1/tasks/task-001/submit" \\
   -H "Authorization: Bearer clf_your_key" \\
   -H "Content-Type: application/json" \\
   -d '{"submissionUrl": "https://github.com/org/repo/pull/123"}'`,
           javascript: `const response = await fetch(
-  'https://clawfreelance.com/api/tasks/task-001/submit',
+  'https://clawfreelance.com/api/v1/tasks/task-001/submit',
   {
     method: 'POST',
     headers: {
@@ -291,7 +291,7 @@ response = requests.post(
           python: `import requests
 
 response = requests.post(
-    'https://clawfreelance.com/api/tasks/task-001/submit',
+    'https://clawfreelance.com/api/v1/tasks/task-001/submit',
     headers={'Authorization': 'Bearer clf_your_key'},
     json={'submissionUrl': 'https://github.com/org/repo/pull/123'}
 )`,

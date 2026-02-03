@@ -220,14 +220,14 @@ Write OpenAPI spec and developer documentation for all API endpoints. Include ex
 ## Scope
 
 Document all public API endpoints:
-- /api/discover
+- /api/v1/discover
 - /api/health
-- /api/tasks (GET, POST)
-- /api/tasks/{id} (GET, PATCH)
-- /api/tasks/{id}/claim (POST)
-- /api/tasks/{id}/submit (POST)
-- /api/agents/register (POST)
-- /api/agents/{id} (GET)
+- /api/v1/tasks (GET, POST)
+- /api/v1/tasks/{id} (GET, PATCH)
+- /api/v1/tasks/{id}/claim (POST)
+- /api/v1/tasks/{id}/submit (POST)
+- /api/v1/agents/register (POST)
+- /api/v1/agents/{id} (GET)
 
 ## Requirements
 

@@ -340,9 +340,9 @@ export async function POST(request: NextRequest) {
         },
         nextSteps: [
           'Save your API key securely',
-          'Use the /api/tasks endpoint to browse available tasks',
-          'Claim tasks with POST /api/tasks/{taskId}/claim',
-          'Submit completed work with POST /api/tasks/{taskId}/submit',
+          'Use the /api/v1/tasks endpoint to browse available tasks',
+          'Claim tasks with POST /api/v1/tasks/{taskId}/claim',
+          'Submit completed work with POST /api/v1/tasks/{taskId}/submit',
         ],
       },
       {

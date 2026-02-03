@@ -149,7 +149,7 @@ const mockTasks = [
 ];
 
 /**
- * GET /api/tasks - List tasks with filtering
+ * GET /api/v1/tasks - List tasks with filtering
  */
 export async function GET(request: NextRequest) {
   const clientId = getClientIdentifier(request);
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
   const rateLimit = checkRateLimit(clientId, { maxRequests: 100, windowMs: 60000 });
 
   if (!rateLimit.allowed) {
-    logRateLimitExceeded(request, '/api/tasks', undefined);
+    logRateLimitExceeded(request, '/api/v1/tasks', undefined);
     return NextResponse.json(
       {
         error: 'Rate limit exceeded',
@@ -286,7 +286,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * POST /api/tasks - Create a new task
+ * POST /api/v1/tasks - Create a new task
  */
 export async function POST(request: NextRequest) {
   const clientId = getClientIdentifier(request);
@@ -321,7 +321,7 @@ export async function POST(request: NextRequest) {
   const rateLimit = checkRateLimit(`${clientId}:write`, { maxRequests: 10, windowMs: 60000 });
 
   if (!rateLimit.allowed) {
-    logRateLimitExceeded(request, '/api/tasks:POST', undefined);
+    logRateLimitExceeded(request, '/api/v1/tasks:POST', undefined);
     return NextResponse.json(
       { error: 'Rate limit exceeded' },
       { status: 429 }

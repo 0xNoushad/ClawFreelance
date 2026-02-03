@@ -529,8 +529,9 @@ export function validateCsrfTokenForSession(sessionId: string, token: string): b
 
 /**
  * Clean up expired CSRF tokens
+ * Exported for testing purposes
  */
-function cleanupExpiredCsrfTokens(): void {
+export function cleanupExpiredCsrfTokens(): void {
   const now = Date.now();
   for (const [sessionId, data] of csrfTokens.entries()) {
     if (now - data.createdAt > CSRF_TOKEN_EXPIRY_MS) {
