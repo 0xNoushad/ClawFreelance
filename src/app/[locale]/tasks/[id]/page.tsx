@@ -1,276 +1,80 @@
 'use client';
 
 import Link from 'next/link';
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 
 import { AgentIcon, BountyIcon, ClockIcon, ExternalLinkIcon, TaskIcon } from '@/components/icons';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
 import { useTranslation } from '@/lib/i18n';
 
-// Mock task data - matches the API route mock data
-const mockTasks: Record<
-  string,
-  {
-    id: string;
-    title: string;
-    description: string;
-    status: 'open' | 'in_progress' | 'verification' | 'completed';
-    type: 'code_contribution' | 'bounty' | 'showcase';
-    difficulty: 'easy' | 'medium' | 'hard';
-    rewardAmount: number;
-    rewardCurrency: string;
-    rewardType: 'crypto' | 'points' | 'external';
-    source: string;
-    externalUrl?: string;
-    requiredCapabilities: string[];
-    deadline?: string;
-    createdAt: string;
-    owner: { name: string; id: string };
-    claimedBy?: { name: string; id: string };
-  }
-> = {
-  'task-001': {
-    id: 'task-001',
-    title: 'Fix authentication race condition in session handler',
-    description: `## Problem
-
-The session handler has a race condition that causes intermittent authentication failures under high load. Need to implement proper locking mechanism.
-
-## Expected Behavior
-
-- Only one valid session should exist per user at a time
-- Token refresh should be atomic
-- Concurrent requests should be properly queued
-
-## Reproduction Steps
-
-1. Open two browser tabs
-2. Trigger login in both tabs simultaneously
-3. Observe that one tab may have an invalid session
-
-## Technical Details
-
-The issue is in the \`refreshToken()\` function which doesn't handle concurrent calls properly. When two requests try to refresh at the same time, they both read the old token, both generate new tokens, and one overwrites the other.
-
-## Acceptance Criteria
-
-- [ ] Add mutex lock for token refresh operations
-- [ ] Implement proper session invalidation
-- [ ] Add tests for concurrent login scenarios
-- [ ] No breaking changes to existing auth flow`,
-    status: 'open',
-    type: 'bounty',
-    difficulty: 'hard',
-    rewardAmount: 500,
-    rewardCurrency: 'USDC',
-    rewardType: 'crypto',
-    source: 'github',
-    externalUrl: 'https://github.com/openclaw/openclaw/issues/42',
-    requiredCapabilities: ['typescript', 'authentication', 'concurrency'],
-    deadline: '2025-02-15',
-    createdAt: '2025-01-30',
-    owner: { name: 'OpenClaw Core', id: 'owner-openclaw' },
-  },
-  'task-002': {
-    id: 'task-002',
-    title: 'Add dark mode support to dashboard components',
-    description: `## Overview
-
-Implement dark mode across all dashboard components. Should respect system preferences and allow manual toggle.
-
-## Requirements
-
-- Detect system color scheme preference
-- Add toggle in user settings
-- Persist preference in localStorage
-- Smooth transition between modes
-
-## Components to Update
-
-- Dashboard header
-- Sidebar navigation
-- Cards and panels
-- Form elements
-- Charts and graphs
-
-## Design Guidelines
-
-Follow the existing color palette variables. Dark mode should use:
-- Background: #0A0A0F
-- Card background: #12121A
-- Text primary: #FFFFFF
-- Text secondary: #A1A1AA
-
-## Acceptance Criteria
-
-- [ ] System preference detection works
-- [ ] Manual toggle persists across sessions
-- [ ] No flash of wrong theme on page load
-- [ ] All components properly styled`,
-    status: 'open',
-    type: 'code_contribution',
-    difficulty: 'medium',
-    rewardAmount: 150,
-    rewardCurrency: 'Points',
-    rewardType: 'points',
-    source: 'direct',
-    requiredCapabilities: ['typescript', 'react', 'css'],
-    createdAt: '2025-01-29',
-    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
-  },
-  'task-003': {
-    id: 'task-003',
-    title: 'Optimize PostgreSQL queries for task listing',
-    description: `## Problem
-
-The task listing endpoint is slow. Need to add proper indexes and optimize the query structure.
-
-## Current Performance
-
-- Average response time: 450ms
-- P95 response time: 1200ms
-- Target: < 100ms average
-
-## Analysis Required
-
-1. Analyze slow query logs
-2. Identify missing indexes
-3. Review query execution plans
-4. Consider denormalization where appropriate
-
-## Queries to Optimize
-
-- Task listing with filters
-- Task search by keyword
-- Task count by status
-- Agent task history
-
-## Deliverables
-
-- SQL migration file with new indexes
-- Updated query implementations
-- Before/after benchmark results
-- Documentation of changes made`,
-    status: 'in_progress',
-    type: 'bounty',
-    difficulty: 'medium',
-    rewardAmount: 250,
-    rewardCurrency: 'USDC',
-    rewardType: 'crypto',
-    source: 'gitcoin',
-    externalUrl: 'https://gitcoin.co/issue/clawfreelance/44',
-    requiredCapabilities: ['postgresql', 'database', 'optimization'],
-    createdAt: '2025-01-28',
-    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
-    claimedBy: { name: 'QueryOptimizer-3B', id: 'agent-0x3b2c' },
-  },
-  'task-004': {
-    id: 'task-004',
-    title: 'Implement WebSocket real-time notifications',
-    description: `## Feature Request
-
-Add WebSocket support for real-time task updates. Agents should receive notifications when tasks are created, claimed, or completed.
-
-## Use Cases
-
-1. **New Task Alert**: Agents matching capabilities get notified of new tasks
-2. **Claim Notification**: Task owner notified when agent claims their task
-3. **Completion Alert**: All parties notified when work is submitted/verified
-4. **Status Updates**: Real-time status changes across dashboard
-
-## Technical Requirements
-
-- WebSocket server implementation
-- Client-side connection management
-- Automatic reconnection with backoff
-- Message authentication
-- Rate limiting per connection
-
-## Events to Implement
-
-\`\`\`typescript
-type WSEvent =
-  | { type: 'task.created'; task: Task }
-  | { type: 'task.claimed'; taskId: string; agentId: string }
-  | { type: 'task.submitted'; taskId: string; submissionId: string }
-  | { type: 'task.completed'; taskId: string }
-  | { type: 'task.disputed'; taskId: string; reason: string }
-\`\`\`
-
-## Acceptance Criteria
-
-- [ ] WebSocket server handles 1000+ concurrent connections
-- [ ] Messages delivered within 100ms
-- [ ] Proper authentication for connections
-- [ ] Graceful degradation when WS unavailable`,
-    status: 'open',
-    type: 'bounty',
-    difficulty: 'hard',
-    rewardAmount: 750,
-    rewardCurrency: 'USDC',
-    rewardType: 'crypto',
-    source: 'algora',
-    externalUrl: 'https://algora.io/bounty/clawfreelance/45',
-    requiredCapabilities: ['typescript', 'websocket', 'real-time'],
-    deadline: '2025-02-20',
-    createdAt: '2025-01-27',
-    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
-  },
-  'task-005': {
-    id: 'task-005',
-    title: 'Create comprehensive API documentation',
-    description: `## Overview
-
-Write OpenAPI spec and developer documentation for all API endpoints. Include examples and best practices.
-
-## Scope
-
-Document all public API endpoints:
-- /api/v1/discover
-- /api/health
-- /api/v1/tasks (GET, POST)
-- /api/v1/tasks/{id} (GET, PATCH)
-- /api/v1/tasks/{id}/claim (POST)
-- /api/v1/tasks/{id}/submit (POST)
-- /api/v1/agents/register (POST)
-- /api/v1/agents/{id} (GET)
-
-## Requirements
-
-- OpenAPI 3.1 specification
-- Interactive documentation (Swagger UI or similar)
-- Code examples in multiple languages (curl, Python, JavaScript)
-- Authentication guide
-- Rate limiting documentation
-- Error handling guide
-
-## Deliverables
-
-- openapi.yaml specification file
-- Markdown documentation in /docs
-- Example code snippets
-- Postman/Insomnia collection`,
-    status: 'verification',
-    type: 'code_contribution',
-    difficulty: 'easy',
-    rewardAmount: 200,
-    rewardCurrency: 'Points',
-    rewardType: 'points',
-    source: 'direct',
-    requiredCapabilities: ['documentation', 'api', 'openapi'],
-    createdAt: '2025-01-26',
-    owner: { name: 'ClawFreelance', id: 'owner-clawfreelance' },
-    claimedBy: { name: 'DocWriter-AI', id: 'agent-0x9d4e' },
-  },
-};
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  status: 'open' | 'in_progress' | 'verification' | 'completed';
+  type: 'code_contribution' | 'bounty' | 'showcase';
+  difficulty: 'easy' | 'medium' | 'hard';
+  rewardAmount: number;
+  rewardCurrency: string;
+  rewardType: 'crypto' | 'points' | 'external';
+  source: string;
+  externalUrl?: string;
+  requirements: string[];
+  deadline?: string;
+  createdAt: string;
+  ownerId?: string;
+  claimedBy?: string;
+}
 
 export default function TaskDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const task = mockTasks[id];
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
-  if (!task) {
+  useEffect(() => {
+    async function fetchTask() {
+      try {
+        const response = await fetch(`/api/v1/tasks/${id}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError('not_found');
+          } else {
+            setError('fetch_error');
+          }
+          return;
+        }
+        const data = await response.json();
+        setTask(data.task || data);
+      } catch (err) {
+        console.error('Failed to fetch task:', err);
+        setError('fetch_error');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTask();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen noise">
+        <div className="grid-bg min-h-screen">
+          <Header />
+          <main className="pt-24 pb-20 px-6">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="animate-pulse">Loading task...</div>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !task) {
     return (
       <div className="min-h-screen noise">
         <div className="grid-bg min-h-screen">
@@ -288,6 +92,23 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       </div>
     );
   }
+
+  // Helper to extract repo name from external URL
+  const getSourceDisplay = () => {
+    if (task.externalUrl) {
+      try {
+        const url = new URL(task.externalUrl);
+        if (url.hostname === 'github.com') {
+          const parts = url.pathname.split('/').filter(Boolean);
+          return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : task.source;
+        }
+        return url.hostname;
+      } catch {
+        return task.source;
+      }
+    }
+    return task.source;
+  };
 
   const statusColors = {
     open: {
@@ -445,7 +266,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                     {t('taskDetail.requiredCapabilities')}
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    {task.requiredCapabilities.map((cap) => (
+                    {task.requirements.map((cap) => (
                       <span
                         key={cap}
                         className="px-3 py-1.5 rounded-lg text-sm"
@@ -480,10 +301,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                       <div className="flex items-center gap-2">
                         <AgentIcon size={20} style={{ color: 'var(--accent-cyan)' }} />
                         <Link
-                          href={`/agents/${task.claimedBy.id}`}
+                          href={`/agents/${task.claimedBy}`}
                           className="font-semibold hover:text-[var(--accent-cyan)]"
                         >
-                          {task.claimedBy.name}
+                          {task.claimedBy.slice(0, 12)}...
                         </Link>
                       </div>
                     </div>
@@ -506,43 +327,31 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                   )}
                 </div>
 
-                {/* Owner info */}
-                <div
-                  className="rounded-xl border p-6"
-                  style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
-                >
-                  <h3 className="font-semibold mb-3">{t('taskDetail.postedBy')}</h3>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center"
-                      style={{ background: 'var(--bg-tertiary)' }}
-                    >
-                      <AgentIcon size={20} style={{ color: 'var(--accent-cyan)' }} />
-                    </div>
-                    <div>
-                      <div className="font-medium">{task.owner.name}</div>
-                      <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                        {t('taskDetail.posted', {
-                          date: new Date(task.createdAt).toLocaleDateString(),
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Source */}
+                {/* Source info */}
                 <div
                   className="rounded-xl border p-6"
                   style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
                 >
                   <h3 className="font-semibold mb-3">{t('taskDetail.source')}</h3>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="px-3 py-1.5 rounded-lg text-sm capitalize"
-                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
-                    >
-                      {task.source}
-                    </span>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="px-3 py-1.5 rounded-lg text-sm capitalize"
+                        style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+                      >
+                        {task.source}
+                      </span>
+                    </div>
+                    {task.externalUrl && (
+                      <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                        <span className="font-mono">{getSourceDisplay()}</span>
+                      </div>
+                    )}
+                    <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      {t('taskDetail.posted', {
+                        date: new Date(task.createdAt).toLocaleDateString(),
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>

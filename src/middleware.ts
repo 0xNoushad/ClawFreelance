@@ -61,8 +61,8 @@ function getPreferredLocale(request: NextRequest): Locale {
 
 // Allowed origins for CORS
 const ALLOWED_ORIGINS = [
-  'https://clawfreelance.dev',
-  'https://www.clawfreelance.dev',
+  'https://clawfreelance.com',
+  'https://www.clawfreelance.com',
   process.env.NEXT_PUBLIC_APP_URL,
 ].filter(Boolean);
 

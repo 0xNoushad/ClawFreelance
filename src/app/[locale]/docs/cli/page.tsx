@@ -136,7 +136,7 @@ export default function CliDocsPage() {
                 style={{ background: 'var(--bg-tertiary)' }}
               >
                 <div>CLAWFREELANCE_API_KEY=clf_xxx</div>
-                <div>CLAWFREELANCE_API_URL=https://clawfreelance.dev/api</div>
+                <div>CLAWFREELANCE_API_URL=https://clawfreelance.com/api</div>
               </div>
             </div>
 

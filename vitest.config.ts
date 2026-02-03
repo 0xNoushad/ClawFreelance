@@ -11,7 +11,12 @@ export default defineConfig({
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     coverage: {
       reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'src/test/'],
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        'src/db/schema.ts', // Schema definitions - not testable logic
+        'src/app/**', // Next.js app router - tested via integration tests
+      ],
     },
   },
   resolve: {

@@ -1,6 +1,9 @@
+import { and, asc, desc, eq, gte, lte, or, sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
+import { db } from '@/db';
+import { taskMilestones, tasks } from '@/db/schema';
 import { createAuditLog, logRateLimitExceeded, logSecurityEvent } from '@/lib/audit';
 import {
   authenticateRequest,
@@ -64,104 +67,13 @@ const createTaskSchema = z.object({
   deadline: z.string().datetime().optional(),
 });
 
-// Mock data for demo (replace with DB queries)
-const mockTasks = [
-  {
-    id: 'task-001',
-    title: 'Fix authentication race condition in session handler',
-    description:
-      'The session handler has a race condition that causes intermittent authentication failures under high load. Need to implement proper locking mechanism.',
-    type: 'bounty',
-    source: 'github',
-    externalUrl: 'https://github.com/openclaw/openclaw/issues/42',
-    ownerId: 'agent-001',
-    rewardType: 'crypto',
-    rewardAmount: 500,
-    rewardCurrency: 'USDC',
-    status: 'open',
-    verificationMethod: 'pr_merged',
-    difficulty: 'hard',
-    visibility: 'public',
-    requirements: ['typescript', 'authentication', 'concurrency'],
-    createdAt: '2025-01-30T10:00:00Z',
-    deadline: '2025-02-15T23:59:59Z',
-  },
-  {
-    id: 'task-002',
-    title: 'Add dark mode support to dashboard components',
-    description:
-      'Implement dark mode across all dashboard components. Should respect system preferences and allow manual toggle.',
-    type: 'code_contribution',
-    source: 'direct',
-    ownerId: 'agent-001',
-    rewardType: 'points',
-    rewardAmount: 150,
-    status: 'open',
-    verificationMethod: 'owner_approval',
-    difficulty: 'medium',
-    visibility: 'public',
-    requirements: ['typescript', 'react', 'css'],
-    createdAt: '2025-01-29T14:30:00Z',
-  },
-  {
-    id: 'task-003',
-    title: 'Optimize PostgreSQL queries for task listing',
-    description:
-      'The task listing endpoint is slow. Need to add proper indexes and optimize the query structure.',
-    type: 'bounty',
-    source: 'gitcoin',
-    externalUrl: 'https://gitcoin.co/issue/clawfreelance/44',
-    ownerId: 'agent-002',
-    rewardType: 'crypto',
-    rewardAmount: 250,
-    rewardCurrency: 'USDC',
-    status: 'in_progress',
-    claimedBy: 'agent-0x3b2c',
-    verificationMethod: 'tests_pass',
-    difficulty: 'medium',
-    visibility: 'public',
-    requirements: ['postgresql', 'database', 'optimization'],
-    createdAt: '2025-01-28T09:00:00Z',
-  },
-  {
-    id: 'task-004',
-    title: 'Implement WebSocket real-time notifications',
-    description:
-      'Add WebSocket support for real-time task updates. Agents should receive notifications when tasks are created, claimed, or completed.',
-    type: 'bounty',
-    source: 'algora',
-    externalUrl: 'https://algora.io/bounty/clawfreelance/45',
-    ownerId: 'agent-003',
-    rewardType: 'crypto',
-    rewardAmount: 750,
-    rewardCurrency: 'USDC',
-    status: 'open',
-    verificationMethod: 'pr_merged',
-    difficulty: 'hard',
-    visibility: 'public',
-    requirements: ['typescript', 'websocket', 'real-time'],
-    createdAt: '2025-01-27T16:00:00Z',
-    deadline: '2025-02-20T23:59:59Z',
-  },
-  {
-    id: 'task-005',
-    title: 'Create comprehensive API documentation',
-    description:
-      'Write OpenAPI spec and developer documentation for all API endpoints. Include examples and best practices.',
-    type: 'code_contribution',
-    source: 'direct',
-    ownerId: 'agent-001',
-    rewardType: 'points',
-    rewardAmount: 200,
-    status: 'verification',
-    claimedBy: 'agent-0x9d4e',
-    verificationMethod: 'owner_approval',
-    difficulty: 'easy',
-    visibility: 'public',
-    requirements: ['documentation', 'api', 'openapi'],
-    createdAt: '2025-01-26T11:00:00Z',
-  },
-];
+// Sort column mapping
+const sortColumnMap = {
+  created_at: tasks.createdAt,
+  reward_amount: tasks.rewardAmount,
+  difficulty: tasks.difficulty,
+  deadline: tasks.deadline,
+} as const;
 
 /**
  * GET /api/v1/tasks - List tasks with filtering
@@ -224,53 +136,71 @@ export async function GET(request: NextRequest) {
   const filters = parsed.data;
   const agent = await optionalAuth(request);
 
-  // Filter tasks (in production, this would be a DB query using getVisibilityFilter(agent?.id))
-  let filteredTasks = [...mockTasks];
+  // Build WHERE conditions
+  const conditions = [];
 
   // Visibility filtering
   if (!agent) {
     // Unauthenticated users only see public tasks
-    filteredTasks = filteredTasks.filter((t) => t.visibility === 'public');
+    conditions.push(eq(tasks.visibility, 'public'));
   } else {
-    // Authenticated users see:
-    // 1. Public tasks
-    // 2. Tasks they own
-    // 3. Unlisted tasks ONLY if accessed directly by ID (not in list view)
-    // Since this is a list endpoint, unlisted tasks should be hidden unless owned
-    filteredTasks = filteredTasks.filter(
-      (t) => t.visibility === 'public' || t.ownerId === agent.id
-    );
+    // Authenticated users see public tasks or tasks they own
+    conditions.push(or(eq(tasks.visibility, 'public'), eq(tasks.ownerId, agent.id)));
   }
 
+  // Apply filters
   if (filters.status) {
-    filteredTasks = filteredTasks.filter((t) => t.status === filters.status);
+    conditions.push(eq(tasks.status, filters.status));
   }
   if (filters.type) {
-    filteredTasks = filteredTasks.filter((t) => t.type === filters.type);
+    conditions.push(eq(tasks.type, filters.type));
   }
   if (filters.difficulty) {
-    filteredTasks = filteredTasks.filter((t) => t.difficulty === filters.difficulty);
+    conditions.push(eq(tasks.difficulty, filters.difficulty));
   }
   if (filters.source) {
-    filteredTasks = filteredTasks.filter((t) => t.source === filters.source);
+    conditions.push(eq(tasks.source, filters.source));
   }
   if (filters.minReward !== undefined) {
-    filteredTasks = filteredTasks.filter((t) => t.rewardAmount >= filters.minReward!);
+    conditions.push(gte(tasks.rewardAmount, filters.minReward));
   }
-  if (filters.capabilities) {
-    const requiredCaps = filters.capabilities.split(',').map((c) => c.trim().toLowerCase());
-    filteredTasks = filteredTasks.filter((t) =>
-      requiredCaps.some((cap) => t.requirements.includes(cap))
-    );
+  if (filters.maxReward !== undefined) {
+    conditions.push(lte(tasks.rewardAmount, filters.maxReward));
   }
 
-  // Pagination
-  const total = filteredTasks.length;
-  const paginatedTasks = filteredTasks.slice(filters.offset, filters.offset + filters.limit);
+  // Build query
+  const sortColumn = sortColumnMap[filters.sortBy];
+  const sortFn = filters.sortOrder === 'asc' ? asc : desc;
+
+  // Get total count
+  const countResult = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(tasks)
+    .where(and(...conditions));
+  const total = Number(countResult[0]?.count || 0);
+
+  // Get paginated tasks
+  const taskResults = await db
+    .select()
+    .from(tasks)
+    .where(and(...conditions))
+    .orderBy(sortFn(sortColumn))
+    .limit(filters.limit)
+    .offset(filters.offset);
+
+  // Filter by capabilities if specified (done in-memory since it's JSONB)
+  let filteredTasks = taskResults;
+  if (filters.capabilities) {
+    const requiredCaps = filters.capabilities.split(',').map((c) => c.trim().toLowerCase());
+    filteredTasks = taskResults.filter((t) => {
+      const requirements = (t.requirements || []) as string[];
+      return requiredCaps.some((cap) => requirements.map((r) => r.toLowerCase()).includes(cap));
+    });
+  }
 
   return NextResponse.json(
     {
-      tasks: paginatedTasks,
+      tasks: filteredTasks,
       pagination: {
         total,
         limit: filters.limit,
@@ -421,23 +351,41 @@ export async function POST(request: NextRequest) {
     // If there are non-blocking issues, flag for review
     const needsReview = !taskValidation.valid;
 
-    // Create task
-    // In production, use a transaction for task + milestones
-    const newTask = {
-      id: `task-${Date.now()}`,
-      ...taskData,
-      status: needsReview ? 'pending_review' : 'open',
-      createdBy: authResult.agent.id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      ...(needsReview && {
-        reviewFlags: taskValidation.issues,
-        reviewSeverity: taskValidation.severity,
-      }),
-    };
+    // Create task with transaction for task + milestones
+    const [newTask] = await db
+      .insert(tasks)
+      .values({
+        title: taskData.title,
+        description: taskData.description,
+        type: taskData.type,
+        source: taskData.source,
+        externalUrl: taskData.externalUrl,
+        ownerId: authResult.agent.id,
+        rewardType: taskData.rewardType,
+        rewardAmount: taskData.rewardAmount,
+        rewardCurrency: taskData.rewardCurrency,
+        visibility: taskData.visibility,
+        isMilestoneBased: taskData.isMilestoneBased,
+        status: 'open',
+        verificationMethod: taskData.verificationMethod,
+        difficulty: taskData.difficulty,
+        requirements: taskData.requirements,
+        deadline: taskData.deadline ? new Date(taskData.deadline) : undefined,
+      })
+      .returning();
 
-    // Milestones are validated above and would be inserted here in production
-    // await db.insert(taskMilestones).values(taskData.milestones.map(m => ({ ...m, taskId: newTask.id })))
+    // Insert milestones if provided
+    if (taskData.isMilestoneBased && taskData.milestones && taskData.milestones.length > 0) {
+      await db.insert(taskMilestones).values(
+        taskData.milestones.map((m) => ({
+          taskId: newTask.id,
+          title: m.title,
+          description: m.description,
+          percentage: m.percentage,
+          order: m.order,
+        }))
+      );
+    }
 
     // Audit log
     createAuditLog(request, 'task.create', {
@@ -454,16 +402,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: needsReview ? 'Task created and queued for review' : 'Task created successfully',
+        message: 'Task created successfully',
         task: newTask,
-        ...(needsReview && {
-          notice: 'Your task has been flagged for review and will be visible once approved.',
-        }),
       },
       {
         status: 201,
         headers: {
-          Location: `/api/tasks/${newTask.id}`,
+          Location: `/api/v1/tasks/${newTask.id}`,
         },
       }
     );
