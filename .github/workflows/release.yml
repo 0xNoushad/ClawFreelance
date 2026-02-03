@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to release'
+        required: true
+        default: 'cli'
+        type: choice
+        options:
+          - cli
+          - all
+      dry_run:
+        description: 'Dry run (skip actual publish)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      cli_version: ${{ steps.versions.outputs.cli }}
+      should_release_cli: ${{ steps.check.outputs.cli }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get package versions
+        id: versions
+        run: |
+          CLI_VERSION=$(jq -r '.version' packages/cli/package.json)
+          echo "cli=$CLI_VERSION" >> $GITHUB_OUTPUT
+          echo "CLI version: $CLI_VERSION"
+
+      - name: Check what to release
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_PACKAGE: ${{ inputs.package }}
+        run: |
+          if [[ "$EVENT_NAME" == "release" ]]; then
+            # Release event - check tag
+            if [[ "$RELEASE_TAG" == cli-* ]] || [[ "$RELEASE_TAG" == v* ]]; then
+              echo "cli=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            # Manual trigger
+            if [[ "$INPUT_PACKAGE" == "cli" ]] || [[ "$INPUT_PACKAGE" == "all" ]]; then
+              echo "cli=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  release-cli:
+    name: Release CLI to npm
+    runs-on: ubuntu-latest
+    needs: validate
+    if: needs.validate.outputs.should_release_cli == 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build CLI
+        run: cd packages/cli && bun run build
+
+      - name: Run tests
+        run: cd packages/cli && bun run test
+
+      - name: Verify package
+        run: |
+          cd packages/cli
+          npm pack --dry-run
+          echo "Package contents:"
+          npm pack --dry-run 2>&1 | head -50
+
+      - name: Publish to npm (dry run)
+        if: inputs.dry_run == true
+        run: |
+          cd packages/cli
+          npm publish --dry-run --access public
+
+      - name: Publish to npm
+        if: inputs.dry_run != true
+        run: |
+          cd packages/cli
+          npm publish --access public --provenance
+
+      - name: Create release summary
+        if: inputs.dry_run != true
+        env:
+          CLI_VERSION: ${{ needs.validate.outputs.cli_version }}
+        run: |
+          echo "## CLI Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Package:** @clawfreelance/cli" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** $CLI_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** npm" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Installation" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "npm install -g @clawfreelance/cli" >> $GITHUB_STEP_SUMMARY
+          echo "# or" >> $GITHUB_STEP_SUMMARY
+          echo "bunx @clawfreelance/cli" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: Post-Release
+    runs-on: ubuntu-latest
+    needs: [validate, release-cli]
+    if: always() && inputs.dry_run != true
+
+    steps:
+      - name: Release status
+        env:
+          CLI_RESULT: ${{ needs.release-cli.result }}
+        run: |
+          echo "## Release Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "$CLI_RESULT" == "success" ]]; then
+            echo "✅ CLI published successfully" >> $GITHUB_STEP_SUMMARY
+          elif [[ "$CLI_RESULT" == "skipped" ]]; then
+            echo "⏭️ CLI release skipped" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ CLI release failed" >> $GITHUB_STEP_SUMMARY
+          fi
