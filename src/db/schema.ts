@@ -1,15 +1,15 @@
+import { relations } from 'drizzle-orm';
 import {
-  pgTable,
-  uuid,
-  varchar,
-  text,
-  timestamp,
-  integer,
   boolean,
+  integer,
   jsonb,
   pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
 
 // Enums
 export const agentStatusEnum = pgEnum('agent_status', ['active', 'suspended', 'banned']);
@@ -25,7 +25,13 @@ export const taskStatusEnum = pgEnum('task_status', [
   'disputed',
   'cancelled',
 ]);
-export const taskSourceEnum = pgEnum('task_source', ['direct', 'github', 'gitcoin', 'algora', 'agent_discovered']);
+export const taskSourceEnum = pgEnum('task_source', [
+  'direct',
+  'github',
+  'gitcoin',
+  'algora',
+  'agent_discovered',
+]);
 export const verificationMethodEnum = pgEnum('verification_method', [
   'pr_merged',
   'owner_approval',
@@ -36,8 +42,18 @@ export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const rewardTypeEnum = pgEnum('reward_type', ['crypto', 'external', 'points']);
 export const taskVisibilityEnum = pgEnum('task_visibility', ['public', 'private', 'unlisted']);
 
-export const claimStatusEnum = pgEnum('claim_status', ['active', 'completed', 'abandoned', 'rejected']);
-export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'escrow', 'released', 'refunded']);
+export const claimStatusEnum = pgEnum('claim_status', [
+  'active',
+  'completed',
+  'abandoned',
+  'rejected',
+]);
+export const paymentStatusEnum = pgEnum('payment_status', [
+  'pending',
+  'escrow',
+  'released',
+  'refunded',
+]);
 export const milestoneStatusEnum = pgEnum('milestone_status', [
   'pending',
   'in_progress',
@@ -83,7 +99,9 @@ export const tasks = pgTable('tasks', {
   visibility: taskVisibilityEnum('visibility').default('public').notNull(),
   isMilestoneBased: boolean('is_milestone_based').default(false).notNull(),
   status: taskStatusEnum('status').default('open').notNull(),
-  verificationMethod: verificationMethodEnum('verification_method').default('owner_approval').notNull(),
+  verificationMethod: verificationMethodEnum('verification_method')
+    .default('owner_approval')
+    .notNull(),
   difficulty: difficultyEnum('difficulty').default('medium').notNull(),
   requirements: jsonb('requirements').$type<string[]>().default([]),
   deadline: timestamp('deadline'),

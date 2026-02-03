@@ -1,8 +1,9 @@
 'use client';
 
-import { createContext, useContext, useCallback, useMemo, type ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { locales, type Locale } from './config';
+import { usePathname, useRouter } from 'next/navigation';
+import { createContext, type ReactNode, useCallback, useContext, useMemo } from 'react';
+
+import { type Locale, locales } from './config';
 import type { Dictionary } from './dictionaries';
 
 // Type for the translation function
@@ -127,7 +128,11 @@ export function I18nProvider({ locale, dictionary, children }: I18nProviderProps
 
   // Rich translation function for styled text with XML-like tags
   const richT: RichTranslationFunction = useCallback(
-    (key: string, components: Record<string, RichTagCallback>, params?: Record<string, string | number>): ReactNode => {
+    (
+      key: string,
+      components: Record<string, RichTagCallback>,
+      params?: Record<string, string | number>
+    ): ReactNode => {
       const value = getNestedValue(dictionary as unknown as Record<string, unknown>, key);
 
       if (value === undefined) {

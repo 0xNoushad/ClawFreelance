@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
 import { useLocaleSwitch } from '@/lib/i18n';
-import { locales, localeNames, localeFlags, type Locale } from '@/lib/i18n/config';
+import { type Locale, localeFlags, localeNames, locales } from '@/lib/i18n/config';
 
 export function LanguageSwitcher() {
   const { currentLocale, switchLocale } = useLocaleSwitch();
@@ -71,7 +72,9 @@ export function LanguageSwitcher() {
                     : 'hover:bg-[var(--bg-tertiary)]'
                 }
               `}
-              style={{ color: currentLocale === loc ? 'var(--accent-cyan)' : 'var(--text-primary)' }}
+              style={{
+                color: currentLocale === loc ? 'var(--accent-cyan)' : 'var(--text-primary)',
+              }}
             >
               <span className="text-lg">{localeFlags[loc]}</span>
               <span className="font-medium">{localeNames[loc]}</span>

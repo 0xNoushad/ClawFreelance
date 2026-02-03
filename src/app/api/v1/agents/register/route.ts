@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  checkRateLimit,
-  getClientIdentifier,
-  sanitizeInputStrict,
-  generateApiKey,
-  detectInjection,
-  isIpBlocked,
-  isAuthLockedOut,
-  trackAuthFailure,
-  blockIp,
-} from '@/lib/security';
-import { validateContentType, validateBodySize } from '@/lib/auth';
+
 import { createAuditLog, logSecurityEvent } from '@/lib/audit';
+import { validateBodySize, validateContentType } from '@/lib/auth';
+import {
+  blockIp,
+  checkRateLimit,
+  detectInjection,
+  generateApiKey,
+  getClientIdentifier,
+  isAuthLockedOut,
+  isIpBlocked,
+  sanitizeInputStrict,
+  trackAuthFailure,
+} from '@/lib/security';
 
 // Registration schema with strict validation
 const registerAgentSchema = z.object({
@@ -25,17 +26,24 @@ const registerAgentSchema = z.object({
     .string()
     .min(3, 'Display name must be at least 3 characters')
     .max(100, 'Display name must not exceed 100 characters')
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Display name can only contain letters, numbers, underscores, and hyphens'),
+    .regex(
+      /^[a-zA-Z0-9_-]+$/,
+      'Display name can only contain letters, numbers, underscores, and hyphens'
+    ),
   walletAddress: z
     .string()
     .regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid Ethereum wallet address')
     .optional(),
   capabilities: z
     .array(
-      z.string()
+      z
+        .string()
         .min(2, 'Capability must be at least 2 characters')
         .max(50, 'Capability must not exceed 50 characters')
-        .regex(/^[a-z0-9-]+$/, 'Capability can only contain lowercase letters, numbers, and hyphens')
+        .regex(
+          /^[a-z0-9-]+$/,
+          'Capability can only contain lowercase letters, numbers, and hyphens'
+        )
     )
     .max(20, 'Maximum 20 capabilities allowed')
     .default([]),
@@ -135,10 +143,7 @@ export async function POST(request: NextRequest) {
 
   // Check if IP is blocked
   if (isIpBlocked(clientId)) {
-    return NextResponse.json(
-      { error: 'Access denied' },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
   // Check for auth lockout (too many failed attempts)
@@ -156,19 +161,13 @@ export async function POST(request: NextRequest) {
   // Validate content type
   const contentTypeCheck = validateContentType(request);
   if (!contentTypeCheck.valid) {
-    return NextResponse.json(
-      { error: contentTypeCheck.error },
-      { status: 415 }
-    );
+    return NextResponse.json({ error: contentTypeCheck.error }, { status: 415 });
   }
 
   // Validate body size (100KB max for registration)
   const bodySizeCheck = validateBodySize(request.headers.get('content-length'), 100 * 1024);
   if (!bodySizeCheck.valid) {
-    return NextResponse.json(
-      { error: bodySizeCheck.error },
-      { status: 413 }
-    );
+    return NextResponse.json({ error: bodySizeCheck.error }, { status: 413 });
   }
 
   // Strict rate limiting for registration
@@ -223,13 +222,14 @@ export async function POST(request: NextRequest) {
       // If too many suspicious attempts, block the IP
       if (trackAuthFailure(clientId)) {
         blockIp(clientId);
-        logSecurityEvent(request, 'blocked_request', 'IP blocked due to repeated injection attempts');
+        logSecurityEvent(
+          request,
+          'blocked_request',
+          'IP blocked due to repeated injection attempts'
+        );
       }
 
-      return NextResponse.json(
-        { error: 'Invalid input detected' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid input detected' }, { status: 400 });
     }
 
     // Validate input schema
@@ -326,7 +326,8 @@ export async function POST(request: NextRequest) {
         },
         authentication: {
           apiKey: apiKey,
-          warning: 'SAVE THIS API KEY SECURELY! It will only be shown once and cannot be recovered.',
+          warning:
+            'SAVE THIS API KEY SECURELY! It will only be shown once and cannot be recovered.',
           security: [
             'Store this key in environment variables, never in code',
             'Do not share this key with anyone',
@@ -359,9 +360,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     // Don't leak error details
     console.error('Registration error:', error);
-    return NextResponse.json(
-      { error: 'Invalid request' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 }

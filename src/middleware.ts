@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * Security middleware for ClawFreelance
@@ -163,9 +163,7 @@ export function middleware(request: NextRequest) {
   // Skip locale handling for API routes and static files
   const isApiRoute = pathname.startsWith('/api/');
   const isStaticFile =
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/_vercel/') ||
-    pathname.includes('.');
+    pathname.startsWith('/_next/') || pathname.startsWith('/_vercel/') || pathname.includes('.');
 
   // Handle API routes - add security headers and CORS
   if (isApiRoute) {

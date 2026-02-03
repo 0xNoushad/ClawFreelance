@@ -1,13 +1,13 @@
 // i18n exports - client-safe (no server-only imports)
 export {
-  locales,
   defaultLocale,
-  localeNames,
-  localeFlags,
   isValidLocale,
   type Locale,
+  localeFlags,
+  localeNames,
+  locales,
 } from './config';
-export { I18nProvider, useI18n, useTranslation, useLocale, useLocaleSwitch } from './context';
+export { I18nProvider, useI18n, useLocale, useLocaleSwitch, useTranslation } from './context';
 
 // Re-export Dictionary type (type-only is safe for client)
 export type { Dictionary } from './dictionaries';

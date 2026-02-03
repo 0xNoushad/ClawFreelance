@@ -1,20 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+
+import { createAuditLog, logRateLimitExceeded, logSecurityEvent } from '@/lib/audit';
+import {
+  authenticateRequest,
+  optionalAuth,
+  validateBodySize,
+  validateContentType,
+} from '@/lib/auth';
 import {
   checkRateLimit,
+  detectInjection,
   getClientIdentifier,
+  isIpBlocked,
   sanitizeInputStrict,
   sanitizeMarkdown,
-  detectInjection,
   validateTaskContent,
-  isIpBlocked,
 } from '@/lib/security';
-import { authenticateRequest, validateContentType, validateBodySize, optionalAuth } from '@/lib/auth';
-import { createAuditLog, logSecurityEvent, logRateLimitExceeded } from '@/lib/audit';
 
 // Validation schemas
 const listTasksQuerySchema = z.object({
-  status: z.enum(['open', 'claimed', 'in_progress', 'verification', 'completed', 'disputed', 'cancelled']).optional(),
+  status: z
+    .enum(['open', 'claimed', 'in_progress', 'verification', 'completed', 'disputed', 'cancelled'])
+    .optional(),
   type: z.enum(['code_contribution', 'bounty', 'showcase']).optional(),
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   source: z.enum(['direct', 'github', 'gitcoin', 'algora', 'agent_discovered']).optional(),
@@ -48,7 +56,9 @@ const createTaskSchema = z.object({
       })
     )
     .optional(),
-  verificationMethod: z.enum(['pr_merged', 'owner_approval', 'tests_pass', 'peer_review']).default('owner_approval'),
+  verificationMethod: z
+    .enum(['pr_merged', 'owner_approval', 'tests_pass', 'peer_review'])
+    .default('owner_approval'),
   difficulty: z.enum(['easy', 'medium', 'hard']).default('medium'),
   requirements: z.array(z.string().max(50)).max(20).default([]),
   deadline: z.string().datetime().optional(),
@@ -59,7 +69,8 @@ const mockTasks = [
   {
     id: 'task-001',
     title: 'Fix authentication race condition in session handler',
-    description: 'The session handler has a race condition that causes intermittent authentication failures under high load. Need to implement proper locking mechanism.',
+    description:
+      'The session handler has a race condition that causes intermittent authentication failures under high load. Need to implement proper locking mechanism.',
     type: 'bounty',
     source: 'github',
     externalUrl: 'https://github.com/openclaw/openclaw/issues/42',
@@ -78,7 +89,8 @@ const mockTasks = [
   {
     id: 'task-002',
     title: 'Add dark mode support to dashboard components',
-    description: 'Implement dark mode across all dashboard components. Should respect system preferences and allow manual toggle.',
+    description:
+      'Implement dark mode across all dashboard components. Should respect system preferences and allow manual toggle.',
     type: 'code_contribution',
     source: 'direct',
     ownerId: 'agent-001',
@@ -94,7 +106,8 @@ const mockTasks = [
   {
     id: 'task-003',
     title: 'Optimize PostgreSQL queries for task listing',
-    description: 'The task listing endpoint is slow. Need to add proper indexes and optimize the query structure.',
+    description:
+      'The task listing endpoint is slow. Need to add proper indexes and optimize the query structure.',
     type: 'bounty',
     source: 'gitcoin',
     externalUrl: 'https://gitcoin.co/issue/clawfreelance/44',
@@ -113,7 +126,8 @@ const mockTasks = [
   {
     id: 'task-004',
     title: 'Implement WebSocket real-time notifications',
-    description: 'Add WebSocket support for real-time task updates. Agents should receive notifications when tasks are created, claimed, or completed.',
+    description:
+      'Add WebSocket support for real-time task updates. Agents should receive notifications when tasks are created, claimed, or completed.',
     type: 'bounty',
     source: 'algora',
     externalUrl: 'https://algora.io/bounty/clawfreelance/45',
@@ -132,7 +146,8 @@ const mockTasks = [
   {
     id: 'task-005',
     title: 'Create comprehensive API documentation',
-    description: 'Write OpenAPI spec and developer documentation for all API endpoints. Include examples and best practices.',
+    description:
+      'Write OpenAPI spec and developer documentation for all API endpoints. Include examples and best practices.',
     type: 'code_contribution',
     source: 'direct',
     ownerId: 'agent-001',
@@ -156,10 +171,7 @@ export async function GET(request: NextRequest) {
 
   // Check if IP is blocked
   if (isIpBlocked(clientId)) {
-    return NextResponse.json(
-      { error: 'Access denied' },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
   // Rate limiting
@@ -194,10 +206,7 @@ export async function GET(request: NextRequest) {
       logSecurityEvent(request, 'suspicious_activity', `Injection attempt in query param: ${key}`, {
         types: injection.types,
       });
-      return NextResponse.json(
-        { error: 'Invalid query parameters' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid query parameters' }, { status: 400 });
     }
   }
 
@@ -221,16 +230,15 @@ export async function GET(request: NextRequest) {
   // Visibility filtering
   if (!agent) {
     // Unauthenticated users only see public tasks
-    filteredTasks = filteredTasks.filter(t => t.visibility === 'public');
+    filteredTasks = filteredTasks.filter((t) => t.visibility === 'public');
   } else {
     // Authenticated users see:
     // 1. Public tasks
     // 2. Tasks they own
     // 3. Unlisted tasks ONLY if accessed directly by ID (not in list view)
     // Since this is a list endpoint, unlisted tasks should be hidden unless owned
-    filteredTasks = filteredTasks.filter(t => 
-      t.visibility === 'public' || 
-      t.ownerId === agent.id
+    filteredTasks = filteredTasks.filter(
+      (t) => t.visibility === 'public' || t.ownerId === agent.id
     );
   }
 
@@ -270,9 +278,7 @@ export async function GET(request: NextRequest) {
         hasMore: filters.offset + filters.limit < total,
       },
       filters: {
-        applied: Object.fromEntries(
-          Object.entries(filters).filter(([, v]) => v !== undefined)
-        ),
+        applied: Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== undefined)),
       },
     },
     {
@@ -293,28 +299,19 @@ export async function POST(request: NextRequest) {
 
   // Check if IP is blocked
   if (isIpBlocked(clientId)) {
-    return NextResponse.json(
-      { error: 'Access denied' },
-      { status: 403 }
-    );
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
   // Validate content type
   const contentTypeCheck = validateContentType(request);
   if (!contentTypeCheck.valid) {
-    return NextResponse.json(
-      { error: contentTypeCheck.error },
-      { status: 415 }
-    );
+    return NextResponse.json({ error: contentTypeCheck.error }, { status: 415 });
   }
 
   // Validate body size (1MB max)
   const bodySizeCheck = validateBodySize(request.headers.get('content-length'), 1024 * 1024);
   if (!bodySizeCheck.valid) {
-    return NextResponse.json(
-      { error: bodySizeCheck.error },
-      { status: 413 }
-    );
+    return NextResponse.json({ error: bodySizeCheck.error }, { status: 413 });
   }
 
   // Rate limiting (stricter for writes)
@@ -322,10 +319,7 @@ export async function POST(request: NextRequest) {
 
   if (!rateLimit.allowed) {
     logRateLimitExceeded(request, '/api/v1/tasks:POST', undefined);
-    return NextResponse.json(
-      { error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   }
 
   // Authenticate request
@@ -360,10 +354,7 @@ export async function POST(request: NextRequest) {
         descTypes: descInjection.types,
         agentId: authResult.agent.id,
       });
-      return NextResponse.json(
-        { error: 'Invalid content detected' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid content detected' }, { status: 400 });
     }
 
     // Validate against schema
@@ -463,9 +454,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: needsReview
-          ? 'Task created and queued for review'
-          : 'Task created successfully',
+        message: needsReview ? 'Task created and queued for review' : 'Task created successfully',
         task: newTask,
         ...(needsReview && {
           notice: 'Your task has been flagged for review and will be visible once approved.',
@@ -479,9 +468,6 @@ export async function POST(request: NextRequest) {
       }
     );
   } catch {
-    return NextResponse.json(
-      { error: 'Invalid JSON body' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 }

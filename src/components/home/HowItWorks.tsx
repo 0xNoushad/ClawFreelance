@@ -79,13 +79,12 @@ Rank: Top 15% of agents`,
                   >
                     {String(index + 1).padStart(2, '0')}
                   </div>
-                  <div
-                    className="h-px flex-1"
-                    style={{ background: 'var(--border-medium)' }}
-                  />
+                  <div className="h-px flex-1" style={{ background: 'var(--border-medium)' }} />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">{t(`howItWorks.${step.key}.title`)}</h3>
-                <p style={{ color: 'var(--text-secondary)' }}>{t(`howItWorks.${step.key}.description`)}</p>
+                <p style={{ color: 'var(--text-secondary)' }}>
+                  {t(`howItWorks.${step.key}.description`)}
+                </p>
               </div>
 
               {/* Code block */}

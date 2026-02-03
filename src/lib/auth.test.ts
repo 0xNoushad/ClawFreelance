@@ -1,21 +1,24 @@
-import { describe, it, expect } from 'vitest';
 import { NextRequest } from 'next/server';
+import { describe, expect, it } from 'vitest';
+
 import {
   authenticateRequest,
-  validateContentType,
-  validateBodySize,
   errorResponse,
-  successResponse,
-  withAuth,
   optionalAuth,
+  successResponse,
+  validateBodySize,
+  validateContentType,
+  withAuth,
 } from './auth';
 
 // Helper to create mock NextRequest
-function createMockRequest(options: {
-  headers?: Record<string, string>;
-  method?: string;
-  url?: string;
-} = {}): NextRequest {
+function createMockRequest(
+  options: {
+    headers?: Record<string, string>;
+    method?: string;
+    url?: string;
+  } = {}
+): NextRequest {
   const headers = new Headers(options.headers || {});
   return {
     headers,
@@ -40,7 +43,7 @@ describe('Auth Module', () => {
 
     it('should reject API keys with wrong format', async () => {
       const request = createMockRequest({
-        headers: { 'authorization': 'Bearer invalid-key' },
+        headers: { authorization: 'Bearer invalid-key' },
       });
       const result = await authenticateRequest(request);
 
@@ -50,7 +53,7 @@ describe('Auth Module', () => {
 
     it('should reject short API keys', async () => {
       const request = createMockRequest({
-        headers: { 'authorization': 'Bearer clf_short' },
+        headers: { authorization: 'Bearer clf_short' },
       });
       const result = await authenticateRequest(request);
 
@@ -60,7 +63,7 @@ describe('Auth Module', () => {
     it('should accept valid Bearer token format', async () => {
       const validKey = 'clf_' + 'a'.repeat(60);
       const request = createMockRequest({
-        headers: { 'authorization': `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${validKey}` },
       });
       const result = await authenticateRequest(request);
 
@@ -82,7 +85,7 @@ describe('Auth Module', () => {
     it('should return agent info on successful auth', async () => {
       const validKey = 'clf_' + 'c'.repeat(60);
       const request = createMockRequest({
-        headers: { 'authorization': `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${validKey}` },
       });
       const result = await authenticateRequest(request);
 
@@ -216,11 +219,7 @@ describe('Auth Module', () => {
       });
 
       it('should include custom headers', async () => {
-        const response = successResponse(
-          { message: 'OK' },
-          200,
-          { 'X-Custom-Header': 'value' }
-        );
+        const response = successResponse({ message: 'OK' }, 200, { 'X-Custom-Header': 'value' });
 
         expect(response.headers.get('X-Custom-Header')).toBe('value');
       });
@@ -249,7 +248,7 @@ describe('Auth Module', () => {
       });
 
       const request = createMockRequest({
-        headers: { 'authorization': `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${validKey}` },
       });
       const response = await handler(request);
 
@@ -260,16 +259,19 @@ describe('Auth Module', () => {
 
     it('should return 429 when rate limit exceeded', async () => {
       const uniqueId = `test-rate-${Date.now()}`;
-      const handler = withAuth(async (_req, agent) => {
-        return successResponse({ agentId: agent.id });
-      }, {
-        rateLimit: { maxRequests: 1, windowMs: 60000 },
-      });
+      const handler = withAuth(
+        async (_req, agent) => {
+          return successResponse({ agentId: agent.id });
+        },
+        {
+          rateLimit: { maxRequests: 1, windowMs: 60000 },
+        }
+      );
 
       const validKey = 'clf_' + 'e'.repeat(60);
       const request = createMockRequest({
         headers: {
-          'authorization': `Bearer ${validKey}`,
+          authorization: `Bearer ${validKey}`,
           'x-forwarded-for': uniqueId,
         },
       });
@@ -284,14 +286,17 @@ describe('Auth Module', () => {
 
     it('should return 403 when permissions missing', async () => {
       const validKey = 'clf_' + 'f'.repeat(60);
-      const handler = withAuth(async (_req, agent) => {
-        return successResponse({ agentId: agent.id });
-      }, {
-        requiredPermissions: ['admin', 'super-admin'],
-      });
+      const handler = withAuth(
+        async (_req, agent) => {
+          return successResponse({ agentId: agent.id });
+        },
+        {
+          requiredPermissions: ['admin', 'super-admin'],
+        }
+      );
 
       const request = createMockRequest({
-        headers: { 'authorization': `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${validKey}` },
       });
       const response = await handler(request);
 
@@ -315,7 +320,7 @@ describe('Auth Module', () => {
     it('should return agent when valid API key provided', async () => {
       const validKey = 'clf_' + 'g'.repeat(60);
       const request = createMockRequest({
-        headers: { 'authorization': `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${validKey}` },
       });
       const result = await optionalAuth(request);
 
@@ -325,7 +330,7 @@ describe('Auth Module', () => {
 
     it('should return null when invalid API key provided', async () => {
       const request = createMockRequest({
-        headers: { 'authorization': 'Bearer invalid-key' },
+        headers: { authorization: 'Bearer invalid-key' },
       });
       const result = await optionalAuth(request);
 

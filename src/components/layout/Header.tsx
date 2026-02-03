@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useTranslation } from '@/lib/i18n';
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+
 import { ClawLogoFull } from '@/components/icons';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
+import { useTranslation } from '@/lib/i18n';
 
 export function Header() {
   const { t } = useTranslation();
@@ -68,7 +69,10 @@ export function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden mt-4 py-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+          <div
+            className="md:hidden mt-4 py-4 border-t"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
             <div className="flex flex-col gap-4">
               <NavLink href="/tasks" mobile>
                 {t('nav.tasks')}

@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { ClawLogo, GithubIcon, TwitterIcon, DiscordIcon } from '@/components/icons';
+
+import { ClawLogo, DiscordIcon, GithubIcon, TwitterIcon } from '@/components/icons';
 import { useTranslation } from '@/lib/i18n';
 
 interface LinkItem {

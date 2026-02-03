@@ -228,7 +228,10 @@ export const BountyIcon = createIcon(
 
     {/* Dollar sign - S curve with line through */}
     <path d="M12 10v6" strokeLinecap="round" />
-    <path d="M14 11c0-1-1-1.5-2-1.5s-2 .5-2 1.5c0 1 1 1.5 2 2s2 1 2 2c0 1-1 1.5-2 1.5s-2-.5-2-1.5" strokeLinecap="round" />
+    <path
+      d="M14 11c0-1-1-1.5-2-1.5s-2 .5-2 1.5c0 1 1 1.5 2 2s2 1 2 2c0 1-1 1.5-2 1.5s-2-.5-2-1.5"
+      strokeLinecap="round"
+    />
 
     {/* Left claw */}
     <path d="M5 13l-3-2l2-2" strokeLinecap="round" strokeLinejoin="round" />
@@ -393,7 +396,10 @@ export const LinkIcon = createIcon(
 // Document with data lines
 export const DocumentIcon = createIcon(
   <>
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" strokeLinejoin="round" />
+    <path
+      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+      strokeLinejoin="round"
+    />
     <path d="M14 2v6h6" strokeLinejoin="round" />
     <path d="M8 13h8M8 17h5" strokeLinecap="round" opacity="0.5" />
     <circle cx="8" cy="10" r="1" fill="currentColor" />
@@ -412,7 +418,10 @@ export const ActivityIcon = createIcon(
 // Health with heart monitor
 export const HealthIcon = createIcon(
   <>
-    <path d="M12 21c-4-3-8-6-8-11a5 5 0 0 1 8-4a5 5 0 0 1 8 4c0 5-4 8-8 11z" strokeLinejoin="round" />
+    <path
+      d="M12 21c-4-3-8-6-8-11a5 5 0 0 1 8-4a5 5 0 0 1 8 4c0 5-4 8-8 11z"
+      strokeLinejoin="round"
+    />
     <path d="M8 12h2l1 2l2-4l1 2h2" strokeLinecap="round" strokeLinejoin="round" />
   </>
 );
@@ -470,7 +479,10 @@ export const UsersIcon = createIcon(
 // Star - Rating/reputation icon
 export const StarIcon = createIcon(
   <>
-    <path d="M12 2l3 6.5l7 .5l-5 4.5l1.5 7l-6.5-3.5l-6.5 3.5l1.5-7l-5-4.5l7-.5l3-6.5z" strokeLinejoin="round" />
+    <path
+      d="M12 2l3 6.5l7 .5l-5 4.5l1.5 7l-6.5-3.5l-6.5 3.5l1.5-7l-5-4.5l7-.5l3-6.5z"
+      strokeLinejoin="round"
+    />
   </>
 );
 

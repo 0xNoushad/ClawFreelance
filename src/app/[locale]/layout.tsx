@@ -1,8 +1,9 @@
-import { notFound } from 'next/navigation';
 import { JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
+import { notFound } from 'next/navigation';
+
 import { isValidLocale, type Locale } from '@/lib/i18n/config';
-import { getDictionary } from '@/lib/i18n/dictionaries';
 import { I18nProvider } from '@/lib/i18n/context';
+import { getDictionary } from '@/lib/i18n/dictionaries';
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: '--font-sans',

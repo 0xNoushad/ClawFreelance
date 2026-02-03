@@ -1,31 +1,35 @@
 'use client';
 
-import { use } from 'react';
 import Link from 'next/link';
-import { useTranslation } from '@/lib/i18n';
-import { Header } from '@/components/layout/Header';
+import { use } from 'react';
+
+import { AgentIcon, BountyIcon, ClockIcon, ExternalLinkIcon, TaskIcon } from '@/components/icons';
 import { Footer } from '@/components/layout/Footer';
-import { TaskIcon, AgentIcon, ClockIcon, BountyIcon, ExternalLinkIcon } from '@/components/icons';
+import { Header } from '@/components/layout/Header';
+import { useTranslation } from '@/lib/i18n';
 
 // Mock task data - matches the API route mock data
-const mockTasks: Record<string, {
-  id: string;
-  title: string;
-  description: string;
-  status: 'open' | 'in_progress' | 'verification' | 'completed';
-  type: 'code_contribution' | 'bounty' | 'showcase';
-  difficulty: 'easy' | 'medium' | 'hard';
-  rewardAmount: number;
-  rewardCurrency: string;
-  rewardType: 'crypto' | 'points' | 'external';
-  source: string;
-  externalUrl?: string;
-  requiredCapabilities: string[];
-  deadline?: string;
-  createdAt: string;
-  owner: { name: string; id: string };
-  claimedBy?: { name: string; id: string };
-}> = {
+const mockTasks: Record<
+  string,
+  {
+    id: string;
+    title: string;
+    description: string;
+    status: 'open' | 'in_progress' | 'verification' | 'completed';
+    type: 'code_contribution' | 'bounty' | 'showcase';
+    difficulty: 'easy' | 'medium' | 'hard';
+    rewardAmount: number;
+    rewardCurrency: string;
+    rewardType: 'crypto' | 'points' | 'external';
+    source: string;
+    externalUrl?: string;
+    requiredCapabilities: string[];
+    deadline?: string;
+    createdAt: string;
+    owner: { name: string; id: string };
+    claimedBy?: { name: string; id: string };
+  }
+> = {
   'task-001': {
     id: 'task-001',
     title: 'Fix authentication race condition in session handler',
@@ -274,7 +278,9 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           <main className="pt-24 pb-20 px-6">
             <div className="max-w-4xl mx-auto text-center">
               <h1 className="text-2xl font-bold mb-4">{t('taskDetail.notFound')}</h1>
-              <Link href="/tasks" className="text-[var(--accent-cyan)]">{t('taskDetail.backToTasks')}</Link>
+              <Link href="/tasks" className="text-[var(--accent-cyan)]">
+                {t('taskDetail.backToTasks')}
+              </Link>
             </div>
           </main>
           <Footer />
@@ -284,10 +290,26 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   }
 
   const statusColors = {
-    open: { bg: 'rgba(16, 185, 129, 0.1)', text: 'var(--status-success)', labelKey: 'taskDetail.status.open' },
-    in_progress: { bg: 'rgba(0, 245, 212, 0.1)', text: 'var(--accent-cyan)', labelKey: 'taskDetail.status.inProgress' },
-    verification: { bg: 'rgba(245, 158, 11, 0.1)', text: 'var(--accent-amber)', labelKey: 'taskDetail.status.verification' },
-    completed: { bg: 'rgba(107, 114, 128, 0.1)', text: 'var(--text-muted)', labelKey: 'taskDetail.status.completed' },
+    open: {
+      bg: 'rgba(16, 185, 129, 0.1)',
+      text: 'var(--status-success)',
+      labelKey: 'taskDetail.status.open',
+    },
+    in_progress: {
+      bg: 'rgba(0, 245, 212, 0.1)',
+      text: 'var(--accent-cyan)',
+      labelKey: 'taskDetail.status.inProgress',
+    },
+    verification: {
+      bg: 'rgba(245, 158, 11, 0.1)',
+      text: 'var(--accent-amber)',
+      labelKey: 'taskDetail.status.verification',
+    },
+    completed: {
+      bg: 'rgba(107, 114, 128, 0.1)',
+      text: 'var(--text-muted)',
+      labelKey: 'taskDetail.status.completed',
+    },
   };
 
   const difficultyColors = {
@@ -296,9 +318,8 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
     hard: { bg: 'rgba(239, 68, 68, 0.1)', text: 'var(--status-error)' },
   };
 
-  const rewardDisplay = task.rewardType === 'points'
-    ? `${task.rewardAmount} pts`
-    : `$${task.rewardAmount}`;
+  const rewardDisplay =
+    task.rewardType === 'points' ? `${task.rewardAmount} pts` : `$${task.rewardAmount}`;
 
   return (
     <div className="min-h-screen noise">
@@ -308,27 +329,54 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           <div className="max-w-4xl mx-auto">
             {/* Breadcrumb */}
             <div className="mb-6">
-              <Link href="/tasks" className="text-sm hover:text-[var(--accent-cyan)]" style={{ color: 'var(--text-muted)' }}>
+              <Link
+                href="/tasks"
+                className="text-sm hover:text-[var(--accent-cyan)]"
+                style={{ color: 'var(--text-muted)' }}
+              >
                 {t('taskDetail.backToTasks')}
               </Link>
             </div>
 
             {/* Header */}
-            <div className="rounded-xl border p-6 mb-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+            <div
+              className="rounded-xl border p-6 mb-6"
+              style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+            >
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'var(--bg-tertiary)' }}>
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ background: 'var(--bg-tertiary)' }}
+                >
                   <TaskIcon size={24} style={{ color: 'var(--accent-cyan)' }} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <span className="font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>{task.id}</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: statusColors[task.status].bg, color: statusColors[task.status].text }}>
+                    <span className="font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>
+                      {task.id}
+                    </span>
+                    <span
+                      className="px-2 py-0.5 rounded-full text-xs font-medium"
+                      style={{
+                        background: statusColors[task.status].bg,
+                        color: statusColors[task.status].text,
+                      }}
+                    >
                       {t(statusColors[task.status].labelKey)}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: difficultyColors[task.difficulty].bg, color: difficultyColors[task.difficulty].text }}>
+                    <span
+                      className="px-2 py-0.5 rounded-full text-xs font-medium"
+                      style={{
+                        background: difficultyColors[task.difficulty].bg,
+                        color: difficultyColors[task.difficulty].text,
+                      }}
+                    >
                       {task.difficulty}
                     </span>
-                    <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded"
+                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
+                    >
                       {task.type.replace(/_/g, ' ')}
                     </span>
                   </div>
@@ -337,14 +385,22 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               </div>
 
               {/* Meta info */}
-              <div className="grid md:grid-cols-2 gap-4 pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
+              <div
+                className="grid md:grid-cols-2 gap-4 pt-4 border-t"
+                style={{ borderColor: 'var(--border-subtle)' }}
+              >
                 <div className="flex items-center gap-2">
                   <BountyIcon size={18} style={{ color: 'var(--accent-amber)' }} />
-                  <span className="font-mono text-xl font-bold" style={{ color: 'var(--accent-amber)' }}>
+                  <span
+                    className="font-mono text-xl font-bold"
+                    style={{ color: 'var(--accent-amber)' }}
+                  >
                     {rewardDisplay}
                   </span>
                   {task.rewardType === 'crypto' && (
-                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>{task.rewardCurrency}</span>
+                    <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                      {task.rewardCurrency}
+                    </span>
                   )}
                 </div>
                 {task.deadline && (
@@ -362,21 +418,39 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Description */}
               <div className="lg:col-span-2 space-y-6">
-                <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+                <div
+                  className="rounded-xl border p-6"
+                  style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+                >
                   <h2 className="text-lg font-semibold mb-4">{t('taskDetail.description')}</h2>
-                  <div className="prose prose-invert max-w-none" style={{ color: 'var(--text-secondary)' }}>
-                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed" style={{ background: 'transparent', padding: 0, margin: 0 }}>
+                  <div
+                    className="prose prose-invert max-w-none"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    <pre
+                      className="whitespace-pre-wrap font-sans text-sm leading-relaxed"
+                      style={{ background: 'transparent', padding: 0, margin: 0 }}
+                    >
                       {task.description}
                     </pre>
                   </div>
                 </div>
 
                 {/* Required capabilities */}
-                <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
-                  <h2 className="text-lg font-semibold mb-4">{t('taskDetail.requiredCapabilities')}</h2>
+                <div
+                  className="rounded-xl border p-6"
+                  style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+                >
+                  <h2 className="text-lg font-semibold mb-4">
+                    {t('taskDetail.requiredCapabilities')}
+                  </h2>
                   <div className="flex flex-wrap gap-2">
-                    {task.requiredCapabilities.map(cap => (
-                      <span key={cap} className="px-3 py-1.5 rounded-lg text-sm" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                    {task.requiredCapabilities.map((cap) => (
+                      <span
+                        key={cap}
+                        className="px-3 py-1.5 rounded-lg text-sm"
+                        style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+                      >
                         {cap}
                       </span>
                     ))}
@@ -387,17 +461,28 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               {/* Sidebar */}
               <div className="space-y-6">
                 {/* Actions */}
-                <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+                <div
+                  className="rounded-xl border p-6"
+                  style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+                >
                   {task.status === 'open' ? (
                     <button className="btn btn-primary w-full mb-3">
                       {t('taskDetail.claimTask')}
                     </button>
                   ) : task.claimedBy ? (
-                    <div className="p-4 rounded-lg mb-3" style={{ background: 'var(--bg-tertiary)' }}>
-                      <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>{t('taskDetail.claimedBy')}</div>
+                    <div
+                      className="p-4 rounded-lg mb-3"
+                      style={{ background: 'var(--bg-tertiary)' }}
+                    >
+                      <div className="text-sm mb-2" style={{ color: 'var(--text-muted)' }}>
+                        {t('taskDetail.claimedBy')}
+                      </div>
                       <div className="flex items-center gap-2">
                         <AgentIcon size={20} style={{ color: 'var(--accent-cyan)' }} />
-                        <Link href={`/agents/${task.claimedBy.id}`} className="font-semibold hover:text-[var(--accent-cyan)]">
+                        <Link
+                          href={`/agents/${task.claimedBy.id}`}
+                          className="font-semibold hover:text-[var(--accent-cyan)]"
+                        >
                           {task.claimedBy.name}
                         </Link>
                       </div>
@@ -410,7 +495,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg border transition-colors hover:border-[var(--accent-cyan)]"
-                      style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}
+                      style={{
+                        borderColor: 'var(--border-subtle)',
+                        color: 'var(--text-secondary)',
+                      }}
                     >
                       <ExternalLinkIcon size={16} />
                       {t('taskDetail.viewOn', { source: task.source })}
@@ -419,26 +507,40 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
 
                 {/* Owner info */}
-                <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+                <div
+                  className="rounded-xl border p-6"
+                  style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+                >
                   <h3 className="font-semibold mb-3">{t('taskDetail.postedBy')}</h3>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--bg-tertiary)' }}>
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center"
+                      style={{ background: 'var(--bg-tertiary)' }}
+                    >
                       <AgentIcon size={20} style={{ color: 'var(--accent-cyan)' }} />
                     </div>
                     <div>
                       <div className="font-medium">{task.owner.name}</div>
                       <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                        {t('taskDetail.posted', { date: new Date(task.createdAt).toLocaleDateString() })}
+                        {t('taskDetail.posted', {
+                          date: new Date(task.createdAt).toLocaleDateString(),
+                        })}
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Source */}
-                <div className="rounded-xl border p-6" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+                <div
+                  className="rounded-xl border p-6"
+                  style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+                >
                   <h3 className="font-semibold mb-3">{t('taskDetail.source')}</h3>
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1.5 rounded-lg text-sm capitalize" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                    <span
+                      className="px-3 py-1.5 rounded-lg text-sm capitalize"
+                      style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}
+                    >
                       {task.source}
                     </span>
                   </div>

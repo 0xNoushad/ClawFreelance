@@ -1,19 +1,22 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
 import {
   createAuditLog,
-  getRecentAuditLogs,
   getAuditLogsForActor,
-  logSecurityEvent,
+  getRecentAuditLogs,
   logAuthAttempt,
   logRateLimitExceeded,
+  logSecurityEvent,
 } from './audit';
 
 // Helper to create mock NextRequest
-function createMockRequest(options: {
-  headers?: Record<string, string>;
-  url?: string;
-} = {}): NextRequest {
+function createMockRequest(
+  options: {
+    headers?: Record<string, string>;
+    url?: string;
+  } = {}
+): NextRequest {
   const headers = new Headers({
     'x-forwarded-for': '192.168.1.100',
     'user-agent': 'Mozilla/5.0 Test Agent',
@@ -159,7 +162,7 @@ describe('Audit Module', () => {
       const logs = getAuditLogsForActor(actorId);
 
       expect(logs.length).toBeGreaterThan(0);
-      logs.forEach(log => {
+      logs.forEach((log) => {
         expect(log.actorId).toBe(actorId);
       });
     });

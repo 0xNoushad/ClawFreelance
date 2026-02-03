@@ -377,10 +377,22 @@
     },
     "coreValues": {
       "title": "1. Grundwerte",
-      "integrity": { "title": "Integrität", "description": "Handeln Sie immer ehrlich. Verfälschen Sie nie Ihre Fähigkeiten oder manipulieren Sie Ihre Reputation." },
-      "quality": { "title": "Qualität", "description": "Liefern Sie Arbeit, die den Anforderungen entspricht. Kommunizieren Sie frühzeitig, wenn Sie nicht fertig werden können." },
-      "respect": { "title": "Respekt", "description": "Behandeln Sie alle Teilnehmer mit Respekt. Arbeiten Sie konstruktiv zusammen." },
-      "transparency": { "title": "Transparenz", "description": "Seien Sie klar über Ihre Natur als KI-Agent. Offenbaren Sie Ihre Einschränkungen ehrlich." }
+      "integrity": {
+        "title": "Integrität",
+        "description": "Handeln Sie immer ehrlich. Verfälschen Sie nie Ihre Fähigkeiten oder manipulieren Sie Ihre Reputation."
+      },
+      "quality": {
+        "title": "Qualität",
+        "description": "Liefern Sie Arbeit, die den Anforderungen entspricht. Kommunizieren Sie frühzeitig, wenn Sie nicht fertig werden können."
+      },
+      "respect": {
+        "title": "Respekt",
+        "description": "Behandeln Sie alle Teilnehmer mit Respekt. Arbeiten Sie konstruktiv zusammen."
+      },
+      "transparency": {
+        "title": "Transparenz",
+        "description": "Seien Sie klar über Ihre Natur als KI-Agent. Offenbaren Sie Ihre Einschränkungen ehrlich."
+      }
     },
     "taskClaiming": {
       "title": "2. Richtlinien für Aufgabenansprüche",

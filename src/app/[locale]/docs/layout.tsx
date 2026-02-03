@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Header } from '@/components/layout/Header';
+import { useState } from 'react';
+
+import { ChevronDownIcon, ChevronRightIcon, CloseIcon, MenuIcon } from '@/components/icons';
 import { Footer } from '@/components/layout/Footer';
-import { ChevronRightIcon, ChevronDownIcon, MenuIcon, CloseIcon } from '@/components/icons';
+import { Header } from '@/components/layout/Header';
 import { useTranslation } from '@/lib/i18n';
 
 interface NavItem {
@@ -67,11 +68,14 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   const { t } = useTranslation();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(['gettingStarted.title', 'coreConcepts.title']);
+  const [expandedSections, setExpandedSections] = useState<string[]>([
+    'gettingStarted.title',
+    'coreConcepts.title',
+  ]);
 
   const toggleSection = (title: string) => {
-    setExpandedSections(prev =>
-      prev.includes(title) ? prev.filter(t => t !== title) : [...prev, title]
+    setExpandedSections((prev) =>
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
     );
   };
 
@@ -104,40 +108,49 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             `}
             style={{
               background: 'var(--bg-secondary)',
-              borderColor: 'var(--border-subtle)'
+              borderColor: 'var(--border-subtle)',
             }}
           >
             <nav className="p-6 space-y-1">
-              {navigationConfig.map(section => (
+              {navigationConfig.map((section) => (
                 <div key={section.titleKey} className="mb-4">
                   <button
                     onClick={() => toggleSection(section.titleKey)}
                     className="flex items-center justify-between w-full py-2 text-sm font-semibold hover:text-[var(--accent-cyan)] transition-colors"
                   >
                     {t(`docsNav.${section.titleKey}`)}
-                    {expandedSections.includes(section.titleKey)
-                      ? <ChevronDownIcon size={16} />
-                      : <ChevronRightIcon size={16} />
-                    }
+                    {expandedSections.includes(section.titleKey) ? (
+                      <ChevronDownIcon size={16} />
+                    ) : (
+                      <ChevronRightIcon size={16} />
+                    )}
                   </button>
 
                   {expandedSections.includes(section.titleKey) && (
-                    <ul className="ml-2 mt-1 space-y-1 border-l" style={{ borderColor: 'var(--border-subtle)' }}>
-                      {section.items.map(item => (
+                    <ul
+                      className="ml-2 mt-1 space-y-1 border-l"
+                      style={{ borderColor: 'var(--border-subtle)' }}
+                    >
+                      {section.items.map((item) => (
                         <li key={item.href}>
                           <Link
                             href={item.href}
                             onClick={() => setSidebarOpen(false)}
                             className={`
                               block py-1.5 pl-4 text-sm transition-colors
-                              ${isActive(item.href)
-                                ? 'text-[var(--accent-cyan)] border-l-2 -ml-[1px]'
-                                : 'hover:text-[var(--accent-cyan)]'
+                              ${
+                                isActive(item.href)
+                                  ? 'text-[var(--accent-cyan)] border-l-2 -ml-[1px]'
+                                  : 'hover:text-[var(--accent-cyan)]'
                               }
                             `}
                             style={{
-                              color: isActive(item.href) ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                              borderColor: isActive(item.href) ? 'var(--accent-cyan)' : 'transparent'
+                              color: isActive(item.href)
+                                ? 'var(--accent-cyan)'
+                                : 'var(--text-secondary)',
+                              borderColor: isActive(item.href)
+                                ? 'var(--accent-cyan)'
+                                : 'transparent',
                             }}
                           >
                             {t(`docsNav.${item.labelKey}`)}
@@ -153,9 +166,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
           {/* Main content */}
           <main className="flex-1 min-w-0 lg:ml-0">
-            <div className="max-w-4xl mx-auto px-6 py-12">
-              {children}
-            </div>
+            <div className="max-w-4xl mx-auto px-6 py-12">{children}</div>
             <Footer />
           </main>
         </div>
