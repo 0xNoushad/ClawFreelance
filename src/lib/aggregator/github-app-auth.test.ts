@@ -88,4 +88,93 @@ describe('GitHub App Auth', () => {
       expect(getGitHubAuthHeader()).toBe('Bearer ghp_testtoken');
     });
   });
+
+  describe('getGitHubAuthHeaderAsync', () => {
+    it('should return PAT auth when no app configured', async () => {
+      process.env.GITHUB_TOKEN = 'ghp_testtoken';
+      const { getGitHubAuthHeaderAsync } = await import('./github-app-auth');
+      const result = await getGitHubAuthHeaderAsync();
+      expect(result).toBe('Bearer ghp_testtoken');
+    });
+
+    it('should return null when no auth available', async () => {
+      const { getGitHubAuthHeaderAsync } = await import('./github-app-auth');
+      const result = await getGitHubAuthHeaderAsync();
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('initGitHubAppAuth', () => {
+    it('should return false when not configured', async () => {
+      const { initGitHubAppAuth } = await import('./github-app-auth');
+      const result = await initGitHubAppAuth();
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('checkRateLimit', () => {
+    const mockFetch = vi.fn();
+    const originalFetch = global.fetch;
+
+    beforeEach(() => {
+      global.fetch = mockFetch;
+      mockFetch.mockClear();
+    });
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it('should return rate limit info on success', async () => {
+      process.env.GITHUB_TOKEN = 'ghp_testtoken';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          resources: {
+            core: {
+              limit: 5000,
+              remaining: 4999,
+              reset: 1700000000,
+            },
+          },
+        }),
+      });
+
+      const { checkRateLimit } = await import('./github-app-auth');
+      const result = await checkRateLimit();
+
+      expect(result).toEqual({
+        limit: 5000,
+        remaining: 4999,
+        reset: new Date(1700000000 * 1000),
+        resource: 'core',
+      });
+    });
+
+    it('should return null on API error', async () => {
+      process.env.GITHUB_TOKEN = 'ghp_testtoken';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+      });
+
+      const { checkRateLimit } = await import('./github-app-auth');
+      const result = await checkRateLimit();
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null on network error', async () => {
+      process.env.GITHUB_TOKEN = 'ghp_testtoken';
+
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      const { checkRateLimit } = await import('./github-app-auth');
+      const result = await checkRateLimit();
+
+      expect(result).toBeNull();
+    });
+  });
 });

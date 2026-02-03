@@ -6,6 +6,11 @@ import { ALGORA_REPOS, AlgoraBountySource } from './algora';
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
+// Mock GitHub App Auth
+vi.mock('../github-app-auth', () => ({
+  getGitHubAuthHeaderAsync: vi.fn(() => Promise.resolve('Bearer test-token')),
+}));
+
 describe('AlgoraBountySource', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -30,6 +35,14 @@ describe('AlgoraBountySource', () => {
   });
 
   describe('fetch', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
     it('should return empty array when disabled', async () => {
       const source = new AlgoraBountySource({ enabled: false });
       const result = await source.fetch();
@@ -38,43 +51,56 @@ describe('AlgoraBountySource', () => {
     });
 
     it('should fetch Algora bounties from configured repositories', async () => {
-      const mockIssue = {
-        id: 456,
-        number: 101,
-        title: 'Implement new feature',
-        body: '/bounty $500\n\nPlease implement this feature...',
-        html_url: 'https://github.com/zio/zio/issues/101',
-        state: 'open',
-        labels: [{ name: '💎 Bounty', color: 'ff0000' }],
-        user: { login: 'ziodev', id: 2 },
-        created_at: '2025-01-15T10:00:00Z',
-        updated_at: '2025-01-20T15:00:00Z',
-      };
+      // Use real timers but mock setTimeout to resolve immediately
+      vi.useRealTimers();
+      const originalSetTimeout = global.setTimeout;
+      global.setTimeout = ((fn: () => void) => {
+        fn();
+        return 0 as unknown as NodeJS.Timeout;
+      }) as typeof setTimeout;
 
-      mockFetch.mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          total_count: 1,
-          incomplete_results: false,
-          items: [mockIssue],
-        }),
-      });
+      try {
+        const mockIssue = {
+          id: 456,
+          number: 101,
+          title: 'Implement new feature',
+          body: '/bounty $500\n\nPlease implement this feature...',
+          html_url: 'https://github.com/zio/zio/issues/101',
+          state: 'open',
+          labels: [{ name: '💎 Bounty', color: 'ff0000' }],
+          user: { login: 'ziodev', id: 2 },
+          created_at: '2025-01-15T10:00:00Z',
+          updated_at: '2025-01-20T15:00:00Z',
+        };
 
-      const source = new AlgoraBountySource({
-        repositories: ['zio/zio'],
-      });
+        mockFetch.mockResolvedValue({
+          ok: true,
+          json: async () => ({
+            total_count: 1,
+            incomplete_results: false,
+            items: [mockIssue],
+          }),
+        });
 
-      const result = await source.fetch();
+        const source = new AlgoraBountySource({
+          repositories: ['zio/zio'],
+        });
 
-      expect(mockFetch).toHaveBeenCalled();
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        source: 'algora',
-        externalId: 'algora-zio/zio-101',
-        externalUrl: 'https://github.com/zio/zio/issues/101',
-        title: 'Implement new feature',
-        ownerExternalId: 'ziodev',
-      });
+        const result = await source.fetch();
+
+        expect(mockFetch).toHaveBeenCalled();
+        expect(result).toHaveLength(1);
+        expect(result[0]).toMatchObject({
+          source: 'algora',
+          externalId: 'algora-zio/zio-101',
+          externalUrl: 'https://github.com/zio/zio/issues/101',
+          title: 'Implement new feature',
+          ownerExternalId: 'ziodev',
+        });
+      } finally {
+        global.setTimeout = originalSetTimeout;
+        vi.useFakeTimers();
+      }
     });
 
     it('should handle rate limits gracefully', async () => {
@@ -88,7 +114,10 @@ describe('AlgoraBountySource', () => {
         repositories: ['test/repo'],
       });
 
-      const result = await source.fetch();
+      const fetchPromise = source.fetch();
+      await vi.runAllTimersAsync();
+      const result = await fetchPromise;
+
       expect(result).toEqual([]);
     });
 
@@ -100,7 +129,10 @@ describe('AlgoraBountySource', () => {
         repositories: ['test/repo'],
       });
 
-      const result = await source.fetch();
+      const fetchPromise = source.fetch();
+      await vi.runAllTimersAsync();
+      const result = await fetchPromise;
+
       expect(result).toEqual([]);
     });
   });

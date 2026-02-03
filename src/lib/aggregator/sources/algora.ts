@@ -269,8 +269,20 @@ export class AlgoraBountySource implements BountySource {
   }
 
   normalize(raw: RawBounty): NormalizedTask {
-    // Use pre-fetched reward from comments, or try extracting from description as fallback
-    const hasReward = raw.rewardAmount && raw.rewardAmount >= 10;
+    // Use pre-fetched reward, or try extracting from description as fallback
+    let rewardAmount = raw.rewardAmount || 0;
+    let rewardCurrency = raw.rewardCurrency || 'USD';
+
+    // If no pre-parsed reward, try extracting from description
+    if (!rewardAmount && raw.description) {
+      const extracted = extractAlgoraReward(raw.description);
+      if (extracted) {
+        rewardAmount = extracted.amount;
+        rewardCurrency = extracted.currency;
+      }
+    }
+
+    const hasReward = rewardAmount >= 10;
 
     return {
       title: raw.title,
@@ -280,8 +292,8 @@ export class AlgoraBountySource implements BountySource {
       externalUrl: raw.externalUrl,
       ownerExternalId: raw.ownerExternalId,
       rewardType: hasReward ? 'external' : 'points',
-      rewardAmount: raw.rewardAmount || 0,
-      rewardCurrency: raw.rewardCurrency || 'USD',
+      rewardAmount,
+      rewardCurrency,
       visibility: 'public',
       isMilestoneBased: false,
       status: 'open',
