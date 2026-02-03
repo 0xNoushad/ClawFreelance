@@ -25,6 +25,7 @@
  * @see https://docs.github.com/en/rest/rate-limit
  */
 
+import { getGitHubHeaders, isGitHubAppConfigured } from '../github-app-auth';
 import type { BountySource, GitHubSourceConfig, NormalizedTask, RawBounty } from '../types';
 
 const GITHUB_API_BASE = 'https://api.github.com';
@@ -317,12 +318,12 @@ export class GitHubBountySource implements BountySource {
   }
 
   private async fetchWithAuth(url: string): Promise<Response> {
-    const headers: HeadersInit = {
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    };
+    // Use centralized auth (GitHub App > PAT > unauthenticated)
+    // GitHub App provides 15,000+ req/hr vs 5,000 with PAT
+    const headers = getGitHubHeaders();
 
-    if (this.config.token) {
+    // Allow config token to override if explicitly set
+    if (this.config.token && !isGitHubAppConfigured()) {
       headers.Authorization = `Bearer ${this.config.token}`;
     }
 
