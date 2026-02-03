@@ -56,7 +56,6 @@ export const POPULAR_BOUNTY_REPOS = [
   'paradigmxyz/reth',
   'matter-labs/zksync-era',
   'scroll-tech/scroll',
-  'base-org/node',
   'starkware-libs/cairo',
   'noir-lang/noir',
   'zcash/zcash',
@@ -396,6 +395,7 @@ export class GitHubBountySource implements BountySource {
 
   /**
    * Fetch bounties from all configured repositories
+   * Uses batched parallel fetching to optimize speed while respecting rate limits
    */
   async fetch(): Promise<RawBounty[]> {
     if (!this.config.enabled) {
@@ -403,14 +403,33 @@ export class GitHubBountySource implements BountySource {
     }
 
     const allBounties: RawBounty[] = [];
+    const repos = this.config.repositories;
 
-    // Fetch from repositories sequentially to respect rate limits
-    for (const repo of this.config.repositories) {
-      const bounties = await this.fetchFromRepo(repo);
-      allBounties.push(...bounties);
+    // Batch size: fetch 3 repos in parallel, then wait
+    // GitHub Search API has secondary rate limit of ~30 req/min
+    // Each repo makes up to 9 requests (one per label), so 3 repos = ~27 req
+    const BATCH_SIZE = 3;
+    const BATCH_DELAY_MS = 5000; // 5 seconds between batches to stay safe
 
-      // Small delay between repos to avoid rate limiting
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    for (let i = 0; i < repos.length; i += BATCH_SIZE) {
+      const batch = repos.slice(i, i + BATCH_SIZE);
+      const batchNum = Math.floor(i / BATCH_SIZE) + 1;
+      const totalBatches = Math.ceil(repos.length / BATCH_SIZE);
+
+      console.log(`[github] Batch ${batchNum}/${totalBatches}: ${batch.join(', ')}`);
+
+      // Fetch batch in parallel
+      const batchResults = await Promise.all(batch.map((repo) => this.fetchFromRepo(repo)));
+
+      // Collect results
+      for (const bounties of batchResults) {
+        allBounties.push(...bounties);
+      }
+
+      // Delay between batches (except for last batch)
+      if (i + BATCH_SIZE < repos.length) {
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
+      }
     }
 
     return allBounties;
