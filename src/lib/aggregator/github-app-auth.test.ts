@@ -193,7 +193,8 @@ describe('GitHub App Auth', () => {
 
     it('should return installation token when app is configured', async () => {
       process.env.GITHUB_APP_ID = '12345';
-      process.env.GITHUB_APP_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
+      process.env.GITHUB_APP_PRIVATE_KEY =
+        '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
 
       // Mock JWT library
       vi.doMock('jsonwebtoken', () => ({
@@ -222,7 +223,8 @@ describe('GitHub App Auth', () => {
 
     it('should fall back to PAT when installation fetch fails', async () => {
       process.env.GITHUB_APP_ID = '12345';
-      process.env.GITHUB_APP_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
+      process.env.GITHUB_APP_PRIVATE_KEY =
+        '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
       process.env.GITHUB_TOKEN = 'ghp_fallback';
 
       // Mock failed installation fetch
@@ -241,7 +243,8 @@ describe('GitHub App Auth', () => {
 
     it('should handle empty installations array', async () => {
       process.env.GITHUB_APP_ID = '12345';
-      process.env.GITHUB_APP_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
+      process.env.GITHUB_APP_PRIVATE_KEY =
+        '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
       process.env.GITHUB_TOKEN = 'ghp_fallback';
 
       mockFetch.mockResolvedValueOnce({
@@ -257,7 +260,8 @@ describe('GitHub App Auth', () => {
 
     it('should handle token fetch failure', async () => {
       process.env.GITHUB_APP_ID = '12345';
-      process.env.GITHUB_APP_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
+      process.env.GITHUB_APP_PRIVATE_KEY =
+        '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
       process.env.GITHUB_TOKEN = 'ghp_fallback';
 
       mockFetch
@@ -293,7 +297,8 @@ describe('GitHub App Auth', () => {
 
     it('should return true when token obtained successfully', async () => {
       process.env.GITHUB_APP_ID = '12345';
-      process.env.GITHUB_APP_PRIVATE_KEY = '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
+      process.env.GITHUB_APP_PRIVATE_KEY =
+        '-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----';
 
       mockFetch
         .mockResolvedValueOnce({

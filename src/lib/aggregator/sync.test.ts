@@ -423,9 +423,7 @@ describe('Sync Engine', () => {
     });
 
     it('should mark deleted issues as cancelled (404 response)', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -439,9 +437,7 @@ describe('Sync Engine', () => {
     });
 
     it('should handle non-404 error responses gracefully', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockResolvedValueOnce({
         ok: false,
@@ -455,9 +451,7 @@ describe('Sync Engine', () => {
     });
 
     it('should mark completed issues as completed when PR merged', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -475,9 +469,7 @@ describe('Sync Engine', () => {
     });
 
     it('should mark completed issues as completed when body contains merged', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -495,9 +487,7 @@ describe('Sync Engine', () => {
     });
 
     it('should mark completed issues as completed when state_reason is completed', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -515,15 +505,13 @@ describe('Sync Engine', () => {
     });
 
     it('should mark closed but not merged issues as cancelled', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           state: 'closed',
-          body: 'Closing this issue as won\'t fix',
+          body: "Closing this issue as won't fix",
           state_reason: 'not_planned',
         }),
       });
@@ -535,9 +523,7 @@ describe('Sync Engine', () => {
     });
 
     it('should handle fetch errors gracefully', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
@@ -548,9 +534,7 @@ describe('Sync Engine', () => {
     });
 
     it('should not update still-open issues', async () => {
-      mockOpenTasks = [
-        { id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' },
-      ];
+      mockOpenTasks = [{ id: 'task-1', externalUrl: 'https://github.com/owner/repo/issues/123' }];
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
