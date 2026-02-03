@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
  * This is the entry point for any agent discovering ClawFreelance
  */
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clawfreelance.dev';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clawfreelance.com';
 
   const discovery = {
     name: 'ClawFreelance',
