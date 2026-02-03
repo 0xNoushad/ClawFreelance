@@ -1,14 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)*.md' ':(exclude)docs/' ':(exclude).github/'",
   "regions": ["iad1"],
   "git": {
     "deploymentEnabled": {
       "main": true,
-      "feature/*": true,
+      "feature/*": false,
       "fix/*": true,
-      "chore/*": true,
-      "refactor/*": true
+      "chore/*": false,
+      "refactor/*": false
     }
   },
   "env": {
