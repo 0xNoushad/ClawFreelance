@@ -30,9 +30,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 // Create postgres client with hardened security settings
 const client = postgres(connectionString, {
   // SSL Configuration
-  // In production: verify server certificate
-  // In development: disable SSL for local postgres
-  ssl: isProduction ? { rejectUnauthorized: true } : false,
+  // Supabase uses certificates not in Node's trust store
+  // rejectUnauthorized: false is required for Supabase compatibility
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
 
   // Connection Pool Settings
   max: 10,
