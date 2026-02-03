@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { NextRequest } from 'next/server';
 import {
   checkRateLimit,
   generateApiKey,
@@ -20,6 +21,7 @@ import {
   validateTaskContent,
   createCsrfTokenForSession,
   validateCsrfTokenForSession,
+  validateCsrfHeaders,
   sanitizeInputStrict,
   sanitizeMarkdown,
 } from './security';
@@ -629,6 +631,70 @@ describe('Security Module', () => {
 
     it.each(safeInputs)('should not flag safe: %s', (input) => {
       expect(containsSuspiciousContent(input)).toBe(false);
+    });
+  });
+
+  // ============================================
+  // CSRF HEADER VALIDATION TESTS
+  // ============================================
+  describe('validateCsrfHeaders', () => {
+    function createMockRequestWithHeaders(headers: Record<string, string>): NextRequest {
+      return {
+        headers: new Headers(headers),
+      } as unknown as NextRequest;
+    }
+
+    it('should accept valid origin header', () => {
+      const request = createMockRequestWithHeaders({ origin: 'https://example.com' });
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(true);
+    });
+
+    it('should reject invalid origin header', () => {
+      const request = createMockRequestWithHeaders({ origin: 'https://evil.com' });
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(false);
+    });
+
+    it('should check referer when origin is missing', () => {
+      const request = createMockRequestWithHeaders({ referer: 'https://example.com/page' });
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(true);
+    });
+
+    it('should reject when both origin and referer are missing', () => {
+      const request = createMockRequestWithHeaders({});
+      expect(validateCsrfHeaders(request, ['https://example.com'])).toBe(false);
+    });
+
+    it('should support multiple allowed origins', () => {
+      const request = createMockRequestWithHeaders({ origin: 'https://app.example.com' });
+      expect(validateCsrfHeaders(request, ['https://example.com', 'https://app.example.com'])).toBe(true);
+    });
+  });
+
+  // ============================================
+  // SANITIZE INPUT STRICT EDGE CASES
+  // ============================================
+  describe('sanitizeInputStrict edge cases', () => {
+    it('should truncate input longer than 10000 characters', () => {
+      const longInput = 'a'.repeat(15000);
+      const result = sanitizeInputStrict(longInput);
+      expect(result.length).toBe(10000);
+    });
+
+    it('should handle input at exactly 10000 characters', () => {
+      const exactInput = 'b'.repeat(10000);
+      const result = sanitizeInputStrict(exactInput);
+      expect(result.length).toBe(10000);
+    });
+  });
+
+  // ============================================
+  // SANITIZE MARKDOWN EDGE CASES
+  // ============================================
+  describe('sanitizeMarkdown edge cases', () => {
+    it('should truncate markdown longer than 50000 characters', () => {
+      const longMarkdown = '# Title\n' + 'content '.repeat(10000);
+      const result = sanitizeMarkdown(longMarkdown);
+      expect(result.length).toBeLessThanOrEqual(50000);
     });
   });
 });

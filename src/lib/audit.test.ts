@@ -295,4 +295,64 @@ describe('Audit Module', () => {
       expect(new Date(entry.timestamp).toISOString()).toBe(entry.timestamp);
     });
   });
+
+  // ============================================
+  // BUFFER OVERFLOW TESTS
+  // ============================================
+  describe('Audit buffer management', () => {
+    it('should handle many log entries without crashing', () => {
+      const request = createMockRequest();
+
+      // Create many entries to test buffer limits
+      for (let i = 0; i < 1100; i++) {
+        createAuditLog(request, 'test.action', {
+          resourceType: 'test',
+          metadata: { iteration: i },
+        });
+      }
+
+      // Should still be able to get recent logs
+      const logs = getRecentAuditLogs(10);
+      expect(logs.length).toBeLessThanOrEqual(10);
+    });
+  });
+
+  // ============================================
+  // SENSITIVE DATA REDACTION TESTS
+  // ============================================
+  describe('Sensitive data handling', () => {
+    it('should handle metadata with sensitive keys', () => {
+      const request = createMockRequest();
+      const entry = createAuditLog(request, 'auth.attempt', {
+        resourceType: 'auth',
+        metadata: {
+          apiKey: 'secret-key-123',
+          password: 'secret-pass',
+          normalField: 'visible',
+        },
+      });
+
+      // Entry should be created successfully
+      expect(entry).toBeDefined();
+      expect(entry.metadata.normalField).toBe('visible');
+    });
+
+    it('should handle nested metadata objects', () => {
+      const request = createMockRequest();
+      const entry = createAuditLog(request, 'complex.action', {
+        resourceType: 'complex',
+        metadata: {
+          user: {
+            name: 'John',
+            credentials: {
+              token: 'secret',
+            },
+          },
+        },
+      });
+
+      expect(entry).toBeDefined();
+      expect(entry.metadata.user).toBeDefined();
+    });
+  });
 });
