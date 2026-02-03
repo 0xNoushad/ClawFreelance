@@ -21,19 +21,99 @@ const DEFAULT_BOUNTY_LABELS = [
   'funding',
 ];
 
-// Well-known repositories with bounty programs
+// Well-known repositories with bounty/contribution programs
+// Organized by category for easier maintenance
 export const POPULAR_BOUNTY_REPOS = [
-  'anthropics/anthropic-cookbook',
+  // === Web3 / Blockchain ===
   'ethereum/go-ethereum',
   'bitcoin/bitcoin',
+  'solana-labs/solana',
+  'aptos-labs/aptos-core',
   'NomicFoundation/hardhat',
   'foundry-rs/foundry',
   'paradigmxyz/reth',
   'matter-labs/zksync-era',
   'scroll-tech/scroll',
   'base-org/node',
-  'solana-labs/solana',
-  'aptos-labs/aptos-core',
+  'starkware-libs/cairo',
+  'noir-lang/noir',
+  'zcash/zcash',
+  'cosmos/cosmos-sdk',
+  'polkadot-fellows/runtimes',
+
+  // === AI / ML ===
+  'anthropics/anthropic-cookbook',
+  'langchain-ai/langchain',
+  'huggingface/transformers',
+  'ollama/ollama',
+  'ggerganov/llama.cpp',
+  'livekit/agents',
+
+  // === Open Source Applications (cal.com ecosystem) ===
+  'calcom/cal.com',
+  'twentyhq/twenty',
+  'appflowy/appflowy',
+  'documenso/documenso',
+  'formbricks/formbricks',
+  'triggerdotdev/trigger.dev',
+  'infisical/infisical',
+  'dubinc/dub',
+  'hoppscotch/hoppscotch',
+  'nocodb/nocodb',
+  'n8n-io/n8n',
+  'plausible/analytics',
+  'PostHog/posthog',
+  'supabase/supabase',
+
+  // === Developer Tools ===
+  'vercel/next.js',
+  'remix-run/remix',
+  'sveltejs/svelte',
+  'vuejs/core',
+  'withastro/astro',
+  'tauri-apps/tauri',
+  'denoland/deno',
+  'biomejs/biome',
+  'oxc-project/oxc',
+  'evanw/esbuild',
+  'vitejs/vite',
+  'turbo/turborepo',
+
+  // === Infrastructure / DevOps ===
+  'docker/compose',
+  'kubernetes/kubernetes',
+  'hashicorp/terraform',
+  'grafana/grafana',
+  'prometheus/prometheus',
+  'traefik/traefik',
+  'containers/podman',
+
+  // === Databases ===
+  'cockroachdb/cockroach',
+  'pingcap/tidb',
+  'questdb/questdb',
+  'surrealdb/surrealdb',
+  'drizzle-team/drizzle-orm',
+  'prisma/prisma',
+
+  // === Security / Privacy ===
+  'nickvdyck/webterminal',
+  'zama-ai/tfhe-rs',
+  'bitwarden/clients',
+
+  // === Paid Contribution Programs ===
+  'Expensify/App',
+  'rudderlabs/rudder-server',
+  'golemcloud/golem-cli',
+  'zio/zio',
+  'omnigres/omnigres',
+  'Mudlet/Mudlet',
+  'ether/etherpad-lite',
+
+  // === Algora Active Bounties ===
+  'zio/zio-blocks',
+  'archestra-ai/archestra',
+  'golemcloud/golem-ai',
 ];
 
 interface GitHubIssue {

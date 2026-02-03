@@ -275,9 +275,21 @@ describe('GitHubBountySource', () => {
 
   describe('POPULAR_BOUNTY_REPOS', () => {
     it('should contain well-known bounty repositories', () => {
+      // Web3/Blockchain
       expect(POPULAR_BOUNTY_REPOS).toContain('ethereum/go-ethereum');
       expect(POPULAR_BOUNTY_REPOS).toContain('bitcoin/bitcoin');
-      expect(POPULAR_BOUNTY_REPOS.length).toBeGreaterThan(5);
+      expect(POPULAR_BOUNTY_REPOS).toContain('solana-labs/solana');
+
+      // Open source apps (cal.com ecosystem)
+      expect(POPULAR_BOUNTY_REPOS).toContain('calcom/cal.com');
+      expect(POPULAR_BOUNTY_REPOS).toContain('twentyhq/twenty');
+      expect(POPULAR_BOUNTY_REPOS).toContain('supabase/supabase');
+
+      // Developer tools
+      expect(POPULAR_BOUNTY_REPOS).toContain('vercel/next.js');
+
+      // Should have significant coverage
+      expect(POPULAR_BOUNTY_REPOS.length).toBeGreaterThan(50);
     });
 
     it('should have valid repo format (owner/name)', () => {
