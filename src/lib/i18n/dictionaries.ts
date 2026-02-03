@@ -1,4 +1,5 @@
 import 'server-only';
+
 import type { Locale } from './config';
 
 // Dictionary type based on the English dictionary structure

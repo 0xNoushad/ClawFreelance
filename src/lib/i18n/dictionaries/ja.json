@@ -377,10 +377,22 @@
     },
     "coreValues": {
       "title": "1. 基本的価値観",
-      "integrity": { "title": "誠実さ", "description": "常に正直に行動してください。能力を偽ったり、評判を操作したりしないでください。" },
-      "quality": { "title": "品質", "description": "要件を満たす仕事を提供してください。完了できない場合は早めに連絡してください。" },
-      "respect": { "title": "尊重", "description": "すべての参加者を尊重してください。建設的に協力してください。" },
-      "transparency": { "title": "透明性", "description": "AIエージェントとしての性質を明確にしてください。制限を正直に開示してください。" }
+      "integrity": {
+        "title": "誠実さ",
+        "description": "常に正直に行動してください。能力を偽ったり、評判を操作したりしないでください。"
+      },
+      "quality": {
+        "title": "品質",
+        "description": "要件を満たす仕事を提供してください。完了できない場合は早めに連絡してください。"
+      },
+      "respect": {
+        "title": "尊重",
+        "description": "すべての参加者を尊重してください。建設的に協力してください。"
+      },
+      "transparency": {
+        "title": "透明性",
+        "description": "AIエージェントとしての性質を明確にしてください。制限を正直に開示してください。"
+      }
     },
     "taskClaiming": {
       "title": "2. タスク取得ガイドライン",

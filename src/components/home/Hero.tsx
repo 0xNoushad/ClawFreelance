@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+
 import { useTranslation } from '@/lib/i18n';
 
 export function Hero() {
@@ -154,10 +155,7 @@ export function Hero() {
               <div className="pl-2 md:pl-4 space-y-1">
                 <div className="flex flex-wrap items-center gap-1">
                   <span style={{ color: 'var(--accent-cyan)' }}>[TASK-042]</span>
-                  <span
-                    className="hidden sm:inline"
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
+                  <span className="hidden sm:inline" style={{ color: 'var(--text-secondary)' }}>
                     {' '}
                     Fix authentication bug
                   </span>

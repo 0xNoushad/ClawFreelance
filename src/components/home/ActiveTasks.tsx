@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+
 import { useTranslation } from '@/lib/i18n';
 
 type TaskStatus = 'open' | 'claimed' | 'in_progress' | 'verification';
@@ -97,16 +98,23 @@ export function ActiveTasks() {
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">
               {t.rich('activeTasks.sectionTitle', {
-                highlight: (chunks) => <span style={{ color: 'var(--accent-cyan)' }}>{chunks}</span>,
+                highlight: (chunks) => (
+                  <span style={{ color: 'var(--accent-cyan)' }}>{chunks}</span>
+                ),
               })}
             </h2>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              {t('activeTasks.sectionDescription')}
-            </p>
+            <p style={{ color: 'var(--text-secondary)' }}>{t('activeTasks.sectionDescription')}</p>
           </div>
           <Link href="/tasks" className="btn btn-secondary text-sm">
             {t('activeTasks.viewAllTasks')}
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </Link>
@@ -129,14 +137,26 @@ export function ActiveTasks() {
                   <span className="font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>
                     {task.id}
                   </span>
-                  <span className="text-xs font-mono px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
-                    {task.source.includes('github') ? 'GH' : task.source.includes('gitcoin') ? 'GC' : task.source.includes('algora') ? 'AL' : 'DR'}
+                  <span
+                    className="text-xs font-mono px-1.5 py-0.5 rounded"
+                    style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
+                  >
+                    {task.source.includes('github')
+                      ? 'GH'
+                      : task.source.includes('gitcoin')
+                        ? 'GC'
+                        : task.source.includes('algora')
+                          ? 'AL'
+                          : 'DR'}
                   </span>
                 </div>
                 <span
                   className="font-mono text-sm font-bold"
                   style={{
-                    color: task.rewardType === 'crypto' ? 'var(--accent-amber)' : 'var(--status-success)',
+                    color:
+                      task.rewardType === 'crypto'
+                        ? 'var(--accent-amber)'
+                        : 'var(--status-success)',
                   }}
                 >
                   {task.reward}
@@ -182,7 +202,10 @@ export function ActiveTasks() {
                 </div>
               </div>
               {task.claimedBy && (
-                <p className="text-xs font-mono mt-2 pt-2 border-t" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-subtle)' }}>
+                <p
+                  className="text-xs font-mono mt-2 pt-2 border-t"
+                  style={{ color: 'var(--text-muted)', borderColor: 'var(--border-subtle)' }}
+                >
                   {t('activeTasks.claimedBy')} {task.claimedBy}
                 </p>
               )}
@@ -261,7 +284,10 @@ export function ActiveTasks() {
                 <span
                   className="font-mono text-sm font-medium"
                   style={{
-                    color: task.rewardType === 'crypto' ? 'var(--accent-amber)' : 'var(--status-success)',
+                    color:
+                      task.rewardType === 'crypto'
+                        ? 'var(--accent-amber)'
+                        : 'var(--status-success)',
                   }}
                 >
                   {task.reward}
@@ -294,7 +320,13 @@ export function ActiveTasks() {
               {/* Source */}
               <div className="col-span-1">
                 <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
-                  {task.source.includes('github') ? 'GH' : task.source.includes('gitcoin') ? 'GC' : task.source.includes('algora') ? 'AL' : 'DR'}
+                  {task.source.includes('github')
+                    ? 'GH'
+                    : task.source.includes('gitcoin')
+                      ? 'GC'
+                      : task.source.includes('algora')
+                        ? 'AL'
+                        : 'DR'}
                 </span>
               </div>
             </div>
@@ -302,9 +334,15 @@ export function ActiveTasks() {
         </div>
 
         {/* Bottom stats */}
-        <div className="flex flex-wrap gap-6 mt-6 justify-center text-sm" style={{ color: 'var(--text-muted)' }}>
+        <div
+          className="flex flex-wrap gap-6 mt-6 justify-center text-sm"
+          style={{ color: 'var(--text-muted)' }}
+        >
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ background: 'var(--status-success)' }} />
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--status-success)' }}
+            />
             <span>{t('activeTasks.bottomStats.open')} 847</span>
           </div>
           <div className="flex items-center gap-2">
@@ -312,11 +350,16 @@ export function ActiveTasks() {
             <span>{t('activeTasks.bottomStats.inProgress')} 234</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ background: 'var(--status-pending)' }} />
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ background: 'var(--status-pending)' }}
+            />
             <span>{t('activeTasks.bottomStats.verification')} 89</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-mono" style={{ color: 'var(--accent-amber)' }}>$127K</span>
+            <span className="font-mono" style={{ color: 'var(--accent-amber)' }}>
+              $127K
+            </span>
             <span>{t('activeTasks.bottomStats.inOpenBounties')}</span>
           </div>
         </div>

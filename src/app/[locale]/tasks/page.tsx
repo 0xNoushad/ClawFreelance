@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useTranslation } from '@/lib/i18n';
-import { Header } from '@/components/layout/Header';
+import { useEffect, useState } from 'react';
+
+import { FilterIcon, SearchIcon, TaskIcon } from '@/components/icons';
 import { Footer } from '@/components/layout/Footer';
-import { SearchIcon, FilterIcon, TaskIcon } from '@/components/icons';
+import { Header } from '@/components/layout/Header';
+import { useTranslation } from '@/lib/i18n';
 
 type Task = {
   id: string;
@@ -70,9 +71,10 @@ export default function TasksPage() {
     fetchTasks();
   }, [filters.status, filters.type, filters.difficulty]);
 
-  const filteredTasks = tasks.filter(task =>
-    task.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-    task.description.toLowerCase().includes(filters.search.toLowerCase())
+  const filteredTasks = tasks.filter(
+    (task) =>
+      task.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+      task.description.toLowerCase().includes(filters.search.toLowerCase())
   );
 
   return (
@@ -85,12 +87,14 @@ export default function TasksPage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
               <div>
                 <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                  <TaskIcon size={36} className="inline mr-3" style={{ color: 'var(--accent-cyan)' }} />
+                  <TaskIcon
+                    size={36}
+                    className="inline mr-3"
+                    style={{ color: 'var(--accent-cyan)' }}
+                  />
                   {t('tasks.title')}
                 </h1>
-                <p style={{ color: 'var(--text-secondary)' }}>
-                  {t('tasks.description')}
-                </p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('tasks.description')}</p>
               </div>
               <Link href="/post-task" className="btn btn-primary">
                 {t('tasks.postTask')}
@@ -98,16 +102,23 @@ export default function TasksPage() {
             </div>
 
             {/* Filters */}
-            <div className="rounded-xl border p-4 mb-8" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}>
+            <div
+              className="rounded-xl border p-4 mb-8"
+              style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+            >
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Search */}
                 <div className="flex-1 relative">
-                  <SearchIcon size={20} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
+                  <SearchIcon
+                    size={20}
+                    className="absolute left-3 top-1/2 -translate-y-1/2"
+                    style={{ color: 'var(--text-muted)' }}
+                  />
                   <input
                     type="text"
                     placeholder={t('tasks.searchPlaceholder')}
                     value={filters.search}
-                    onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
                     className="w-full pl-10 pr-4 py-2.5 rounded-lg border bg-transparent focus:outline-none focus:border-[var(--accent-cyan)]"
                     style={{ borderColor: 'var(--border-medium)' }}
                   />
@@ -117,7 +128,7 @@ export default function TasksPage() {
                 <div className="flex gap-3">
                   <select
                     value={filters.status}
-                    onChange={e => setFilters(prev => ({ ...prev, status: e.target.value }))}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
                     className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
                     style={{ borderColor: 'var(--border-medium)' }}
                   >
@@ -130,7 +141,7 @@ export default function TasksPage() {
 
                   <select
                     value={filters.type}
-                    onChange={e => setFilters(prev => ({ ...prev, type: e.target.value }))}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, type: e.target.value }))}
                     className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
                     style={{ borderColor: 'var(--border-medium)' }}
                   >
@@ -142,7 +153,9 @@ export default function TasksPage() {
 
                   <select
                     value={filters.difficulty}
-                    onChange={e => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, difficulty: e.target.value }))
+                    }
                     className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
                     style={{ borderColor: 'var(--border-medium)' }}
                   >
@@ -159,16 +172,22 @@ export default function TasksPage() {
             {loading ? (
               <div className="text-center py-20">
                 <div className="inline-block w-8 h-8 border-2 border-[var(--accent-cyan)] border-t-transparent rounded-full animate-spin" />
-                <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>{t('tasks.loadingTasks')}</p>
+                <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
+                  {t('tasks.loadingTasks')}
+                </p>
               </div>
             ) : filteredTasks.length === 0 ? (
               <div className="text-center py-20">
-                <FilterIcon size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+                <FilterIcon
+                  size={48}
+                  className="mx-auto mb-4"
+                  style={{ color: 'var(--text-muted)' }}
+                />
                 <p style={{ color: 'var(--text-secondary)' }}>{t('tasks.noTasksFound')}</p>
               </div>
             ) : (
               <div className="grid gap-4">
-                {filteredTasks.map(task => (
+                {filteredTasks.map((task) => (
                   <Link
                     key={task.id}
                     href={`/tasks/${task.id}`}
@@ -178,7 +197,10 @@ export default function TasksPage() {
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="font-mono text-sm" style={{ color: 'var(--accent-cyan)' }}>
+                          <span
+                            className="font-mono text-sm"
+                            style={{ color: 'var(--accent-cyan)' }}
+                          >
                             {task.id}
                           </span>
                           <span
@@ -190,22 +212,41 @@ export default function TasksPage() {
                           >
                             {statusConfig[task.status]?.label || task.status}
                           </span>
-                          <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                          <span
+                            className="text-xs px-2 py-0.5 rounded"
+                            style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
+                          >
                             {task.type.replace('_', ' ')}
                           </span>
                         </div>
                         <h3 className="text-lg font-semibold mb-2">{task.title}</h3>
-                        <p className="text-sm line-clamp-2 mb-3" style={{ color: 'var(--text-secondary)' }}>
+                        <p
+                          className="text-sm line-clamp-2 mb-3"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
                           {task.description}
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {task.requirements.slice(0, 4).map(req => (
-                            <span key={req} className="text-xs px-2 py-1 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)' }}>
+                          {task.requirements.slice(0, 4).map((req) => (
+                            <span
+                              key={req}
+                              className="text-xs px-2 py-1 rounded"
+                              style={{
+                                background: 'var(--bg-tertiary)',
+                                color: 'var(--text-secondary)',
+                              }}
+                            >
                               {req}
                             </span>
                           ))}
                           {task.requirements.length > 4 && (
-                            <span className="text-xs px-2 py-1 rounded" style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}>
+                            <span
+                              className="text-xs px-2 py-1 rounded"
+                              style={{
+                                background: 'var(--bg-tertiary)',
+                                color: 'var(--text-muted)',
+                              }}
+                            >
                               {t('common.more', { count: task.requirements.length - 4 })}
                             </span>
                           )}
@@ -214,21 +255,36 @@ export default function TasksPage() {
 
                       <div className="flex md:flex-col items-center md:items-end gap-4">
                         <div className="text-right">
-                          <div className="font-mono text-xl font-bold" style={{ color: task.rewardType === 'crypto' ? 'var(--accent-amber)' : 'var(--status-success)' }}>
-                            {task.rewardType === 'crypto' ? `$${task.rewardAmount}` : `${task.rewardAmount} ${t('common.pts')}`}
+                          <div
+                            className="font-mono text-xl font-bold"
+                            style={{
+                              color:
+                                task.rewardType === 'crypto'
+                                  ? 'var(--accent-amber)'
+                                  : 'var(--status-success)',
+                            }}
+                          >
+                            {task.rewardType === 'crypto'
+                              ? `$${task.rewardAmount}`
+                              : `${task.rewardAmount} ${t('common.pts')}`}
                           </div>
                           {task.rewardCurrency && (
-                            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{task.rewardCurrency}</div>
+                            <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                              {task.rewardCurrency}
+                            </div>
                           )}
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="flex gap-1">
-                            {[1, 2, 3].map(dot => (
+                            {[1, 2, 3].map((dot) => (
                               <div
                                 key={dot}
                                 className="w-2 h-2 rounded-full"
                                 style={{
-                                  background: dot <= difficultyConfig[task.difficulty]?.dots ? 'var(--accent-cyan)' : 'var(--bg-tertiary)',
+                                  background:
+                                    dot <= difficultyConfig[task.difficulty]?.dots
+                                      ? 'var(--accent-cyan)'
+                                      : 'var(--bg-tertiary)',
                                 }}
                               />
                             ))}

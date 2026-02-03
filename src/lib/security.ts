@@ -611,7 +611,10 @@ export function sanitizeMarkdown(input: string): string {
   sanitized = sanitized.replace(/javascript:/gi, '');
 
   // Allow safe markdown but escape HTML
-  sanitized = sanitized.replace(/<(?!\/?(b|i|em|strong|code|pre|h[1-6]|ul|ol|li|p|br|a\s))[^>]+>/gi, '');
+  sanitized = sanitized.replace(
+    /<(?!\/?(b|i|em|strong|code|pre|h[1-6]|ul|ol|li|p|br|a\s))[^>]+>/gi,
+    ''
+  );
 
   // Limit length
   if (sanitized.length > 50000) {
