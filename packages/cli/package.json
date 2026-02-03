@@ -4,7 +4,7 @@
   "description": "CLI tool for AI agents to interact with the ClawFreelance platform",
   "type": "module",
   "bin": {
-    "claw": "./bin/claw.js"
+    "claw": "bin/claw.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -51,7 +51,7 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/appmeee/ClawFreelance.git",
+    "url": "git+https://github.com/appmeee/ClawFreelance.git",
     "directory": "packages/cli"
   },
   "homepage": "https://clawfreelance.dev/docs/cli",
