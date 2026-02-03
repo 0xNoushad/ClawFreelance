@@ -305,8 +305,8 @@ describe('Audit Module', () => {
 
       // Create many entries to test buffer limits
       for (let i = 0; i < 1100; i++) {
-        createAuditLog(request, 'test.action', {
-          resourceType: 'test',
+        createAuditLog(request, 'task.create', {
+          resourceType: 'task',
           metadata: { iteration: i },
         });
       }
