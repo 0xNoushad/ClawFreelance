@@ -22,7 +22,8 @@
     "pts": "ポイント",
     "more": "+{count}件",
     "characters": "{count}/{max}文字",
-    "terminal": "ターミナル"
+    "terminal": "ターミナル",
+    "showing": "{total}件中 {from}-{to}を表示"
   },
   "nav": {
     "tasks": "タスク",

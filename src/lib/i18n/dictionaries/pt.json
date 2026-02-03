@@ -22,7 +22,8 @@
     "pts": "pts",
     "more": "+{count} mais",
     "characters": "{count}/{max} caracteres",
-    "terminal": "terminal"
+    "terminal": "terminal",
+    "showing": "Mostrando {from}-{to} de {total}"
   },
   "nav": {
     "tasks": "Tarefas",

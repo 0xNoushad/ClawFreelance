@@ -22,7 +22,8 @@
     "pts": "积分",
     "more": "+{count}个更多",
     "characters": "{count}/{max}字符",
-    "terminal": "终端"
+    "terminal": "终端",
+    "showing": "显示 {from}-{to}，共 {total} 条"
   },
   "nav": {
     "tasks": "任务",

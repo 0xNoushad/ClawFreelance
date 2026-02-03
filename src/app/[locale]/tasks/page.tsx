@@ -24,10 +24,25 @@ type Task = {
   claimedBy?: string;
 };
 
+type Pagination = {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+};
+
+const ITEMS_PER_PAGE = 20;
+
 export default function TasksPage() {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState<Pagination>({
+    total: 0,
+    limit: ITEMS_PER_PAGE,
+    offset: 0,
+    hasMore: false,
+  });
   const [filters, setFilters] = useState({
     status: '',
     type: '',
@@ -49,30 +64,48 @@ export default function TasksPage() {
     hard: { label: t('tasks.hard'), dots: 3 },
   };
 
+  const typeConfig: Record<string, { label: string; color: string }> = {
+    code_contribution: { label: t('tasks.filters.contribution'), color: 'var(--accent-cyan)' },
+    bounty: { label: t('tasks.filters.bounty'), color: 'var(--accent-amber)' },
+    showcase: { label: t('tasks.filters.showcase'), color: 'var(--status-success)' },
+  };
+
+  const fetchTasks = async (offset = 0) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      // Tasks page shows only non-monetary items (rewardAmount = 0)
+      // Bounties with monetary rewards are shown on /bounties
+      params.set('maxReward', '0');
+      params.set('limit', String(ITEMS_PER_PAGE));
+      params.set('offset', String(offset));
+      if (filters.status) params.set('status', filters.status);
+      if (filters.type) params.set('type', filters.type);
+      if (filters.difficulty) params.set('difficulty', filters.difficulty);
+
+      const response = await fetch(`/api/v1/tasks?${params.toString()}`);
+      const data = await response.json();
+      setTasks(data.tasks || []);
+      setPagination(data.pagination || { total: 0, limit: ITEMS_PER_PAGE, offset: 0, hasMore: false });
+    } catch {
+      console.error('Failed to fetch tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const params = new URLSearchParams();
-        // Tasks page shows only non-monetary items (rewardAmount = 0)
-        // Bounties with monetary rewards are shown on /bounties
-        params.set('maxReward', '0');
-        if (filters.status) params.set('status', filters.status);
-        if (filters.type) params.set('type', filters.type);
-        if (filters.difficulty) params.set('difficulty', filters.difficulty);
-
-        const response = await fetch(`/api/v1/tasks?${params.toString()}`);
-        const data = await response.json();
-        setTasks(data.tasks || []);
-      } catch {
-        console.error('Failed to fetch tasks');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
+    fetchTasks(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.status, filters.type, filters.difficulty]);
+
+  const handlePageChange = (newOffset: number) => {
+    fetchTasks(newOffset);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const currentPage = Math.floor(pagination.offset / ITEMS_PER_PAGE) + 1;
+  const totalPages = Math.ceil(pagination.total / ITEMS_PER_PAGE);
 
   const filteredTasks = tasks.filter(
     (task) =>
@@ -189,7 +222,7 @@ export default function TasksPage() {
                 <p style={{ color: 'var(--text-secondary)' }}>{t('tasks.noTasksFound')}</p>
               </div>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-4 overflow-hidden">
                 {filteredTasks.map((task) => (
                   <Link
                     key={task.id}
@@ -198,16 +231,16 @@ export default function TasksPage() {
                     style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
                   >
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
                           <span
-                            className="font-mono text-sm"
+                            className="font-mono text-sm truncate max-w-[120px]"
                             style={{ color: 'var(--accent-cyan)' }}
                           >
                             {task.id}
                           </span>
                           <span
-                            className="px-2 py-0.5 rounded-full text-xs font-medium"
+                            className="px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
                             style={{
                               background: `${statusConfig[task.status]?.color || 'var(--text-muted)'}15`,
                               color: statusConfig[task.status]?.color || 'var(--text-muted)',
@@ -216,15 +249,15 @@ export default function TasksPage() {
                             {statusConfig[task.status]?.label || task.status}
                           </span>
                           <span
-                            className="text-xs px-2 py-0.5 rounded"
+                            className="text-xs px-2 py-0.5 rounded whitespace-nowrap"
                             style={{ background: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
                           >
                             {task.type.replace('_', ' ')}
                           </span>
                         </div>
-                        <h3 className="text-lg font-semibold mb-2">{task.title}</h3>
+                        <h3 className="text-lg font-semibold mb-2 break-words">{task.title}</h3>
                         <p
-                          className="text-sm line-clamp-2 mb-3"
+                          className="text-sm line-clamp-2 mb-3 break-words"
                           style={{ color: 'var(--text-secondary)' }}
                         >
                           {task.description}
@@ -256,16 +289,16 @@ export default function TasksPage() {
                         </div>
                       </div>
 
-                      <div className="flex md:flex-col items-center md:items-end gap-4">
+                      <div className="flex md:flex-col items-center md:items-end gap-4 flex-shrink-0">
                         <div className="text-right">
                           <div
                             className="font-mono text-sm font-medium px-2 py-1 rounded"
                             style={{
-                              background: 'var(--bg-tertiary)',
-                              color: 'var(--text-secondary)',
+                              background: `${typeConfig[task.type]?.color || 'var(--bg-tertiary)'}15`,
+                              color: typeConfig[task.type]?.color || 'var(--text-secondary)',
                             }}
                           >
-                            {t('tasks.filters.contribution')}
+                            {typeConfig[task.type]?.label || task.type.replace('_', ' ')}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -291,6 +324,52 @@ export default function TasksPage() {
                     </div>
                   </Link>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && pagination.total > ITEMS_PER_PAGE && (
+              <div
+                className="flex items-center justify-between mt-8 pt-6 border-t"
+                style={{ borderColor: 'var(--border-subtle)' }}
+              >
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {t('common.showing', {
+                    from: pagination.offset + 1,
+                    to: Math.min(pagination.offset + pagination.limit, pagination.total),
+                    total: pagination.total,
+                  })}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handlePageChange(pagination.offset - ITEMS_PER_PAGE)}
+                    disabled={pagination.offset === 0}
+                    className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'var(--border-medium)',
+                      background: 'var(--bg-tertiary)',
+                    }}
+                  >
+                    {t('common.previous')}
+                  </button>
+                  <span
+                    className="px-4 py-2 text-sm"
+                    style={{ color: 'var(--text-secondary)' }}
+                  >
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(pagination.offset + ITEMS_PER_PAGE)}
+                    disabled={!pagination.hasMore}
+                    className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'var(--border-medium)',
+                      background: 'var(--bg-tertiary)',
+                    }}
+                  >
+                    {t('common.next')}
+                  </button>
+                </div>
               </div>
             )}
           </div>
