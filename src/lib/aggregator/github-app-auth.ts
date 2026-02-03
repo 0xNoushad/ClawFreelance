@@ -24,6 +24,9 @@ interface GitHubAppConfig {
 // JWTs are valid for up to 10 minutes, we regenerate at 9 minutes
 let cachedJwt: { token: string; expiresAt: number } | null = null;
 
+// Cache the installation token (valid for 1 hour, regenerate at 55 mins)
+let cachedInstallationToken: { token: string; expiresAt: number } | null = null;
+
 /**
  * Check if GitHub App credentials are configured
  */
@@ -92,18 +95,103 @@ export function generateAppJwt(): string | null {
 }
 
 /**
+ * Get an installation access token for API requests
+ * This provides the higher rate limits (15,000+ req/hr)
+ */
+async function getInstallationToken(): Promise<string | null> {
+  // Check cache first
+  const now = Math.floor(Date.now() / 1000);
+  if (cachedInstallationToken && cachedInstallationToken.expiresAt > now + 300) {
+    return cachedInstallationToken.token;
+  }
+
+  const appJwt = generateAppJwt();
+  if (!appJwt) return null;
+
+  try {
+    // Get installations
+    const installResponse = await fetch('https://api.github.com/app/installations', {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${appJwt}`,
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+
+    if (!installResponse.ok) return null;
+
+    const installations = await installResponse.json();
+    if (!Array.isArray(installations) || installations.length === 0) return null;
+
+    // Get token for first installation
+    const installationId = installations[0].id;
+    const tokenResponse = await fetch(
+      `https://api.github.com/app/installations/${installationId}/access_tokens`,
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${appJwt}`,
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      }
+    );
+
+    if (!tokenResponse.ok) return null;
+
+    const tokenData = await tokenResponse.json();
+
+    // Cache the token (expires in 1 hour)
+    cachedInstallationToken = {
+      token: tokenData.token,
+      expiresAt: now + 55 * 60, // Refresh 5 mins early
+    };
+
+    return tokenData.token;
+  } catch (error) {
+    console.error('[github-app] Failed to get installation token:', error);
+    return null;
+  }
+}
+
+/**
  * Get the best available authorization header for GitHub API requests
  *
  * Priority:
- * 1. GitHub App JWT (15,000+ req/hr)
+ * 1. GitHub App Installation Token (15,000+ req/hr)
+ * 2. Personal Access Token (5,000 req/hr)
+ * 3. None (60 req/hr)
+ */
+export async function getGitHubAuthHeaderAsync(): Promise<string | null> {
+  // Try GitHub App installation token first
+  const installToken = await getInstallationToken();
+  if (installToken) {
+    return `Bearer ${installToken}`;
+  }
+
+  // Fall back to PAT
+  const token = process.env.GITHUB_TOKEN;
+  if (token) {
+    return `Bearer ${token}`;
+  }
+
+  return null;
+}
+
+/**
+ * Get the best available authorization header for GitHub API requests (sync version)
+ * Note: Prefers cached tokens, falls back to PAT if no cached App token
+ *
+ * Priority:
+ * 1. Cached Installation Token (15,000+ req/hr)
  * 2. Personal Access Token (5,000 req/hr)
  * 3. None (60 req/hr)
  */
 export function getGitHubAuthHeader(): string | null {
-  // Try GitHub App first
-  const appJwt = generateAppJwt();
-  if (appJwt) {
-    return `Bearer ${appJwt}`;
+  // Use cached installation token if available
+  const now = Math.floor(Date.now() / 1000);
+  if (cachedInstallationToken && cachedInstallationToken.expiresAt > now + 60) {
+    return `Bearer ${cachedInstallationToken.token}`;
   }
 
   // Fall back to PAT
@@ -134,6 +222,26 @@ export function getGitHubHeaders(): HeadersInit {
 }
 
 /**
+ * Initialize GitHub App auth by pre-fetching installation token
+ * Call this at startup to ensure the token is cached
+ */
+export async function initGitHubAppAuth(): Promise<boolean> {
+  if (!isGitHubAppConfigured()) {
+    console.log('[github-app] App not configured, using PAT or unauthenticated');
+    return false;
+  }
+
+  const token = await getInstallationToken();
+  if (token) {
+    console.log('[github-app] Installation token cached successfully');
+    return true;
+  }
+
+  console.warn('[github-app] Failed to get installation token');
+  return false;
+}
+
+/**
  * Check current rate limit status
  * Useful for monitoring and debugging
  */
@@ -144,8 +252,18 @@ export async function checkRateLimit(): Promise<{
   resource: string;
 } | null> {
   try {
+    // Use async version to ensure we have installation token
+    const authHeader = await getGitHubAuthHeaderAsync();
+    const headers: HeadersInit = {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+    if (authHeader) {
+      headers.Authorization = authHeader;
+    }
+
     const response = await fetch('https://api.github.com/rate_limit', {
-      headers: getGitHubHeaders(),
+      headers,
     });
 
     if (!response.ok) {
