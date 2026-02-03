@@ -252,7 +252,7 @@ describe('AlgoraBountySource', () => {
         externalId: 'test-1',
         externalUrl: 'https://github.com/test/repo/issues/1',
         title: 'Test',
-        description: undefined,
+        description: '',
         ownerExternalId: 'user',
         labels: [],
         createdAt: new Date(),

@@ -363,7 +363,8 @@ describe('Sync Engine', () => {
           githubIssues: { enabled: true },
         },
       });
-      expect(results.some((r) => r.source === 'github-issues')).toBe(true);
+      // Cast to string since 'github-issues' is the source name but not in TaskSource union
+      expect(results.some((r) => (r.source as string) === 'github-issues')).toBe(true);
     });
 
     it('should handle multiple sources enabled', async () => {
