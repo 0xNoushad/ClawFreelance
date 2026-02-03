@@ -37,12 +37,16 @@ export const metadata: Metadata = {
   },
 };
 
-// Root layout - just passes through children
-// HTML/body rendering moved to [locale]/layout.tsx for proper lang attribute
+// Root layout - must include html/body tags for Next.js App Router
+// The [locale] layout handles locale-specific attributes
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return children;
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>{children}</body>
+    </html>
+  );
 }

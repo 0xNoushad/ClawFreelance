@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { getSyncStats, runSync, type SyncConfig } from '@/lib/aggregator';
+import { getSyncStats, runSync, type SyncConfig,updateGitHubTaskStatuses } from '@/lib/aggregator';
 import { POPULAR_BOUNTY_REPOS } from '@/lib/aggregator/sources/github';
 
 // Schema for sync request
@@ -14,12 +14,32 @@ const syncRequestSchema = z.object({
           repositories: z.array(z.string().max(200)).max(50).optional(),
         })
         .optional(),
-      gitcoin: z
+      githubIssues: z
         .object({
           enabled: z.boolean().optional(),
+          repositories: z.array(z.string().max(200)).max(50).optional(),
         })
         .optional(),
       algora: z
+        .object({
+          enabled: z.boolean().optional(),
+          repositories: z.array(z.string().max(200)).max(50).optional(),
+        })
+        .optional(),
+      immunefi: z
+        .object({
+          enabled: z.boolean().optional(),
+          maxPrograms: z.number().int().min(1).max(500).optional(),
+          minBounty: z.number().int().min(0).optional(),
+        })
+        .optional(),
+      bugcrowd: z
+        .object({
+          enabled: z.boolean().optional(),
+          maxPrograms: z.number().int().min(1).max(500).optional(),
+        })
+        .optional(),
+      gitcoin: z
         .object({
           enabled: z.boolean().optional(),
         })
@@ -71,8 +91,8 @@ export async function GET(_request: NextRequest) {
       success: true,
       data: {
         ...stats,
-        availableSources: ['github'],
-        pendingSources: ['gitcoin', 'algora'],
+        availableSources: ['github', 'githubIssues', 'algora', 'immunefi'],
+        pendingSources: ['gitcoin', 'bugcrowd'],
         defaultRepositories: POPULAR_BOUNTY_REPOS,
       },
     });
@@ -143,11 +163,19 @@ export async function POST(request: NextRequest) {
       totals.errors += result.errors.length;
     }
 
+    // Check for stale tasks (closed/merged issues)
+    console.log('[sync] Checking for stale tasks...');
+    const staleResult = await updateGitHubTaskStatuses();
+    console.log(
+      `[sync] Stale check: completed=${staleResult.completed} cancelled=${staleResult.cancelled}`
+    );
+
     // Log the sync operation
     console.log(
       '[sync] Completed:',
       JSON.stringify({
         totals,
+        stale: staleResult,
         sources: results.map((r) => r.source),
         timestamp: new Date().toISOString(),
       })
@@ -158,6 +186,11 @@ export async function POST(request: NextRequest) {
       data: {
         results,
         totals,
+        staleTasksUpdated: {
+          completed: staleResult.completed,
+          cancelled: staleResult.cancelled,
+          errors: staleResult.errors.length,
+        },
         syncedAt: new Date().toISOString(),
       },
     });

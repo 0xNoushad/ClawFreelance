@@ -106,7 +106,10 @@ async function getInstallationToken(): Promise<string | null> {
   }
 
   const appJwt = generateAppJwt();
-  if (!appJwt) return null;
+  if (!appJwt) {
+    console.warn('[github-app] No JWT available - App not configured?');
+    return null;
+  }
 
   try {
     // Get installations
@@ -118,10 +121,17 @@ async function getInstallationToken(): Promise<string | null> {
       },
     });
 
-    if (!installResponse.ok) return null;
+    if (!installResponse.ok) {
+      const errorText = await installResponse.text();
+      console.error('[github-app] Failed to get installations:', installResponse.status, errorText.slice(0, 200));
+      return null;
+    }
 
     const installations = await installResponse.json();
-    if (!Array.isArray(installations) || installations.length === 0) return null;
+    if (!Array.isArray(installations) || installations.length === 0) {
+      console.warn('[github-app] No installations found - App not installed on any repos?');
+      return null;
+    }
 
     // Get token for first installation
     const installationId = installations[0].id;
@@ -137,7 +147,11 @@ async function getInstallationToken(): Promise<string | null> {
       }
     );
 
-    if (!tokenResponse.ok) return null;
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error('[github-app] Failed to get access token:', tokenResponse.status, errorText.slice(0, 200));
+      return null;
+    }
 
     const tokenData = await tokenResponse.json();
 
@@ -175,6 +189,8 @@ export async function getGitHubAuthHeaderAsync(): Promise<string | null> {
     return `Bearer ${token}`;
   }
 
+  // Only warn once about no auth - this is important to know
+  console.warn('[github-app] No auth available - using unauthenticated (60 req/hr)');
   return null;
 }
 
@@ -207,15 +223,15 @@ export function getGitHubAuthHeader(): string | null {
 /**
  * Get headers for GitHub API requests with the best available auth
  */
-export function getGitHubHeaders(): HeadersInit {
-  const headers: HeadersInit = {
+export function getGitHubHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
   };
 
   const authHeader = getGitHubAuthHeader();
   if (authHeader) {
-    headers.Authorization = authHeader;
+    headers['Authorization'] = authHeader;
   }
 
   return headers;
@@ -227,17 +243,17 @@ export function getGitHubHeaders(): HeadersInit {
  */
 export async function initGitHubAppAuth(): Promise<boolean> {
   if (!isGitHubAppConfigured()) {
-    console.log('[github-app] App not configured, using PAT or unauthenticated');
+    console.log('[github-app] App not configured, falling back to PAT or unauthenticated');
     return false;
   }
 
   const token = await getInstallationToken();
   if (token) {
-    console.log('[github-app] Installation token cached successfully');
+    console.log('[github-app] Authenticated (15,000+ req/hr)');
     return true;
   }
 
-  console.warn('[github-app] Failed to get installation token');
+  console.warn('[github-app] Failed to authenticate');
   return false;
 }
 
@@ -254,12 +270,12 @@ export async function checkRateLimit(): Promise<{
   try {
     // Use async version to ensure we have installation token
     const authHeader = await getGitHubAuthHeaderAsync();
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       Accept: 'application/vnd.github+json',
       'X-GitHub-Api-Version': '2022-11-28',
     };
     if (authHeader) {
-      headers.Authorization = authHeader;
+      headers['Authorization'] = authHeader;
     }
 
     const response = await fetch('https://api.github.com/rate_limit', {

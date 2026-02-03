@@ -25,7 +25,6 @@
  * @see https://docs.github.com/en/rest/rate-limit
  */
 
-import { getGitHubHeaders, isGitHubAppConfigured } from '../github-app-auth';
 import type { BountySource, GitHubSourceConfig, NormalizedTask, RawBounty } from '../types';
 
 const GITHUB_API_BASE = 'https://api.github.com';
@@ -63,17 +62,17 @@ export const POPULAR_BOUNTY_REPOS = [
   'polkadot-fellows/runtimes',
 
   // === AI / ML ===
-  'anthropics/anthropic-cookbook',
+  'anthropics/claude-cookbooks',
   'langchain-ai/langchain',
   'huggingface/transformers',
   'ollama/ollama',
-  'ggerganov/llama.cpp',
+  'ggml-org/llama.cpp',
   'livekit/agents',
 
   // === Open Source Applications (cal.com ecosystem) ===
   'calcom/cal.com',
   'twentyhq/twenty',
-  'appflowy/appflowy',
+  'AppFlowy-IO/AppFlowy',
   'documenso/documenso',
   'formbricks/formbricks',
   'triggerdotdev/trigger.dev',
@@ -98,7 +97,7 @@ export const POPULAR_BOUNTY_REPOS = [
   'oxc-project/oxc',
   'evanw/esbuild',
   'vitejs/vite',
-  'turbo/turborepo',
+  'vercel/turborepo',
 
   // === Infrastructure / DevOps ===
   'docker/compose',
@@ -118,7 +117,6 @@ export const POPULAR_BOUNTY_REPOS = [
   'prisma/prisma',
 
   // === Security / Privacy ===
-  'nickvdyck/webterminal',
   'zama-ai/tfhe-rs',
   'bitwarden/clients',
 
@@ -319,11 +317,22 @@ export class GitHubBountySource implements BountySource {
   private async fetchWithAuth(url: string): Promise<Response> {
     // Use centralized auth (GitHub App > PAT > unauthenticated)
     // GitHub App provides 15,000+ req/hr vs 5,000 with PAT
-    const headers = getGitHubHeaders();
+    const { getGitHubAuthHeaderAsync } = await import('../github-app-auth');
+
+    const headers: Record<string, string> = {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+
+    // Get auth header asynchronously to ensure we try to fetch installation token
+    const authHeader = await getGitHubAuthHeaderAsync();
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    }
 
     // Allow config token to override if explicitly set
-    if (this.config.token && !isGitHubAppConfigured()) {
-      headers.Authorization = `Bearer ${this.config.token}`;
+    if (this.config.token && !authHeader) {
+      headers['Authorization'] = `Bearer ${this.config.token}`;
     }
 
     return fetch(url, { headers });
@@ -383,8 +392,8 @@ export class GitHubBountySource implements BountySource {
           });
         }
 
-        // Small delay between label requests to be nice to API
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        // GitHub Search API has 30 req/min secondary limit - need ~2s between requests
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
         console.error(`Error fetching ${label} from ${repo}:`, error);
       }
@@ -405,11 +414,10 @@ export class GitHubBountySource implements BountySource {
     const allBounties: RawBounty[] = [];
     const repos = this.config.repositories;
 
-    // Batch size: fetch 3 repos in parallel, then wait
-    // GitHub Search API has secondary rate limit of ~30 req/min
-    // Each repo makes up to 9 requests (one per label), so 3 repos = ~27 req
-    const BATCH_SIZE = 3;
-    const BATCH_DELAY_MS = 5000; // 5 seconds between batches to stay safe
+    // Process 1 repo at a time to respect GitHub Search API's 30 req/min limit
+    // Each repo makes up to 9 requests (one per label) at 2s each = 18s per repo
+    const BATCH_SIZE = 1;
+    const BATCH_DELAY_MS = 2000;
 
     for (let i = 0; i < repos.length; i += BATCH_SIZE) {
       const batch = repos.slice(i, i + BATCH_SIZE);

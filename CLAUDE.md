@@ -158,6 +158,12 @@ bun db:studio                # Open Drizzle Studio
 - Database credentials
 - IP addresses, server hostnames
 
+**NEVER display in output:**
+- Private keys, API keys, tokens, passwords
+- Database connection strings with credentials
+- Any content from `.env.local` or environment files
+- Mask or omit sensitive values when showing file contents
+
 Keep all sensitive info in environment variables. `.env.local` is gitignored.
 
 ## Code Style

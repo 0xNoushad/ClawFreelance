@@ -29,7 +29,14 @@ export type {
 } from './types';
 
 // Sync engine
-export { getSyncStats, markStaleTasks, runSync, type SyncConfig, syncFromSource } from './sync';
+export {
+  getSyncStats,
+  markStaleTasks,
+  runSync,
+  type SyncConfig,
+  syncFromSource,
+  updateGitHubTaskStatuses,
+} from './sync';
 
 // Individual sources
 export { createGitHubSource, GitHubBountySource, POPULAR_BOUNTY_REPOS } from './sources/github';

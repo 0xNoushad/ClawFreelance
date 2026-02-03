@@ -11,7 +11,6 @@
  * - Title/body: Contains reward info from Algora bot
  */
 
-import { getGitHubHeaders, isGitHubAppConfigured } from '../github-app-auth';
 import type { BountySource, NormalizedTask, RawBounty } from '../types';
 
 const GITHUB_API_BASE = 'https://api.github.com';
@@ -66,25 +65,28 @@ interface AlgoraSourceConfig {
 }
 
 /**
- * Extract Algora bounty amount from issue body
+ * Extract Algora bounty amount from text (issue body or comments)
  * Looks for patterns like:
  * - `/bounty $1000`
  * - `💎 $500 bounty`
+ * - `## 💎 $2,500 bounty`
  * - Algora bot comments with reward info
  */
-function extractAlgoraReward(body: string | null): { amount: number; currency: string } | null {
-  if (!body) return null;
+function extractAlgoraReward(text: string | null): { amount: number; currency: string } | null {
+  if (!text) return null;
 
-  // Pattern: /bounty $X or 💎 $X
+  // Pattern: /bounty $X or 💎 $X (various formats)
   const patterns = [
     /\/bounty\s+\$(\d+(?:,\d{3})*(?:\.\d+)?)/i,
     /💎\s*\$(\d+(?:,\d{3})*(?:\.\d+)?)/i,
+    /##\s*💎\s*\$(\d+(?:,\d{3})*(?:\.\d+)?)\s*bounty/i,
     /bounty[:\s]+\$(\d+(?:,\d{3})*(?:\.\d+)?)/i,
     /reward[:\s]+\$(\d+(?:,\d{3})*(?:\.\d+)?)/i,
+    /\$(\d+(?:,\d{3})*)\s*bounty/i,
   ];
 
   for (const pattern of patterns) {
-    const match = body.match(pattern);
+    const match = text.match(pattern);
     if (match) {
       return {
         amount: parseFloat(match[1].replace(/,/g, '')),
@@ -94,6 +96,11 @@ function extractAlgoraReward(body: string | null): { amount: number; currency: s
   }
 
   return null;
+}
+
+interface GitHubComment {
+  body: string;
+  user: { login: string };
 }
 
 /**
@@ -132,15 +139,52 @@ export class AlgoraBountySource implements BountySource {
   }
 
   private async fetchWithAuth(url: string): Promise<Response> {
-    // Use centralized auth (GitHub App > PAT > unauthenticated)
-    const headers = getGitHubHeaders();
+    // Use centralized async auth (GitHub App > PAT > unauthenticated)
+    const { getGitHubAuthHeaderAsync } = await import('../github-app-auth');
 
-    // Allow config token to override if explicitly set
-    if (this.config.token && !isGitHubAppConfigured()) {
-      headers.Authorization = `Bearer ${this.config.token}`;
+    const headers: Record<string, string> = {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    };
+
+    const authHeader = await getGitHubAuthHeaderAsync();
+    if (authHeader) {
+      headers['Authorization'] = authHeader;
+    } else if (this.config.token) {
+      headers['Authorization'] = `Bearer ${this.config.token}`;
     }
 
     return fetch(url, { headers });
+  }
+
+  /**
+   * Fetch comments for an issue to find bounty amount
+   * Algora bounties are posted as comments, not in issue body
+   */
+  private async fetchCommentsForBounty(
+    repo: string,
+    issueNumber: number
+  ): Promise<{ amount: number; currency: string } | null> {
+    const url = `${GITHUB_API_BASE}/repos/${repo}/issues/${issueNumber}/comments?per_page=10`;
+
+    try {
+      const response = await this.fetchWithAuth(url);
+      if (!response.ok) return null;
+
+      const comments: GitHubComment[] = await response.json();
+
+      // Check each comment for bounty amount (usually in first few comments)
+      for (const comment of comments) {
+        const reward = extractAlgoraReward(comment.body);
+        if (reward && reward.amount >= 10) {
+          return reward;
+        }
+      }
+    } catch {
+      // Silently fail - we'll just not have the amount
+    }
+
+    return null;
   }
 
   private async fetchFromRepo(repo: string): Promise<RawBounty[]> {
@@ -170,6 +214,16 @@ export class AlgoraBountySource implements BountySource {
 
           seenIssues.add(issue.number);
 
+          // First try to extract reward from issue body/title
+          let reward = extractAlgoraReward(issue.body);
+
+          // If not found in body, fetch comments (Algora posts bounty in comments)
+          if (!reward || reward.amount < 10) {
+            reward = await this.fetchCommentsForBounty(repo, issue.number);
+            // Small delay between comment fetches
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+
           bounties.push({
             source: 'algora',
             externalId: `algora-${repo}-${issue.number}`,
@@ -179,13 +233,16 @@ export class AlgoraBountySource implements BountySource {
             ownerExternalId: issue.user.login,
             ownerName: issue.user.login,
             labels: issue.labels.map((l) => l.name),
+            rewardAmount: reward?.amount,
+            rewardCurrency: reward?.currency,
             createdAt: new Date(issue.created_at),
             updatedAt: new Date(issue.updated_at),
             raw: issue,
           });
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        // Respect GitHub Search API rate limits (30 req/min)
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       } catch (error) {
         console.error(`[algora] Error fetching ${repo}:`, error);
       }
@@ -204,14 +261,16 @@ export class AlgoraBountySource implements BountySource {
     for (const repo of this.config.repositories) {
       const bounties = await this.fetchFromRepo(repo);
       allBounties.push(...bounties);
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Respect GitHub Search API rate limits
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
     return allBounties;
   }
 
   normalize(raw: RawBounty): NormalizedTask {
-    const reward = extractAlgoraReward(raw.description);
+    // Use pre-fetched reward from comments, or try extracting from description as fallback
+    const hasReward = raw.rewardAmount && raw.rewardAmount >= 10;
 
     return {
       title: raw.title,
@@ -220,9 +279,9 @@ export class AlgoraBountySource implements BountySource {
       source: 'algora',
       externalUrl: raw.externalUrl,
       ownerExternalId: raw.ownerExternalId,
-      rewardType: reward ? 'external' : 'points',
-      rewardAmount: reward?.amount || 0,
-      rewardCurrency: reward?.currency,
+      rewardType: hasReward ? 'external' : 'points',
+      rewardAmount: raw.rewardAmount || 0,
+      rewardCurrency: raw.rewardCurrency || 'USD',
       visibility: 'public',
       isMilestoneBased: false,
       status: 'open',

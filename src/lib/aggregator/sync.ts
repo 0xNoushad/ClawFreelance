@@ -10,8 +10,12 @@ import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { tasks } from '@/db/schema';
 
+import { initGitHubAppAuth } from './github-app-auth';
 import { createAlgoraSource } from './sources/algora';
+import { createBugcrowdSource } from './sources/bugcrowd';
 import { createGitHubSource } from './sources/github';
+import { createGitHubIssuesSource } from './sources/github-issues';
+import { createImmunefiSource } from './sources/immunefi';
 import type { BountySource, SyncResult, TaskSource } from './types';
 
 /**
@@ -31,46 +35,27 @@ async function syncSource(source: BountySource): Promise<SyncResult> {
 
   try {
     // Fetch all bounties from source
+    console.log(`[sync] Fetching from ${source.name}...`);
     const rawBounties = await source.fetch();
     result.fetched = rawBounties.length;
+    console.log(`[sync] Fetched ${rawBounties.length} items from ${source.name}, processing...`);
+
+    let processed = 0;
+    const logInterval = Math.max(1, Math.floor(rawBounties.length / 10)); // Log ~10 times
 
     for (const raw of rawBounties) {
+      processed++;
+      if (processed % logInterval === 0 || processed === rawBounties.length) {
+        console.log(`[sync] ${source.name}: ${processed}/${rawBounties.length} (created=${result.created} updated=${result.updated} errors=${result.errors.length})`);
+      }
       try {
         const normalized = source.normalize(raw);
 
-        // Check if task already exists by external URL
-        const existing = await db
-          .select({ id: tasks.id, updatedAt: tasks.updatedAt })
-          .from(tasks)
-          .where(and(eq(tasks.externalUrl, raw.externalUrl), eq(tasks.source, source.name)))
-          .limit(1);
-
-        if (existing.length > 0) {
-          // Update existing task if source was updated more recently
-          const existingTask = existing[0];
-          const sourceUpdated = raw.updatedAt || raw.createdAt;
-
-          if (sourceUpdated > existingTask.updatedAt) {
-            await db
-              .update(tasks)
-              .set({
-                title: normalized.title,
-                description: normalized.description,
-                rewardAmount: normalized.rewardAmount,
-                rewardCurrency: normalized.rewardCurrency,
-                difficulty: normalized.difficulty,
-                requirements: normalized.requirements,
-                deadline: normalized.deadline,
-                updatedAt: new Date(),
-              })
-              .where(eq(tasks.id, existingTask.id));
-            result.updated++;
-          } else {
-            result.skipped++;
-          }
-        } else {
-          // Create new task
-          await db.insert(tasks).values({
+        // Use UPSERT to handle duplicates atomically
+        // This relies on the unique index on (externalUrl, source)
+        const upsertResult = await db
+          .insert(tasks)
+          .values({
             title: normalized.title,
             description: normalized.description,
             type: normalized.type,
@@ -87,8 +72,32 @@ async function syncSource(source: BountySource): Promise<SyncResult> {
             difficulty: normalized.difficulty,
             requirements: normalized.requirements,
             deadline: normalized.deadline,
-          });
-          result.created++;
+          })
+          .onConflictDoUpdate({
+            target: [tasks.externalUrl, tasks.source],
+            set: {
+              title: normalized.title,
+              description: normalized.description,
+              rewardAmount: normalized.rewardAmount,
+              rewardCurrency: normalized.rewardCurrency,
+              difficulty: normalized.difficulty,
+              requirements: normalized.requirements,
+              deadline: normalized.deadline,
+              updatedAt: new Date(),
+            },
+          })
+          .returning({ id: tasks.id, createdAt: tasks.createdAt, updatedAt: tasks.updatedAt });
+
+        // Check if it was created (createdAt == updatedAt) or updated
+        if (upsertResult.length > 0) {
+          const row = upsertResult[0];
+          // If createdAt and updatedAt are within 1 second, it's a new record
+          const isNew = Math.abs(row.createdAt.getTime() - row.updatedAt.getTime()) < 1000;
+          if (isNew) {
+            result.created++;
+          } else {
+            result.updated++;
+          }
         }
       } catch (error) {
         result.errors.push({
@@ -117,9 +126,22 @@ export interface SyncConfig {
       enabled?: boolean;
       repositories?: string[];
     };
+    githubIssues?: {
+      enabled?: boolean;
+      repositories?: string[];
+    };
     algora?: {
       enabled?: boolean;
       repositories?: string[];
+    };
+    immunefi?: {
+      enabled?: boolean;
+      maxPrograms?: number;
+      minBounty?: number;
+    };
+    bugcrowd?: {
+      enabled?: boolean;
+      maxPrograms?: number;
     };
     gitcoin?: {
       enabled?: boolean;
@@ -128,27 +150,94 @@ export interface SyncConfig {
 }
 
 /**
+ * Check if a source should be enabled based on config
+ */
+function isSourceEnabled(
+  sourceConfig: { enabled?: boolean } | undefined,
+  hasSpecificSources: boolean
+): boolean {
+  if (hasSpecificSources) {
+    return sourceConfig?.enabled === true;
+  }
+  return sourceConfig?.enabled !== false;
+}
+
+/**
+ * Source factory definitions
+ */
+type SourceFactory = (config: SyncConfig) => BountySource | null;
+
+const sourceFactories: Array<{ name: string; factory: SourceFactory }> = [
+  {
+    name: 'GitHub bounty',
+    factory: (c) =>
+      isSourceEnabled(c.sources?.github, !!(c.sources && Object.keys(c.sources).length > 0))
+        ? createGitHubSource(c.sources?.github?.repositories)
+        : null,
+  },
+  {
+    name: 'GitHub issues',
+    factory: (c) =>
+      isSourceEnabled(c.sources?.githubIssues, !!(c.sources && Object.keys(c.sources).length > 0))
+        ? createGitHubIssuesSource(c.sources?.githubIssues?.repositories)
+        : null,
+  },
+  {
+    name: 'Algora',
+    factory: (c) =>
+      isSourceEnabled(c.sources?.algora, !!(c.sources && Object.keys(c.sources).length > 0))
+        ? createAlgoraSource(c.sources?.algora?.repositories)
+        : null,
+  },
+  {
+    name: 'Immunefi',
+    factory: (c) =>
+      isSourceEnabled(c.sources?.immunefi, !!(c.sources && Object.keys(c.sources).length > 0))
+        ? createImmunefiSource({
+            maxPrograms: c.sources?.immunefi?.maxPrograms,
+            minBounty: c.sources?.immunefi?.minBounty,
+          })
+        : null,
+  },
+  {
+    name: 'Bugcrowd',
+    factory: (c) =>
+      isSourceEnabled(c.sources?.bugcrowd, !!(c.sources && Object.keys(c.sources).length > 0))
+        ? createBugcrowdSource({ maxPrograms: c.sources?.bugcrowd?.maxPrograms })
+        : null,
+  },
+];
+
+/**
+ * Build list of enabled bounty sources from config
+ */
+function buildSourceList(config: SyncConfig): BountySource[] {
+  const sources: BountySource[] = [];
+
+  for (const { name, factory } of sourceFactories) {
+    const source = factory(config);
+    if (source) {
+      console.log(`[sync] Enabling ${name} source`);
+      sources.push(source);
+    }
+  }
+
+  return sources;
+}
+
+/**
  * Run a full sync across all enabled sources
  */
 export async function runSync(config: SyncConfig = {}): Promise<SyncResult[]> {
+  const authInitialized = await initGitHubAppAuth();
+  if (!authInitialized) {
+    console.warn('[sync] GitHub App auth not available, using limited rate limits');
+  }
+
+  const sources = buildSourceList(config);
+  console.log(`[sync] Running sync with ${sources.length} source(s)`);
+
   const results: SyncResult[] = [];
-  const sources: BountySource[] = [];
-
-  // Initialize GitHub source
-  const githubConfig = config.sources?.github;
-  if (githubConfig?.enabled !== false) {
-    sources.push(createGitHubSource(githubConfig?.repositories));
-  }
-
-  // Initialize Algora source
-  const algoraConfig = config.sources?.algora;
-  if (algoraConfig?.enabled !== false) {
-    sources.push(createAlgoraSource(algoraConfig?.repositories));
-  }
-
-  // TODO: Add Gitcoin source (requires API key and complex grant structure)
-
-  // Sync each source
   for (const source of sources) {
     const result = await syncSource(source);
     results.push(result);
@@ -190,13 +279,13 @@ export async function syncFromSource(
 export async function markStaleTasks(
   sourceName: TaskSource,
   activeExternalUrls: string[]
-): Promise<void> {
+): Promise<number> {
   if (activeExternalUrls.length === 0) {
-    return;
+    return 0;
   }
 
   // Find tasks from this source that are not in the active list
-  await db
+  const result = await db
     .update(tasks)
     .set({
       status: 'cancelled',
@@ -208,7 +297,110 @@ export async function markStaleTasks(
         eq(tasks.status, 'open'),
         sql`${tasks.externalUrl} NOT IN ${activeExternalUrls}`
       )
-    );
+    )
+    .returning({ id: tasks.id });
+
+  return result.length;
+}
+
+/**
+ * Check and update status for GitHub-sourced tasks
+ * Marks tasks as completed/cancelled based on issue state
+ */
+export async function updateGitHubTaskStatuses(): Promise<{
+  completed: number;
+  cancelled: number;
+  errors: string[];
+}> {
+  const { getGitHubHeaders, initGitHubAppAuth } = await import('./github-app-auth');
+
+  // Initialize GitHub App auth for better rate limits
+  await initGitHubAppAuth();
+
+  const result = {
+    completed: 0,
+    cancelled: 0,
+    errors: [] as string[],
+  };
+
+  // Get all open GitHub tasks
+  const openTasks = await db
+    .select({
+      id: tasks.id,
+      externalUrl: tasks.externalUrl,
+    })
+    .from(tasks)
+    .where(
+      and(
+        eq(tasks.status, 'open'),
+        sql`${tasks.source} IN ('github', 'algora')`,
+        sql`${tasks.externalUrl} IS NOT NULL`
+      )
+    )
+    .limit(100); // Process in batches
+
+  const headers = getGitHubHeaders();
+
+  for (const task of openTasks) {
+    if (!task.externalUrl) continue;
+
+    // Parse GitHub issue URL: https://github.com/owner/repo/issues/123
+    const match = task.externalUrl.match(/github\.com\/([^/]+)\/([^/]+)\/issues\/(\d+)/);
+    if (!match) continue;
+
+    const [, owner, repo, issueNum] = match;
+
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/issues/${issueNum}`,
+        { headers }
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          // Issue was deleted - mark as cancelled
+          await db
+            .update(tasks)
+            .set({ status: 'cancelled', updatedAt: new Date() })
+            .where(eq(tasks.id, task.id));
+          result.cancelled++;
+        }
+        continue;
+      }
+
+      const issue = await response.json();
+
+      if (issue.state === 'closed') {
+        // Check if it was merged (has associated PR that was merged)
+        const prMatch = issue.pull_request?.merged_at;
+        const hasLinkedMergedPR = issue.body?.toLowerCase().includes('merged');
+
+        if (prMatch || hasLinkedMergedPR || issue.state_reason === 'completed') {
+          await db
+            .update(tasks)
+            .set({ status: 'completed', updatedAt: new Date() })
+            .where(eq(tasks.id, task.id));
+          result.completed++;
+        } else {
+          // Closed but not merged - mark as cancelled
+          await db
+            .update(tasks)
+            .set({ status: 'cancelled', updatedAt: new Date() })
+            .where(eq(tasks.id, task.id));
+          result.cancelled++;
+        }
+      }
+
+      // Small delay to respect rate limits
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } catch (error) {
+      result.errors.push(
+        `Failed to check ${task.externalUrl}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  return result;
 }
 
 /**

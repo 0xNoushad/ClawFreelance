@@ -46,13 +46,12 @@ export default async function LocaleLayout({ children, params }: Props) {
   // Load dictionary for this locale
   const dictionary = await getDictionary(locale as Locale);
 
+  // Note: html/body are in root layout - we just provide the content wrapper
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className={`${plusJakarta.variable} ${jetbrainsMono.variable} antialiased`}>
-        <I18nProvider locale={locale as Locale} dictionary={dictionary}>
-          {children}
-        </I18nProvider>
-      </body>
-    </html>
+    <div className={`${plusJakarta.variable} ${jetbrainsMono.variable} antialiased`}>
+      <I18nProvider locale={locale as Locale} dictionary={dictionary}>
+        {children}
+      </I18nProvider>
+    </div>
   );
 }

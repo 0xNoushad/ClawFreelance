@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { useTranslation } from '@/lib/i18n';
 
@@ -19,61 +20,38 @@ interface Task {
   claimedBy?: string;
 }
 
-const mockTasks: Task[] = [
-  {
-    id: 'TASK-042',
-    title: 'Fix authentication race condition in session handler',
-    type: 'bounty',
-    status: 'open',
-    reward: '$500',
-    rewardType: 'crypto',
-    difficulty: 'hard',
-    source: 'github.com/openclaw/openclaw',
-  },
-  {
-    id: 'TASK-043',
-    title: 'Add dark mode support to dashboard components',
-    type: 'contribution',
-    status: 'claimed',
-    reward: '150 pts',
-    rewardType: 'points',
-    difficulty: 'medium',
-    source: 'direct',
-    claimedBy: 'agent-0x7f8a',
-  },
-  {
-    id: 'TASK-044',
-    title: 'Optimize PostgreSQL queries for task listing endpoint',
-    type: 'bounty',
-    status: 'in_progress',
-    reward: '$250',
-    rewardType: 'crypto',
-    difficulty: 'medium',
-    source: 'gitcoin',
-    claimedBy: 'agent-0x3b2c',
-  },
-  {
-    id: 'TASK-045',
-    title: 'Implement WebSocket real-time notifications',
-    type: 'bounty',
-    status: 'open',
-    reward: '$750',
-    rewardType: 'crypto',
-    difficulty: 'hard',
-    source: 'algora',
-  },
-  {
-    id: 'TASK-046',
-    title: 'Create comprehensive API documentation',
-    type: 'contribution',
-    status: 'verification',
-    reward: '200 pts',
-    rewardType: 'points',
-    difficulty: 'easy',
-    source: 'direct',
-    claimedBy: 'agent-0x9d4e',
-  },
-];
+interface ApiTask {
+  id: string;
+  title: string;
+  type: string;
+  status: string;
+  rewardAmount: number;
+  rewardCurrency?: string;
+  rewardType: string;
+  difficulty: string;
+  source: string;
+  claimedBy?: string;
+}
+
+function formatReward(amount: number, type: string, currency?: string): string {
+  if (type === 'points') return `${amount} pts`;
+  if (type === 'crypto' && currency) return `$${amount}`;
+  return `${amount}`;
+}
+
+function mapApiTaskToTask(apiTask: ApiTask): Task {
+  return {
+    id: apiTask.id.slice(0, 8).toUpperCase(),
+    title: apiTask.title,
+    type: (apiTask.type === 'code_contribution' ? 'contribution' : apiTask.type) as TaskType,
+    status: apiTask.status as TaskStatus,
+    reward: formatReward(apiTask.rewardAmount, apiTask.rewardType, apiTask.rewardCurrency),
+    rewardType: apiTask.rewardType as 'crypto' | 'points',
+    difficulty: apiTask.difficulty as 'easy' | 'medium' | 'hard',
+    source: apiTask.source,
+    claimedBy: apiTask.claimedBy,
+  };
+}
 
 const statusConfig: Record<TaskStatus, { labelKey: string; color: string }> = {
   open: { labelKey: 'status.open', color: 'var(--status-success)' },
@@ -90,6 +68,66 @@ const difficultyConfig: Record<string, { labelKey: string; dots: number }> = {
 
 export function ActiveTasks() {
   const { t } = useTranslation();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [stats, setStats] = useState({ open: 0, inProgress: 0, verification: 0, totalBounty: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchTasks() {
+      try {
+        const response = await fetch('/api/v1/tasks?limit=5&sortBy=created_at&sortOrder=desc');
+        const data = await response.json();
+        if (data.tasks) {
+          setTasks(data.tasks.map(mapApiTaskToTask));
+        }
+
+        // Fetch stats
+        const statsResponse = await fetch('/api/v1/tasks?limit=1');
+        const statsData = await statsResponse.json();
+        if (statsData.pagination) {
+          // Get counts by status
+          const [openRes, inProgressRes, verificationRes, bountyRes] = await Promise.all([
+            fetch('/api/v1/tasks?status=open&limit=1'),
+            fetch('/api/v1/tasks?status=in_progress&limit=1'),
+            fetch('/api/v1/tasks?status=verification&limit=1'),
+            fetch('/api/v1/tasks?type=bounty&status=open&limit=100'),
+          ]);
+          const [openData, inProgressData, verificationData, bountyData] = await Promise.all([
+            openRes.json(),
+            inProgressRes.json(),
+            verificationRes.json(),
+            bountyRes.json(),
+          ]);
+          const totalBounty = bountyData.tasks?.reduce(
+            (sum: number, t: ApiTask) => sum + (t.rewardAmount || 0),
+            0
+          ) || 0;
+          setStats({
+            open: openData.pagination?.total || 0,
+            inProgress: inProgressData.pagination?.total || 0,
+            verification: verificationData.pagination?.total || 0,
+            totalBounty,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch tasks:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTasks();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="animate-pulse">Loading tasks...</div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
@@ -122,7 +160,7 @@ export function ActiveTasks() {
 
         {/* Mobile: Card view */}
         <div className="md:hidden space-y-4">
-          {mockTasks.map((task) => (
+          {tasks.map((task) => (
             <div
               key={task.id}
               className="rounded-xl border p-4 hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
@@ -239,7 +277,7 @@ export function ActiveTasks() {
           </div>
 
           {/* Table rows */}
-          {mockTasks.map((task) => (
+          {tasks.map((task) => (
             <div
               key={task.id}
               className="grid grid-cols-12 gap-4 px-6 py-4 items-center border-b last:border-b-0 hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer"
@@ -343,22 +381,22 @@ export function ActiveTasks() {
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--status-success)' }}
             />
-            <span>{t('activeTasks.bottomStats.open')} 847</span>
+            <span>{t('activeTasks.bottomStats.open')} {stats.open}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-cyan)' }} />
-            <span>{t('activeTasks.bottomStats.inProgress')} 234</span>
+            <span>{t('activeTasks.bottomStats.inProgress')} {stats.inProgress}</span>
           </div>
           <div className="flex items-center gap-2">
             <span
               className="w-2 h-2 rounded-full"
               style={{ background: 'var(--status-pending)' }}
             />
-            <span>{t('activeTasks.bottomStats.verification')} 89</span>
+            <span>{t('activeTasks.bottomStats.verification')} {stats.verification}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-mono" style={{ color: 'var(--accent-amber)' }}>
-              $127K
+              ${stats.totalBounty >= 1000 ? `${Math.round(stats.totalBounty / 1000)}K` : stats.totalBounty}
             </span>
             <span>{t('activeTasks.bottomStats.inOpenBounties')}</span>
           </div>
