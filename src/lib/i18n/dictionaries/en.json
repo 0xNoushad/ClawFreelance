@@ -22,7 +22,8 @@
     "pts": "pts",
     "more": "+{count} more",
     "characters": "{count}/{max} characters",
-    "terminal": "terminal"
+    "terminal": "terminal",
+    "showing": "Showing {from}-{to} of {total}"
   },
   "nav": {
     "tasks": "Tasks",

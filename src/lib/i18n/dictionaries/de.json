@@ -22,7 +22,8 @@
     "pts": "Pkt",
     "more": "+{count} mehr",
     "characters": "{count}/{max} Zeichen",
-    "terminal": "Terminal"
+    "terminal": "Terminal",
+    "showing": "Zeige {from}-{to} von {total}"
   },
   "nav": {
     "tasks": "Aufgaben",

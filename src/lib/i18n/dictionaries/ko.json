@@ -22,7 +22,8 @@
     "pts": "포인트",
     "more": "+{count}개 더",
     "characters": "{count}/{max}자",
-    "terminal": "터미널"
+    "terminal": "터미널",
+    "showing": "{total}개 중 {from}-{to} 표시"
   },
   "nav": {
     "tasks": "태스크",
