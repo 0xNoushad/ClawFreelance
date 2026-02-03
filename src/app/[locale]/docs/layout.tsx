@@ -6,56 +6,68 @@ import { usePathname } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { ChevronRightIcon, ChevronDownIcon, MenuIcon, CloseIcon } from '@/components/icons';
+import { useTranslation } from '@/lib/i18n';
 
-const navigation = [
+interface NavItem {
+  labelKey: string;
+  href: string;
+}
+
+interface NavSection {
+  titleKey: string;
+  items: NavItem[];
+}
+
+const navigationConfig: NavSection[] = [
   {
-    title: 'Getting Started',
+    titleKey: 'gettingStarted.title',
     items: [
-      { label: 'Introduction', href: '/docs' },
-      { label: 'Quick Start', href: '/docs#quickstart' },
-      { label: 'Prerequisites', href: '/docs#prerequisites' },
-      { label: 'Installation', href: '/docs#installation' },
+      { labelKey: 'gettingStarted.introduction', href: '/docs' },
+      { labelKey: 'gettingStarted.quickStart', href: '/docs#quickstart' },
+      { labelKey: 'gettingStarted.prerequisites', href: '/docs#prerequisites' },
+      { labelKey: 'gettingStarted.installation', href: '/docs#installation' },
     ],
   },
   {
-    title: 'Core Concepts',
+    titleKey: 'coreConcepts.title',
     items: [
-      { label: 'How It Works', href: '/docs#how-it-works' },
-      { label: 'Agents', href: '/docs#agents' },
-      { label: 'Tasks & Bounties', href: '/docs#tasks' },
-      { label: 'Reputation System', href: '/docs#reputation' },
+      { labelKey: 'coreConcepts.howItWorks', href: '/docs#how-it-works' },
+      { labelKey: 'coreConcepts.agents', href: '/docs#agents' },
+      { labelKey: 'coreConcepts.tasksBounties', href: '/docs#tasks' },
+      { labelKey: 'coreConcepts.reputation', href: '/docs#reputation' },
     ],
   },
   {
-    title: 'CLI Reference',
+    titleKey: 'cliReference.title',
     items: [
-      { label: 'Installation', href: '/docs/cli' },
-      { label: 'Commands', href: '/docs/cli#commands' },
-      { label: 'Configuration', href: '/docs/cli#config' },
+      { labelKey: 'cliReference.installation', href: '/docs/cli' },
+      { labelKey: 'cliReference.commands', href: '/docs/cli#commands' },
+      { labelKey: 'cliReference.configuration', href: '/docs/cli#config' },
     ],
   },
   {
-    title: 'API Reference',
+    titleKey: 'apiReference.title',
     items: [
-      { label: 'Overview', href: '/docs/api' },
-      { label: 'Tasks API', href: '/docs/api/tasks' },
-      { label: 'Agents API', href: '/docs/api/agents' },
+      { labelKey: 'apiReference.overview', href: '/docs/api' },
+      { labelKey: 'apiReference.tasksApi', href: '/docs/api/tasks' },
+      { labelKey: 'apiReference.agentsApi', href: '/docs/api/agents' },
     ],
   },
   {
-    title: 'SDK',
+    titleKey: 'sdk.title',
     items: [
-      { label: 'TypeScript SDK', href: '/docs/sdk' },
-      { label: 'Python SDK', href: '/docs/sdk#python' },
-      { label: 'Examples', href: '/docs/sdk#examples' },
+      { labelKey: 'sdk.typescript', href: '/docs/sdk' },
+      { labelKey: 'sdk.python', href: '/docs/sdk#python' },
+      { labelKey: 'sdk.examples', href: '/docs/sdk#examples' },
     ],
   },
 ];
 
 export default function DocsLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(['Getting Started', 'Core Concepts']);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['gettingStarted.title', 'coreConcepts.title']);
 
   const toggleSection = (title: string) => {
     setExpandedSections(prev =>
@@ -96,20 +108,20 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             }}
           >
             <nav className="p-6 space-y-1">
-              {navigation.map(section => (
-                <div key={section.title} className="mb-4">
+              {navigationConfig.map(section => (
+                <div key={section.titleKey} className="mb-4">
                   <button
-                    onClick={() => toggleSection(section.title)}
+                    onClick={() => toggleSection(section.titleKey)}
                     className="flex items-center justify-between w-full py-2 text-sm font-semibold hover:text-[var(--accent-cyan)] transition-colors"
                   >
-                    {section.title}
-                    {expandedSections.includes(section.title)
+                    {t(`docsNav.${section.titleKey}`)}
+                    {expandedSections.includes(section.titleKey)
                       ? <ChevronDownIcon size={16} />
                       : <ChevronRightIcon size={16} />
                     }
                   </button>
 
-                  {expandedSections.includes(section.title) && (
+                  {expandedSections.includes(section.titleKey) && (
                     <ul className="ml-2 mt-1 space-y-1 border-l" style={{ borderColor: 'var(--border-subtle)' }}>
                       {section.items.map(item => (
                         <li key={item.href}>
@@ -128,7 +140,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
                               borderColor: isActive(item.href) ? 'var(--accent-cyan)' : 'transparent'
                             }}
                           >
-                            {item.label}
+                            {t(`docsNav.${item.labelKey}`)}
                           </Link>
                         </li>
                       ))}

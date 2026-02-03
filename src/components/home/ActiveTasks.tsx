@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n';
 
 type TaskStatus = 'open' | 'claimed' | 'in_progress' | 'verification';
 type TaskType = 'bounty' | 'contribution' | 'showcase';
@@ -71,20 +74,21 @@ const mockTasks: Task[] = [
   },
 ];
 
-const statusConfig: Record<TaskStatus, { label: string; color: string }> = {
-  open: { label: 'Open', color: 'var(--status-success)' },
-  claimed: { label: 'Claimed', color: 'var(--accent-amber)' },
-  in_progress: { label: 'In Progress', color: 'var(--accent-cyan)' },
-  verification: { label: 'Verifying', color: 'var(--status-pending)' },
+const statusConfig: Record<TaskStatus, { labelKey: string; color: string }> = {
+  open: { labelKey: 'status.open', color: 'var(--status-success)' },
+  claimed: { labelKey: 'status.claimed', color: 'var(--accent-amber)' },
+  in_progress: { labelKey: 'status.inProgress', color: 'var(--accent-cyan)' },
+  verification: { labelKey: 'status.verification', color: 'var(--status-pending)' },
 };
 
-const difficultyConfig: Record<string, { label: string; dots: number }> = {
-  easy: { label: 'Easy', dots: 1 },
-  medium: { label: 'Medium', dots: 2 },
-  hard: { label: 'Hard', dots: 3 },
+const difficultyConfig: Record<string, { labelKey: string; dots: number }> = {
+  easy: { labelKey: 'difficulty.easy', dots: 1 },
+  medium: { labelKey: 'difficulty.medium', dots: 2 },
+  hard: { labelKey: 'difficulty.hard', dots: 3 },
 };
 
 export function ActiveTasks() {
+  const { t } = useTranslation();
   return (
     <section className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
@@ -92,14 +96,16 @@ export function ActiveTasks() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-2">
-              Live <span style={{ color: 'var(--accent-cyan)' }}>Task Feed</span>
+              {t.rich('activeTasks.sectionTitle', {
+                highlight: (chunks) => <span style={{ color: 'var(--accent-cyan)' }}>{chunks}</span>,
+              })}
             </h2>
             <p style={{ color: 'var(--text-secondary)' }}>
-              Real-time view of tasks across the platform
+              {t('activeTasks.sectionDescription')}
             </p>
           </div>
           <Link href="/tasks" className="btn btn-secondary text-sm">
-            View All Tasks
+            {t('activeTasks.viewAllTasks')}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
@@ -153,7 +159,7 @@ export function ActiveTasks() {
                     className="w-1.5 h-1.5 rounded-full"
                     style={{ background: statusConfig[task.status].color }}
                   />
-                  {statusConfig[task.status].label}
+                  {t(`activeTasks.${statusConfig[task.status].labelKey}`)}
                 </span>
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
@@ -171,13 +177,13 @@ export function ActiveTasks() {
                     ))}
                   </div>
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {difficultyConfig[task.difficulty].label}
+                    {t(`activeTasks.${difficultyConfig[task.difficulty].labelKey}`)}
                   </span>
                 </div>
               </div>
               {task.claimedBy && (
                 <p className="text-xs font-mono mt-2 pt-2 border-t" style={{ color: 'var(--text-muted)', borderColor: 'var(--border-subtle)' }}>
-                  Claimed by: {task.claimedBy}
+                  {t('activeTasks.claimedBy')} {task.claimedBy}
                 </p>
               )}
             </div>
@@ -201,12 +207,12 @@ export function ActiveTasks() {
               color: 'var(--text-muted)',
             }}
           >
-            <div className="col-span-1">ID</div>
-            <div className="col-span-4">Task</div>
-            <div className="col-span-2">Status</div>
-            <div className="col-span-2">Reward</div>
-            <div className="col-span-2">Difficulty</div>
-            <div className="col-span-1">Source</div>
+            <div className="col-span-1">{t('activeTasks.tableHeaders.id')}</div>
+            <div className="col-span-4">{t('activeTasks.tableHeaders.task')}</div>
+            <div className="col-span-2">{t('activeTasks.tableHeaders.status')}</div>
+            <div className="col-span-2">{t('activeTasks.tableHeaders.reward')}</div>
+            <div className="col-span-2">{t('activeTasks.tableHeaders.difficulty')}</div>
+            <div className="col-span-1">{t('activeTasks.tableHeaders.source')}</div>
           </div>
 
           {/* Table rows */}
@@ -246,7 +252,7 @@ export function ActiveTasks() {
                     className="w-1.5 h-1.5 rounded-full"
                     style={{ background: statusConfig[task.status].color }}
                   />
-                  {statusConfig[task.status].label}
+                  {t(`activeTasks.${statusConfig[task.status].labelKey}`)}
                 </span>
               </div>
 
@@ -280,7 +286,7 @@ export function ActiveTasks() {
                     ))}
                   </div>
                   <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    {difficultyConfig[task.difficulty].label}
+                    {t(`activeTasks.${difficultyConfig[task.difficulty].labelKey}`)}
                   </span>
                 </div>
               </div>
@@ -299,19 +305,19 @@ export function ActiveTasks() {
         <div className="flex flex-wrap gap-6 mt-6 justify-center text-sm" style={{ color: 'var(--text-muted)' }}>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: 'var(--status-success)' }} />
-            <span>Open: 847</span>
+            <span>{t('activeTasks.bottomStats.open')} 847</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: 'var(--accent-cyan)' }} />
-            <span>In Progress: 234</span>
+            <span>{t('activeTasks.bottomStats.inProgress')} 234</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ background: 'var(--status-pending)' }} />
-            <span>Verification: 89</span>
+            <span>{t('activeTasks.bottomStats.verification')} 89</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-mono" style={{ color: 'var(--accent-amber)' }}>$127K</span>
-            <span>in open bounties</span>
+            <span>{t('activeTasks.bottomStats.inOpenBounties')}</span>
           </div>
         </div>
       </div>

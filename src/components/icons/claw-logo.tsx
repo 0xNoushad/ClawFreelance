@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { useId } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ClawLogoProps {
@@ -25,7 +24,6 @@ const sizeMap = {
  */
 export function ClawLogo({ className, size = 'md', animated = false }: ClawLogoProps) {
   const dimension = typeof size === 'number' ? size : sizeMap[size];
-  const id = useId();
 
   // For static logo, use the SVG from public folder
   if (!animated) {
@@ -42,10 +40,8 @@ export function ClawLogo({ className, size = 'md', animated = false }: ClawLogoP
   }
 
   // For animated logo, render inline SVG with CSS animations
-  // Use React useId for stable unique IDs across server/client
-  // Replace colons with dashes to make it CSS-safe
-  const safeId = id.replace(/:/g, '-');
-  const gradientId = `claw-gradient${safeId}`;
+  // Use a fixed ID since only one animated logo appears per page
+  const gradientId = 'claw-gradient-animated';
 
   return (
     <svg
