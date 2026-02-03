@@ -1,60 +1,133 @@
-import { and, desc, eq, gte, or } from 'drizzle-orm';
-import Link from 'next/link';
+'use client';
 
-import { BountyIcon } from '@/components/icons';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+import { BountyIcon, FilterIcon } from '@/components/icons';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
-import { db } from '@/db';
-import { tasks } from '@/db/schema';
-import type { Locale } from '@/lib/i18n';
-import { getDictionary } from '@/lib/i18n/dictionaries';
+import { useTranslation } from '@/lib/i18n';
 
-// Force dynamic rendering (database queries)
-export const dynamic = 'force-dynamic';
+type Bounty = {
+  id: string;
+  title: string;
+  description: string;
+  type: 'code_contribution' | 'bounty' | 'showcase';
+  status: string;
+  rewardType: 'crypto' | 'points' | 'external';
+  rewardAmount: number;
+  rewardCurrency?: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  source: string;
+  externalUrl?: string;
+  deadline?: string;
+  createdAt: string;
+};
 
-async function getBounties() {
-  // Get only real bounties with external (monetary) rewards
-  // Code contributions with points are shown on the tasks page instead
-  const bounties = await db
-    .select({
-      id: tasks.id,
-      title: tasks.title,
-      type: tasks.type,
-      rewardAmount: tasks.rewardAmount,
-      rewardCurrency: tasks.rewardCurrency,
-      rewardType: tasks.rewardType,
-      source: tasks.source,
-      deadline: tasks.deadline,
-      status: tasks.status,
-      externalUrl: tasks.externalUrl,
-      difficulty: tasks.difficulty,
-      createdAt: tasks.createdAt,
-    })
-    .from(tasks)
-    .where(
-      and(
-        eq(tasks.visibility, 'public'),
-        or(eq(tasks.status, 'open'), eq(tasks.status, 'in_progress')),
-        eq(tasks.rewardType, 'external'), // Only real monetary bounties
-        gte(tasks.rewardAmount, 1)
-      )
-    )
-    .orderBy(desc(tasks.rewardAmount))
-    .limit(100);
+type Pagination = {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+};
 
-  return bounties;
+const ITEMS_PER_PAGE = 20;
+
+// Fisher-Yates shuffle for randomizing bounties
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
-export default async function BountiesPage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params;
-  const dict = await getDictionary(locale as Locale);
-  const bounties = await getBounties();
+export default function BountiesPage() {
+  const { t } = useTranslation();
+  const [bounties, setBounties] = useState<Bounty[]>([]);
+  const [allBounties, setAllBounties] = useState<Bounty[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState<Pagination>({
+    total: 0,
+    limit: ITEMS_PER_PAGE,
+    offset: 0,
+    hasMore: false,
+  });
+  const [filters, setFilters] = useState({
+    type: '',
+    difficulty: '',
+    source: '',
+  });
 
-  const totalValue = bounties
+  const typeConfig: Record<string, { label: string; color: string }> = {
+    code_contribution: { label: t('tasks.filters.contribution'), color: 'var(--accent-cyan)' },
+    bounty: { label: t('tasks.filters.bounty'), color: 'var(--accent-amber)' },
+    showcase: { label: t('tasks.filters.showcase'), color: 'var(--status-success)' },
+  };
+
+  const fetchBounties = async () => {
+    setLoading(true);
+    try {
+      // Fetch bounties with external rewards (monetary)
+      const params = new URLSearchParams();
+      params.set('minReward', '1');
+      params.set('limit', '500'); // Fetch all, we'll paginate client-side after shuffle
+      params.set('status', 'open');
+      if (filters.type) params.set('type', filters.type);
+      if (filters.difficulty) params.set('difficulty', filters.difficulty);
+      if (filters.source) params.set('source', filters.source);
+
+      const response = await fetch(`/api/v1/tasks?${params.toString()}`);
+      const data = await response.json();
+
+      // Filter to only external rewards and shuffle
+      const externalBounties = ((data.tasks || []) as Bounty[]).filter(
+        (t) => t.rewardType === 'external' || t.rewardAmount > 0
+      );
+      const shuffled = shuffleArray(externalBounties);
+      setAllBounties(shuffled);
+
+      // Set first page
+      const firstPage = shuffled.slice(0, ITEMS_PER_PAGE);
+      setBounties(firstPage);
+      setPagination({
+        total: shuffled.length,
+        limit: ITEMS_PER_PAGE,
+        offset: 0,
+        hasMore: shuffled.length > ITEMS_PER_PAGE,
+      });
+    } catch {
+      console.error('Failed to fetch bounties');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBounties();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.type, filters.difficulty, filters.source]);
+
+  const handlePageChange = (newOffset: number) => {
+    const pageBounties = allBounties.slice(newOffset, newOffset + ITEMS_PER_PAGE);
+    setBounties(pageBounties);
+    setPagination({
+      ...pagination,
+      offset: newOffset,
+      hasMore: newOffset + ITEMS_PER_PAGE < allBounties.length,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const currentPage = Math.floor(pagination.offset / ITEMS_PER_PAGE) + 1;
+  const totalPages = Math.ceil(pagination.total / ITEMS_PER_PAGE);
+
+  const totalValue = allBounties
     .filter((b) => b.status === 'open')
     .reduce((acc, b) => acc + (b.rewardAmount || 0), 0);
 
-  const openCount = bounties.filter((b) => b.status === 'open').length;
+  const openCount = allBounties.filter((b) => b.status === 'open').length;
 
   return (
     <div className="min-h-screen noise">
@@ -70,13 +143,13 @@ export default async function BountiesPage({ params }: { params: Promise<{ local
                     className="inline mr-3"
                     style={{ color: 'var(--accent-amber)' }}
                   />
-                  {dict.bounties.title}
+                  {t('bounties.title')}
                 </h1>
-                <p style={{ color: 'var(--text-secondary)' }}>{dict.bounties.description}</p>
+                <p style={{ color: 'var(--text-secondary)' }}>{t('bounties.description')}</p>
               </div>
               <div className="text-right">
                 <div className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                  {openCount} {dict.bounties.totalOpen}
+                  {openCount} {t('bounties.totalOpen')}
                 </div>
                 <div
                   className="font-mono text-3xl font-bold"
@@ -87,12 +160,70 @@ export default async function BountiesPage({ params }: { params: Promise<{ local
               </div>
             </div>
 
-            {bounties.length === 0 ? (
+            {/* Filters */}
+            <div
+              className="rounded-xl border p-4 mb-8"
+              style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
+            >
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex gap-3 flex-wrap">
+                  <select
+                    value={filters.type}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, type: e.target.value }))}
+                    className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
+                    style={{ borderColor: 'var(--border-medium)' }}
+                  >
+                    <option value="">{t('tasks.filters.allTypes')}</option>
+                    <option value="bounty">{t('tasks.filters.bounty')}</option>
+                    <option value="code_contribution">{t('tasks.filters.contribution')}</option>
+                    <option value="showcase">{t('tasks.filters.showcase')}</option>
+                  </select>
+
+                  <select
+                    value={filters.difficulty}
+                    onChange={(e) =>
+                      setFilters((prev) => ({ ...prev, difficulty: e.target.value }))
+                    }
+                    className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
+                    style={{ borderColor: 'var(--border-medium)' }}
+                  >
+                    <option value="">{t('tasks.filters.allDifficulty')}</option>
+                    <option value="easy">{t('tasks.easy')}</option>
+                    <option value="medium">{t('tasks.medium')}</option>
+                    <option value="hard">{t('tasks.hard')}</option>
+                  </select>
+
+                  <select
+                    value={filters.source}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, source: e.target.value }))}
+                    className="px-4 py-2.5 rounded-lg border bg-[var(--bg-tertiary)] focus:outline-none"
+                    style={{ borderColor: 'var(--border-medium)' }}
+                  >
+                    <option value="">All Sources</option>
+                    <option value="github">GitHub</option>
+                    <option value="gitcoin">Gitcoin</option>
+                    <option value="algora">Algora</option>
+                    <option value="immunefi">Immunefi</option>
+                    <option value="bugcrowd">Bugcrowd</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Bounties Grid */}
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="inline-block w-8 h-8 border-2 border-[var(--accent-amber)] border-t-transparent rounded-full animate-spin" />
+                <p className="mt-4" style={{ color: 'var(--text-secondary)' }}>
+                  {t('tasks.loadingTasks')}
+                </p>
+              </div>
+            ) : bounties.length === 0 ? (
               <div
                 className="text-center py-16 rounded-xl border"
                 style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
               >
-                <BountyIcon
+                <FilterIcon
                   size={48}
                   className="mx-auto mb-4"
                   style={{ color: 'var(--text-muted)' }}
@@ -115,9 +246,24 @@ export default async function BountiesPage({ params }: { params: Promise<{ local
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2 flex-wrap">
                           <span
+                            className="font-mono text-sm truncate max-w-[120px]"
+                            style={{ color: 'var(--accent-cyan)' }}
+                          >
+                            {bounty.id.slice(0, 8)}...
+                          </span>
+                          <span
                             className={`px-2 py-0.5 rounded-full text-xs font-medium ${bounty.status === 'open' ? 'bg-[var(--status-success)]/10 text-[var(--status-success)]' : 'bg-[var(--accent-cyan)]/10 text-[var(--accent-cyan)]'}`}
                           >
-                            {bounty.status === 'open' ? dict.tasks.open : dict.tasks.inProgress}
+                            {bounty.status === 'open' ? t('tasks.open') : t('tasks.inProgress')}
+                          </span>
+                          <span
+                            className="text-xs px-2 py-0.5 rounded"
+                            style={{
+                              background: `${typeConfig[bounty.type]?.color || 'var(--bg-tertiary)'}15`,
+                              color: typeConfig[bounty.type]?.color || 'var(--text-muted)',
+                            }}
+                          >
+                            {typeConfig[bounty.type]?.label || bounty.type.replace('_', ' ')}
                           </span>
                           <span
                             className="text-xs px-2 py-0.5 rounded capitalize"
@@ -138,16 +284,11 @@ export default async function BountiesPage({ params }: { params: Promise<{ local
                               {bounty.difficulty}
                             </span>
                           )}
-                          {bounty.externalUrl && (
-                            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                              External
-                            </span>
-                          )}
                         </div>
                         <h3 className="text-lg font-semibold mb-2">{bounty.title}</h3>
                         {bounty.deadline && (
                           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                            {dict.bounties.deadlineLabel}{' '}
+                            {t('bounties.deadlineLabel')}{' '}
                             {new Date(bounty.deadline).toLocaleDateString()}
                           </p>
                         )}
@@ -166,6 +307,49 @@ export default async function BountiesPage({ params }: { params: Promise<{ local
                     </div>
                   </Link>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && pagination.total > ITEMS_PER_PAGE && (
+              <div
+                className="flex items-center justify-between mt-8 pt-6 border-t"
+                style={{ borderColor: 'var(--border-subtle)' }}
+              >
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {t('common.showing', {
+                    from: pagination.offset + 1,
+                    to: Math.min(pagination.offset + pagination.limit, pagination.total),
+                    total: pagination.total,
+                  })}
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handlePageChange(pagination.offset - ITEMS_PER_PAGE)}
+                    disabled={pagination.offset === 0}
+                    className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'var(--border-medium)',
+                      background: 'var(--bg-tertiary)',
+                    }}
+                  >
+                    {t('common.previous')}
+                  </button>
+                  <span className="px-4 py-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(pagination.offset + ITEMS_PER_PAGE)}
+                    disabled={!pagination.hasMore}
+                    className="px-4 py-2 rounded-lg border text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'var(--border-medium)',
+                      background: 'var(--bg-tertiary)',
+                    }}
+                  >
+                    {t('common.next')}
+                  </button>
+                </div>
               </div>
             )}
           </div>

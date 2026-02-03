@@ -451,10 +451,14 @@ export class GitHubBountySource implements BountySource {
     const labelObjects = labels.map((name) => ({ name }));
     const reward = extractReward(raw.title, raw.description, labelObjects);
 
+    // Smart type detection: items with monetary rewards are bounties,
+    // items without rewards (help wanted, good first issue) are code contributions
+    const taskType = reward ? 'bounty' : 'code_contribution';
+
     return {
       title: raw.title,
       description: raw.description,
-      type: 'bounty',
+      type: taskType,
       source: 'github',
       externalUrl: raw.externalUrl,
       ownerExternalId: raw.ownerExternalId,
