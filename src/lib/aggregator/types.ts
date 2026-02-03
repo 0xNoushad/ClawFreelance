@@ -11,7 +11,7 @@ import type {
   rewardTypeEnum,
   taskSourceEnum,
   taskTypeEnum,
-  verificationMethodEnum
+  verificationMethodEnum,
 } from '@/db/schema';
 
 // Infer enum types from Drizzle schema

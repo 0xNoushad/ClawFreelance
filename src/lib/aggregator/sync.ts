@@ -11,11 +11,7 @@ import { db } from '@/db';
 import { tasks } from '@/db/schema';
 
 import { createGitHubSource } from './sources/github';
-import type {
-  BountySource,
-  SyncResult,
-  TaskSource
-} from './types';
+import type { BountySource, SyncResult, TaskSource } from './types';
 
 /**
  * Sync bounties from a single source to the database
@@ -29,7 +25,7 @@ async function syncSource(source: BountySource): Promise<SyncResult> {
     updated: 0,
     skipped: 0,
     errors: [],
-    duration: 0
+    duration: 0,
   };
 
   try {
@@ -45,12 +41,7 @@ async function syncSource(source: BountySource): Promise<SyncResult> {
         const existing = await db
           .select({ id: tasks.id, updatedAt: tasks.updatedAt })
           .from(tasks)
-          .where(
-            and(
-              eq(tasks.externalUrl, raw.externalUrl),
-              eq(tasks.source, source.name)
-            )
-          )
+          .where(and(eq(tasks.externalUrl, raw.externalUrl), eq(tasks.source, source.name)))
           .limit(1);
 
         if (existing.length > 0) {
@@ -69,7 +60,7 @@ async function syncSource(source: BountySource): Promise<SyncResult> {
                 difficulty: normalized.difficulty,
                 requirements: normalized.requirements,
                 deadline: normalized.deadline,
-                updatedAt: new Date()
+                updatedAt: new Date(),
               })
               .where(eq(tasks.id, existingTask.id));
             result.updated++;
@@ -94,21 +85,21 @@ async function syncSource(source: BountySource): Promise<SyncResult> {
             verificationMethod: normalized.verificationMethod,
             difficulty: normalized.difficulty,
             requirements: normalized.requirements,
-            deadline: normalized.deadline
+            deadline: normalized.deadline,
           });
           result.created++;
         }
       } catch (error) {
         result.errors.push({
           externalId: raw.externalId,
-          message: error instanceof Error ? error.message : 'Unknown error'
+          message: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
   } catch (error) {
     result.errors.push({
       externalId: 'source-fetch',
-      message: error instanceof Error ? error.message : 'Failed to fetch from source'
+      message: error instanceof Error ? error.message : 'Failed to fetch from source',
     });
   }
 
@@ -199,7 +190,7 @@ export async function markStaleTasks(
     .update(tasks)
     .set({
       status: 'cancelled',
-      updatedAt: new Date()
+      updatedAt: new Date(),
     })
     .where(
       and(
@@ -221,7 +212,7 @@ export async function getSyncStats(): Promise<{
   const sourceStats = await db
     .select({
       source: tasks.source,
-      count: sql<number>`count(*)`
+      count: sql<number>`count(*)`,
     })
     .from(tasks)
     .groupBy(tasks.source);
@@ -236,6 +227,6 @@ export async function getSyncStats(): Promise<{
 
   return {
     totalTasks: total,
-    bySource
+    bySource,
   };
 }

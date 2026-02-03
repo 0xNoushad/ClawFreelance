@@ -11,21 +11,21 @@ const syncRequestSchema = z.object({
       github: z
         .object({
           enabled: z.boolean().optional(),
-          repositories: z.array(z.string().max(200)).max(50).optional()
+          repositories: z.array(z.string().max(200)).max(50).optional(),
         })
         .optional(),
       gitcoin: z
         .object({
-          enabled: z.boolean().optional()
+          enabled: z.boolean().optional(),
         })
         .optional(),
       algora: z
         .object({
-          enabled: z.boolean().optional()
+          enabled: z.boolean().optional(),
         })
-        .optional()
+        .optional(),
     })
-    .optional()
+    .optional(),
 });
 
 /**
@@ -73,15 +73,15 @@ export async function GET(_request: NextRequest) {
         ...stats,
         availableSources: ['github'],
         pendingSources: ['gitcoin', 'algora'],
-        defaultRepositories: POPULAR_BOUNTY_REPOS
-      }
+        defaultRepositories: POPULAR_BOUNTY_REPOS,
+      },
     });
   } catch (error) {
     console.error('[sync] GET error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to get sync stats'
+        error: 'Failed to get sync stats',
       },
       { status: 500 }
     );
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Unauthorized. Provide valid SYNC_SECRET in Authorization header.'
+        error: 'Unauthorized. Provide valid SYNC_SECRET in Authorization header.',
       },
       { status: 401 }
     );
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: 'Invalid request body',
-          details: validated.error.flatten()
+          details: validated.error.flatten(),
         },
         { status: 400 }
       );
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       created: 0,
       updated: 0,
       skipped: 0,
-      errors: 0
+      errors: 0,
     };
 
     for (const result of results) {
@@ -144,26 +144,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Log the sync operation
-    console.log('[sync] Completed:', JSON.stringify({
-      totals,
-      sources: results.map((r) => r.source),
-      timestamp: new Date().toISOString()
-    }));
+    console.log(
+      '[sync] Completed:',
+      JSON.stringify({
+        totals,
+        sources: results.map((r) => r.source),
+        timestamp: new Date().toISOString(),
+      })
+    );
 
     return NextResponse.json({
       success: true,
       data: {
         results,
         totals,
-        syncedAt: new Date().toISOString()
-      }
+        syncedAt: new Date().toISOString(),
+      },
     });
   } catch (error) {
     console.error('[sync] POST error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Sync failed'
+        error: error instanceof Error ? error.message : 'Sync failed',
       },
       { status: 500 }
     );

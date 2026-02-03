@@ -5,11 +5,7 @@
  * Supports configurable repositories and bounty label detection.
  */
 
-import type {
-  BountySource,
-  GitHubSourceConfig,
-  NormalizedTask,
-  RawBounty} from '../types';
+import type { BountySource, GitHubSourceConfig, NormalizedTask, RawBounty } from '../types';
 
 const GITHUB_API_BASE = 'https://api.github.com';
 
@@ -22,7 +18,7 @@ const DEFAULT_BOUNTY_LABELS = [
   'reward',
   'money',
   'gitcoin',
-  'funding'
+  'funding',
 ];
 
 // Well-known repositories with bounty programs
@@ -37,7 +33,7 @@ export const POPULAR_BOUNTY_REPOS = [
   'scroll-tech/scroll',
   'base-org/node',
   'solana-labs/solana',
-  'aptos-labs/aptos-core'
+  'aptos-labs/aptos-core',
 ];
 
 interface GitHubIssue {
@@ -81,17 +77,17 @@ function extractReward(
     if (labelMatch) {
       return {
         amount: parseFloat(labelMatch[1].replace(/,/g, '')),
-        currency: labelMatch[2]?.toUpperCase() || 'USD'
+        currency: labelMatch[2]?.toUpperCase() || 'USD',
       };
     }
   }
 
-  // Patterns to match in body
+  // Patterns to match in body (crypto first since they're more specific)
   const patterns = [
-    /reward[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(USD|USDC|USDT)?/i,
-    /bounty[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(USD|USDC|USDT)?/i,
-    /\$(\d+(?:,\d{3})*(?:\.\d{2})?)\s*(?:bounty|reward)/i,
-    /(\d+(?:\.\d+)?)\s*(ETH|BTC|SOL)\s*(?:bounty|reward)?/i
+    /(\d+(?:\.\d+)?)\s*(ETH|BTC|SOL)/i,
+    /reward[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d+)?)\s*(USD|USDC|USDT)?/i,
+    /bounty[:\s]*\$?(\d+(?:,\d{3})*(?:\.\d+)?)\s*(USD|USDC|USDT)?/i,
+    /\$(\d+(?:,\d{3})*(?:\.\d+)?)\s*(USD|USDC|USDT)?/i,
   ];
 
   for (const pattern of patterns) {
@@ -99,7 +95,7 @@ function extractReward(
     if (match) {
       return {
         amount: parseFloat(match[1].replace(/,/g, '')),
-        currency: match[2]?.toUpperCase() || 'USD'
+        currency: match[2]?.toUpperCase() || 'USD',
       };
     }
   }
@@ -124,11 +120,7 @@ function inferDifficulty(
     return 'easy';
   }
 
-  if (
-    labelNames.some((l) =>
-      ['hard', 'difficult', 'complex', 'expert', 'advanced'].includes(l)
-    )
-  ) {
+  if (labelNames.some((l) => ['hard', 'difficult', 'complex', 'expert', 'advanced'].includes(l))) {
     return 'hard';
   }
 
@@ -171,7 +163,7 @@ function extractRequirements(labels: Array<{ name: string }>): string[] {
     'solidity',
     'react',
     'node',
-    'web3'
+    'web3',
   ];
   for (const tech of techLabels) {
     if (labelNames.some((l) => l.includes(tech))) {
@@ -209,14 +201,14 @@ export class GitHubBountySource implements BountySource {
       repositories: config.repositories || POPULAR_BOUNTY_REPOS,
       bountyLabels: config.bountyLabels || DEFAULT_BOUNTY_LABELS,
       token: config.token || process.env.GITHUB_TOKEN,
-      ...config
+      ...config,
     };
   }
 
   private async fetchWithAuth(url: string): Promise<Response> {
     const headers: HeadersInit = {
       Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28'
+      'X-GitHub-Api-Version': '2022-11-28',
     };
 
     if (this.config.token) {
@@ -231,13 +223,9 @@ export class GitHubBountySource implements BountySource {
    */
   private async fetchFromRepo(repo: string): Promise<RawBounty[]> {
     const bounties: RawBounty[] = [];
-    const labelQuery = this.config.bountyLabels
-      .map((l) => `label:"${l}"`)
-      .join(' OR ');
+    const labelQuery = this.config.bountyLabels.map((l) => `label:"${l}"`).join(' OR ');
 
-    const query = encodeURIComponent(
-      `repo:${repo} is:issue is:open (${labelQuery})`
-    );
+    const query = encodeURIComponent(`repo:${repo} is:issue is:open (${labelQuery})`);
     const url = `${GITHUB_API_BASE}/search/issues?q=${query}&per_page=100&sort=updated`;
 
     try {
@@ -265,10 +253,8 @@ export class GitHubBountySource implements BountySource {
           labels: issue.labels.map((l) => l.name),
           createdAt: new Date(issue.created_at),
           updatedAt: new Date(issue.updated_at),
-          deadline: issue.milestone?.due_on
-            ? new Date(issue.milestone.due_on)
-            : undefined,
-          raw: issue
+          deadline: issue.milestone?.due_on ? new Date(issue.milestone.due_on) : undefined,
+          raw: issue,
         });
       }
     } catch (error) {
@@ -324,7 +310,7 @@ export class GitHubBountySource implements BountySource {
       verificationMethod: 'pr_merged',
       difficulty: inferDifficulty(labelObjects, raw.description),
       requirements: extractRequirements(labelObjects),
-      deadline: raw.deadline
+      deadline: raw.deadline,
     };
   }
 }
@@ -332,11 +318,9 @@ export class GitHubBountySource implements BountySource {
 /**
  * Create a GitHub source with environment-based configuration
  */
-export function createGitHubSource(
-  customRepos?: string[]
-): GitHubBountySource {
+export function createGitHubSource(customRepos?: string[]): GitHubBountySource {
   return new GitHubBountySource({
     token: process.env.GITHUB_TOKEN,
-    repositories: customRepos || POPULAR_BOUNTY_REPOS
+    repositories: customRepos || POPULAR_BOUNTY_REPOS,
   });
 }
