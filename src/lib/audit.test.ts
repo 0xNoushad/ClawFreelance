@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import {
   createAuditLog,
@@ -314,6 +314,51 @@ describe('Audit Module', () => {
       // Should still be able to get recent logs
       const logs = getRecentAuditLogs(10);
       expect(logs.length).toBeLessThanOrEqual(10);
+    });
+  });
+
+  // ============================================
+  // DEVELOPMENT MODE LOGGING TESTS
+  // ============================================
+  describe('Development mode logging', () => {
+    const originalEnv = process.env.NODE_ENV;
+
+    afterEach(() => {
+      process.env.NODE_ENV = originalEnv;
+    });
+
+    it('should log all entries when NODE_ENV is development', () => {
+      process.env.NODE_ENV = 'development';
+      const consoleSpy = vi.spyOn(console, 'info');
+
+      const request = createMockRequest();
+      // Use an action that wouldn't normally be logged (not in alwaysLogActions, success=true)
+      createAuditLog(request, 'task.update', {
+        resourceType: 'task',
+        resourceId: 'task-123',
+        success: true,
+      });
+
+      // In development mode, even successful non-security actions should be logged
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('should not log successful non-security actions in production', () => {
+      process.env.NODE_ENV = 'production';
+      const consoleSpy = vi.spyOn(console, 'info');
+
+      const request = createMockRequest();
+      // Use an action that wouldn't normally be logged
+      createAuditLog(request, 'task.update', {
+        resourceType: 'task',
+        resourceId: 'task-123',
+        success: true,
+      });
+
+      // In production mode, successful non-security actions should NOT be logged
+      expect(consoleSpy).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
   });
 

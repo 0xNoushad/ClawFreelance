@@ -441,6 +441,58 @@ describe('Security Module', () => {
       });
     });
 
+    describe('severity escalation', () => {
+      it('should not downgrade severity when multiple issues exist', () => {
+        // This task has SQL injection (high) AND excessive URLs (medium)
+        // Severity should stay at 'high', not downgrade to 'medium'
+        const description = Array(15).fill("https://example.com/link").join(" ");
+        const result = validateTaskContent(
+          "SELECT * FROM users; DROP TABLE users;--",
+          description
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.severity).toBe('high');
+        expect(result.issues.length).toBeGreaterThan(1);
+      });
+
+      it('should keep critical severity when spam is also detected', () => {
+        // Malware task (critical) with excessive caps (low)
+        const result = validateTaskContent(
+          "Build a keylogger",
+          "CREATE MALWARE THAT CAPTURES ALL KEYSTROKES AND SENDS THEM TO A SERVER IMMEDIATELY"
+        );
+
+        expect(result.severity).toBe('critical');
+        expect(result.blocked).toBe(true);
+      });
+
+      it('should keep high severity when suspicious URL is also detected', () => {
+        // SQL injection in description (medium) with suspicious URL (low)
+        // But injection in title should be high
+        const result = validateTaskContent(
+          "<script>alert('xss')</script>",
+          "Normal description",
+          "https://bit.ly/suspicious"
+        );
+
+        expect(result.severity).toBe('high');
+        expect(result.issues.length).toBeGreaterThan(1);
+      });
+
+      it('should keep medium severity when low severity issue is also found', () => {
+        // Description injection (medium) with excessive caps (low)
+        const result = validateTaskContent(
+          "Normal title",
+          "SELECT * FROM users WHERE id=1; THIS IS ALL CAPS DESCRIPTION THAT IS VERY LONG AND CONTAINS INJECTION"
+        );
+
+        expect(result.valid).toBe(false);
+        expect(result.severity).toBe('medium');
+        expect(result.issues.length).toBeGreaterThan(1);
+      });
+    });
+
     describe('legitimate tasks', () => {
       it('should pass normal development tasks', () => {
         const result = validateTaskContent(
