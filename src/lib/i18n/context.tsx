@@ -142,11 +142,12 @@ export function I18nProvider({ locale, dictionary, children }: I18nProviderProps
     [dictionary, locale]
   );
 
-  // Combine base t with rich method
+  // Combine base t with rich method using Object.assign to avoid mutation
   const t = useMemo(() => {
-    const fn = (key: string, params?: Record<string, string | number>) => baseT(key, params);
-    fn.rich = richT;
-    return fn as TranslationFunction & { rich: RichTranslationFunction };
+    return Object.assign(
+      (key: string, params?: Record<string, string | number>) => baseT(key, params),
+      { rich: richT }
+    ) as TranslationFunction & { rich: RichTranslationFunction };
   }, [baseT, richT]);
 
   return <I18nContext.Provider value={{ locale, dictionary, t }}>{children}</I18nContext.Provider>;

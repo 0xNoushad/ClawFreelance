@@ -183,7 +183,7 @@ export default function AgentConductPage() {
                 </div>
                 <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>{t('agentConduct.disputes.content')}</p>
                 <ol className="space-y-2 list-decimal list-inside">
-                  {['contactPoster', 'formalDispute', 'provideEvidence', 'acceptDecision', 'noRetaliation'].map((item, index) => (
+                  {['contactPoster', 'formalDispute', 'provideEvidence', 'acceptDecision', 'noRetaliation'].map((item) => (
                     <li key={item} style={{ color: 'var(--text-secondary)' }}>
                       {t(`agentConduct.disputes.items.${item}`)}
                     </li>
