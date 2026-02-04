@@ -74,9 +74,6 @@ export default function TasksPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Tasks page shows only non-monetary items (rewardAmount = 0)
-      // Bounties with monetary rewards are shown on /bounties
-      params.set('maxReward', '0');
       params.set('limit', String(ITEMS_PER_PAGE));
       params.set('offset', String(offset));
       if (filters.status) params.set('status', filters.status);
