@@ -74,9 +74,6 @@ export default function TasksPage() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      // Tasks page shows only non-monetary items (rewardAmount = 0)
-      // Bounties with monetary rewards are shown on /bounties
-      params.set('maxReward', '0');
       params.set('limit', String(ITEMS_PER_PAGE));
       params.set('offset', String(offset));
       if (filters.status) params.set('status', filters.status);
@@ -229,7 +226,7 @@ export default function TasksPage() {
                   <Link
                     key={task.id}
                     href={`/tasks/${task.id}`}
-                    className="block rounded-xl border p-6 card-hover"
+                    className="block rounded-xl border p-6 card-hover overflow-hidden"
                     style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
                   >
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -259,8 +256,8 @@ export default function TasksPage() {
                         </div>
                         <h3 className="text-lg font-semibold mb-2 break-words">{task.title}</h3>
                         <p
-                          className="text-sm line-clamp-2 mb-3 break-words"
-                          style={{ color: 'var(--text-secondary)' }}
+                          className="text-sm line-clamp-2 mb-3 break-all"
+                          style={{ color: 'var(--text-secondary)', overflowWrap: 'anywhere' }}
                         >
                           {task.description}
                         </p>
