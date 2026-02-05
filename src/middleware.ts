@@ -113,7 +113,7 @@ function getSecurityHeaders(requestId: string): Record<string, string> {
     // Content Security Policy
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-eval in dev
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.redoc.ly", // Next.js requires unsafe-eval in dev, Redoc CDN for API docs
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
