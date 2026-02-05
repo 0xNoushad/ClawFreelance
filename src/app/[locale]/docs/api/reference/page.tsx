@@ -7,97 +7,125 @@ export default function ApiReferencePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadRedoc = async () => {
+    let mounted = true;
+    let scriptElement: HTMLScriptElement | null = null;
+
+    const loadRedoc = () => {
       if (typeof window === 'undefined' || !containerRef.current) return;
 
-      const script = document.createElement('script');
-      script.src = 'https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js';
-      script.async = true;
+      // Check if Redoc is already loaded
+      // @ts-expect-error - Redoc is loaded globally
+      if (window.Redoc) {
+        initRedoc();
+        return;
+      }
 
-      script.onload = () => {
+      // Check if script is already in document
+      const existingScript = document.querySelector(
+        'script[src*="redoc.standalone.js"]'
+      ) as HTMLScriptElement | null;
+
+      if (existingScript) {
+        existingScript.onload = initRedoc;
+        return;
+      }
+
+      scriptElement = document.createElement('script');
+      scriptElement.src = 'https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js';
+      scriptElement.async = true;
+      scriptElement.onload = initRedoc;
+      document.head.appendChild(scriptElement);
+    };
+
+    const initRedoc = () => {
+      if (!mounted || !containerRef.current) return;
+
+      // @ts-expect-error - Redoc is loaded globally
+      if (window.Redoc) {
         // @ts-expect-error - Redoc is loaded globally
-        if (window.Redoc) {
-          // @ts-expect-error - Redoc is loaded globally
-          window.Redoc.init(
-            '/openapi.yaml',
-            {
-              theme: {
-                colors: {
-                  primary: { main: '#00F5D4' },
-                  success: { main: '#10B981' },
-                  warning: { main: '#FFB800' },
-                  error: { main: '#EF4444' },
-                  text: { primary: '#E5E7EB', secondary: '#9CA3AF' },
-                  border: { dark: '#2A2A3A', light: '#1F1F2E' },
-                  responses: {
-                    success: { color: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)' },
-                    error: { color: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.1)' },
-                    info: { color: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.1)' },
-                  },
-                  http: {
-                    get: '#10B981',
-                    post: '#3B82F6',
-                    put: '#F59E0B',
-                    delete: '#EF4444',
-                    patch: '#8B5CF6',
-                    options: '#6B7280',
-                    head: '#6B7280',
-                  },
+        window.Redoc.init(
+          '/openapi.yaml',
+          {
+            theme: {
+              colors: {
+                primary: { main: '#00F5D4' },
+                success: { main: '#10B981' },
+                warning: { main: '#FFB800' },
+                error: { main: '#EF4444' },
+                text: { primary: '#E5E7EB', secondary: '#9CA3AF' },
+                border: { dark: '#2A2A3A', light: '#1F1F2E' },
+                responses: {
+                  success: { color: '#10B981', backgroundColor: 'rgba(16, 185, 129, 0.1)' },
+                  error: { color: '#EF4444', backgroundColor: 'rgba(239, 68, 68, 0.1)' },
+                  info: { color: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.1)' },
                 },
-                schema: {
-                  nestedBackground: '#0D0D12',
-                  typeNameColor: '#00F5D4',
-                  typeTitleColor: '#E5E7EB',
-                },
-                typography: {
-                  fontSize: '15px',
-                  fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
-                  headings: {
-                    fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
-                    fontWeight: '700',
-                  },
-                  code: {
-                    fontFamily: 'JetBrains Mono, monospace',
-                    fontSize: '13px',
-                    backgroundColor: 'rgba(0, 245, 212, 0.08)',
-                    color: '#00F5D4',
-                  },
-                  links: { color: '#00F5D4' },
-                },
-                sidebar: {
-                  width: '280px',
-                  backgroundColor: '#0A0A0F',
-                  textColor: '#9CA3AF',
-                  activeTextColor: '#00F5D4',
-                  groupItems: { textTransform: 'uppercase' },
-                },
-                rightPanel: {
-                  backgroundColor: '#0A0A0F',
-                  width: '45%',
+                http: {
+                  get: '#10B981',
+                  post: '#3B82F6',
+                  put: '#F59E0B',
+                  delete: '#EF4444',
+                  patch: '#8B5CF6',
+                  options: '#6B7280',
+                  head: '#6B7280',
                 },
               },
-              scrollYOffset: 0,
-              hideDownloadButton: true,
-              expandResponses: '200,201',
-              jsonSampleExpandLevel: 2,
-              hideSingleRequestSampleTab: true,
-              requiredPropsFirst: true,
-              sortPropsAlphabetically: false,
-              pathInMiddlePanel: true,
-              nativeScrollbars: true,
-              hideHostname: false,
-              expandDefaultServerVariables: true,
+              schema: {
+                nestedBackground: '#0D0D12',
+                typeNameColor: '#00F5D4',
+                typeTitleColor: '#E5E7EB',
+              },
+              typography: {
+                fontSize: '15px',
+                fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+                headings: {
+                  fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+                  fontWeight: '700',
+                },
+                code: {
+                  fontFamily: 'JetBrains Mono, monospace',
+                  fontSize: '13px',
+                  backgroundColor: 'rgba(0, 245, 212, 0.08)',
+                  color: '#00F5D4',
+                },
+                links: { color: '#00F5D4' },
+              },
+              sidebar: {
+                width: '280px',
+                backgroundColor: '#0A0A0F',
+                textColor: '#9CA3AF',
+                activeTextColor: '#00F5D4',
+                groupItems: { textTransform: 'uppercase' },
+              },
+              rightPanel: {
+                backgroundColor: '#0A0A0F',
+                width: '45%',
+              },
             },
-            containerRef.current
-          );
-          setTimeout(() => setLoading(false), 500);
-        }
-      };
-
-      document.body.appendChild(script);
+            scrollYOffset: 0,
+            hideDownloadButton: true,
+            expandResponses: '200,201',
+            jsonSampleExpandLevel: 2,
+            hideSingleRequestSampleTab: true,
+            requiredPropsFirst: true,
+            sortPropsAlphabetically: false,
+            pathInMiddlePanel: true,
+            nativeScrollbars: true,
+            hideHostname: false,
+            expandDefaultServerVariables: true,
+          },
+          containerRef.current
+        );
+        setTimeout(() => {
+          if (mounted) setLoading(false);
+        }, 500);
+      }
     };
 
     loadRedoc();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
