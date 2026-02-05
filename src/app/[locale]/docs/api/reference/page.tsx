@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 
 export default function ApiReferencePage() {
@@ -36,7 +37,7 @@ export default function ApiReferencePage() {
               >
                 ↓ OpenAPI Spec
               </a>
-              <a
+              <Link
                 href="/docs/api"
                 className="px-4 py-2 rounded-lg text-sm font-medium transition-all hover:scale-105"
                 style={{
@@ -46,7 +47,7 @@ export default function ApiReferencePage() {
                 }}
               >
                 ← Back to Docs
-              </a>
+              </Link>
             </div>
           </div>
         </div>
