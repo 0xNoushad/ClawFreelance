@@ -1,216 +1,224 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import 'swagger-ui-react/swagger-ui.css';
-
-// Dynamically import SwaggerUI to avoid SSR issues
-const SwaggerUI = dynamic(() => import('swagger-ui-react'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="w-8 h-8 border-2 border-[var(--accent-cyan)] border-t-transparent rounded-full animate-spin" />
-    </div>
-  ),
-});
+import { useEffect, useRef } from 'react';
 
 export default function ApiReferencePage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Dynamically load Redoc to avoid SSR issues
+    const loadRedoc = async () => {
+      if (typeof window === 'undefined' || !containerRef.current) return;
+
+      // Load Redoc standalone script
+      const script = document.createElement('script');
+      script.src = 'https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js';
+      script.async = true;
+
+      script.onload = () => {
+        // @ts-expect-error - Redoc is loaded globally
+        if (window.Redoc) {
+          // @ts-expect-error - Redoc is loaded globally
+          window.Redoc.init(
+            '/openapi.yaml',
+            {
+              theme: {
+                colors: {
+                  primary: {
+                    main: '#00F5D4',
+                  },
+                  success: {
+                    main: '#10B981',
+                  },
+                  warning: {
+                    main: '#FFB800',
+                  },
+                  error: {
+                    main: '#EF4444',
+                  },
+                  text: {
+                    primary: '#E5E7EB',
+                    secondary: '#9CA3AF',
+                  },
+                  http: {
+                    get: '#10B981',
+                    post: '#3B82F6',
+                    put: '#F59E0B',
+                    delete: '#EF4444',
+                    patch: '#8B5CF6',
+                  },
+                },
+                typography: {
+                  fontSize: '15px',
+                  fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+                  headings: {
+                    fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+                    fontWeight: '700',
+                  },
+                  code: {
+                    fontFamily: 'JetBrains Mono, monospace',
+                    fontSize: '14px',
+                  },
+                },
+                sidebar: {
+                  backgroundColor: '#12121A',
+                  textColor: '#E5E7EB',
+                  activeTextColor: '#00F5D4',
+                },
+                rightPanel: {
+                  backgroundColor: '#0D0D12',
+                },
+              },
+              scrollYOffset: 80,
+              hideDownloadButton: false,
+              expandResponses: '200,201',
+              jsonSampleExpandLevel: 2,
+              hideSingleRequestSampleTab: true,
+              requiredPropsFirst: true,
+              sortPropsAlphabetically: false,
+              pathInMiddlePanel: true,
+              nativeScrollbars: true,
+            },
+            containerRef.current
+          );
+        }
+      };
+
+      document.body.appendChild(script);
+
+      return () => {
+        document.body.removeChild(script);
+      };
+    };
+
+    loadRedoc();
+  }, []);
+
   return (
     <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">API Reference</h1>
           <p style={{ color: 'var(--text-secondary)' }}>
-            Interactive documentation for the ClawFreelance API. Try out endpoints directly from
-            this page.
+            Complete documentation for the ClawFreelance API
           </p>
         </div>
 
+        <div className="flex gap-4 mb-6">
+          <a
+            href="/openapi.yaml"
+            download
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            style={{
+              background: 'var(--bg-tertiary)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            Download OpenAPI Spec
+          </a>
+          <a
+            href="/docs/cli"
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            style={{
+              background: 'var(--bg-tertiary)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-subtle)',
+            }}
+          >
+            CLI Documentation
+          </a>
+        </div>
+
         <div
+          ref={containerRef}
           className="rounded-xl border overflow-hidden"
           style={{
             borderColor: 'var(--border-subtle)',
-            background: '#fff',
+            minHeight: '600px',
           }}
         >
-          <SwaggerUI
-            url="/openapi.yaml"
-            docExpansion="list"
-            defaultModelsExpandDepth={2}
-            displayRequestDuration={true}
-            filter={true}
-            showExtensions={true}
-            showCommonExtensions={true}
-            tryItOutEnabled={true}
-          />
-        </div>
-
-        <div className="mt-8 p-4 rounded-lg" style={{ background: 'var(--bg-card)' }}>
-          <h3 className="font-semibold mb-2">Quick Links</h3>
-          <ul className="space-y-1 text-sm" style={{ color: 'var(--text-secondary)' }}>
-            <li>
-              <a
-                href="/openapi.yaml"
-                download
-                className="hover:underline"
-                style={{ color: 'var(--accent-cyan)' }}
-              >
-                Download OpenAPI Spec (YAML)
-              </a>
-            </li>
-            <li>
-              <a
-                href="/docs/cli"
-                className="hover:underline"
-                style={{ color: 'var(--accent-cyan)' }}
-              >
-                CLI Documentation
-              </a>
-            </li>
-            <li>
-              <a
-                href="/docs/sdk"
-                className="hover:underline"
-                style={{ color: 'var(--accent-cyan)' }}
-              >
-                SDK Documentation
-              </a>
-            </li>
-          </ul>
+          <div className="flex items-center justify-center h-[400px]">
+            <div className="w-8 h-8 border-2 border-[var(--accent-cyan)] border-t-transparent rounded-full animate-spin" />
+          </div>
         </div>
       </div>
 
       <style jsx global>{`
-        /* Swagger UI Custom Styles */
-        .swagger-ui {
-          font-family: inherit;
+        /* Redoc overrides for dark theme */
+        .redoc-wrap {
+          background: #0a0a0f !important;
         }
 
-        .swagger-ui .info .title {
-          font-size: 1.75rem;
-          font-weight: 700;
+        .api-content {
+          background: #0a0a0f !important;
         }
 
-        .swagger-ui .opblock-tag {
-          font-size: 1.25rem;
-          font-weight: 600;
-          border-bottom: 1px solid #e5e7eb;
+        .menu-content {
+          background: #12121a !important;
         }
 
-        .swagger-ui .opblock {
-          border-radius: 8px;
-          margin-bottom: 8px;
-          box-shadow: none;
+        [data-section-id] h1,
+        [data-section-id] h2,
+        [data-section-id] h3 {
+          color: #e5e7eb !important;
         }
 
-        .swagger-ui .opblock .opblock-summary {
-          border-radius: 8px;
+        .api-info p,
+        .api-info li {
+          color: #9ca3af !important;
         }
 
-        .swagger-ui .opblock.opblock-get {
-          border-color: #10b981;
-          background: rgba(16, 185, 129, 0.05);
+        pre {
+          background: #1a1a24 !important;
+          border-radius: 8px !important;
         }
 
-        .swagger-ui .opblock.opblock-get .opblock-summary-method {
-          background: #10b981;
+        code {
+          background: rgba(0, 245, 212, 0.1) !important;
+          color: #00f5d4 !important;
+          padding: 2px 6px !important;
+          border-radius: 4px !important;
         }
 
-        .swagger-ui .opblock.opblock-post {
-          border-color: #3b82f6;
-          background: rgba(59, 130, 246, 0.05);
+        pre code {
+          background: transparent !important;
+          color: #e5e7eb !important;
+          padding: 0 !important;
         }
 
-        .swagger-ui .opblock.opblock-post .opblock-summary-method {
-          background: #3b82f6;
+        .http-verb {
+          border-radius: 4px !important;
+          font-weight: 600 !important;
         }
 
-        .swagger-ui .opblock.opblock-put {
-          border-color: #f59e0b;
-          background: rgba(245, 158, 11, 0.05);
+        table {
+          background: #12121a !important;
         }
 
-        .swagger-ui .opblock.opblock-put .opblock-summary-method {
-          background: #f59e0b;
+        table th {
+          background: #1a1a24 !important;
+          color: #e5e7eb !important;
         }
 
-        .swagger-ui .opblock.opblock-delete {
-          border-color: #ef4444;
-          background: rgba(239, 68, 68, 0.05);
+        table td {
+          border-color: #2a2a3a !important;
+          color: #9ca3af !important;
         }
 
-        .swagger-ui .opblock.opblock-delete .opblock-summary-method {
-          background: #ef4444;
+        .react-tabs__tab--selected {
+          background: #00f5d4 !important;
+          color: #000 !important;
         }
 
-        .swagger-ui .btn.execute {
-          background: var(--accent-cyan, #00f5d4);
-          border-color: var(--accent-cyan, #00f5d4);
-          color: #000;
-          border-radius: 6px;
+        .react-tabs__tab {
+          background: #1a1a24 !important;
+          color: #9ca3af !important;
         }
 
-        .swagger-ui .btn.execute:hover {
-          background: var(--accent-cyan-hover, #00d4b8);
-        }
-
-        .swagger-ui .model-box {
-          background: #f9fafb;
-          border-radius: 8px;
-        }
-
-        .swagger-ui section.models {
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-        }
-
-        .swagger-ui .responses-inner {
-          padding: 12px;
-        }
-
-        .swagger-ui .response-col_status {
-          font-weight: 600;
-        }
-
-        .swagger-ui table tbody tr td {
-          padding: 8px 0;
-        }
-
-        .swagger-ui .parameter__name {
-          font-weight: 600;
-        }
-
-        .swagger-ui .parameter__type {
-          font-size: 0.75rem;
-          color: #6b7280;
-        }
-
-        .swagger-ui input[type='text'],
-        .swagger-ui textarea {
-          border-radius: 6px;
-          border: 1px solid #d1d5db;
-          padding: 8px 12px;
-        }
-
-        .swagger-ui input[type='text']:focus,
-        .swagger-ui textarea:focus {
-          border-color: var(--accent-cyan, #00f5d4);
-          outline: none;
-          box-shadow: 0 0 0 2px rgba(0, 245, 212, 0.2);
-        }
-
-        .swagger-ui .topbar {
-          display: none;
-        }
-
-        .swagger-ui .info {
-          margin: 20px 0;
-        }
-
-        .swagger-ui .scheme-container {
-          background: #f9fafb;
-          padding: 16px;
-          border-radius: 8px;
-          box-shadow: none;
+        button[data-cy='copy-button'] {
+          background: #00f5d4 !important;
+          color: #000 !important;
         }
       `}</style>
     </div>
