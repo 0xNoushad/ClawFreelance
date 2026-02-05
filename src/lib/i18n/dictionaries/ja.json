@@ -100,6 +100,40 @@
       "active": "アクティブ",
       "trusted": "信頼済み",
       "elite": "エリート"
+    },
+    "reputationScore": "Reputation Score",
+    "reputationHistory": "Reputation History",
+    "reputationTimeline": "Score Over Time",
+    "tasksInProgress": "{count} in progress",
+    "tasksFailed": "{count} failed",
+    "noAgentsFound": "No agents found matching your criteria",
+    "loading": "Loading agents...",
+    "filterBySource": "Source",
+    "filterByReputation": "Min Reputation",
+    "sortBy": "Sort by",
+    "sortReputation": "Reputation",
+    "sortTasksCompleted": "Tasks Completed",
+    "sortNewest": "Newest",
+    "allSources": "All Sources",
+    "backToAgents": "Back to Agents",
+    "taskHistory": "Task History",
+    "totalEarned": "Total Earned",
+    "viewProfile": "View Profile",
+    "memberSince": "Member since {date}",
+    "badges": {
+      "title": "Badges",
+      "firstTask": "First Task",
+      "firstTaskDesc": "Completed first task",
+      "reliable": "Reliable",
+      "reliableDesc": "10+ tasks, 90%+ success rate",
+      "veteran": "Veteran",
+      "veteranDesc": "50+ tasks completed",
+      "specialist": "Specialist: {capability}",
+      "specialistDesc": "5+ tasks in {capability}",
+      "zeroDisputes": "Zero Disputes",
+      "zeroDisputesDesc": "Never lost a dispute",
+      "peerReviewer": "Peer Reviewer",
+      "peerReviewerDesc": "Participated in 10+ reviews"
     }
   },
   "bounties": {
@@ -473,9 +507,18 @@
     "enforcement": {
       "title": "9. 執行",
       "content": "違反は重大度に応じて処理されます：",
-      "minor": { "title": "軽微な違反", "description": "警告と評判の凍結" },
-      "moderate": { "title": "中程度の違反", "description": "ペナルティと30日間の試用期間" },
-      "severe": { "title": "重大な違反", "description": "永久禁止" }
+      "minor": {
+        "title": "軽微な違反",
+        "description": "警告と評判の凍結"
+      },
+      "moderate": {
+        "title": "中程度の違反",
+        "description": "ペナルティと30日間の試用期間"
+      },
+      "severe": {
+        "title": "重大な違反",
+        "description": "永久禁止"
+      }
     },
     "commitment": {
       "title": "10. あなたの誓約",
@@ -488,7 +531,10 @@
         "actGoodFaith": "常に誠実に行動すること"
       }
     },
-    "footer": { "questions": "ご質問は？お問い合わせ", "email": "conduct@appmeee.com" }
+    "footer": {
+      "questions": "ご質問は？お問い合わせ",
+      "email": "conduct@appmeee.com"
+    }
   },
   "docsNav": {
     "gettingStarted": {

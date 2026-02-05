@@ -64,6 +64,13 @@ export const milestoneStatusEnum = pgEnum('milestone_status', [
   'completed',
   'disputed',
 ]);
+export const claimModeEnum = pgEnum('claim_mode', ['exclusive', 'competitive']);
+export const verificationStatusEnum = pgEnum('verification_status', [
+  'pending',
+  'approved',
+  'rejected',
+  'auto_verified',
+]);
 export const reputationEventTypeEnum = pgEnum('reputation_event_type', [
   'task_completed',
   'task_failed',
@@ -109,6 +116,8 @@ export const tasks = pgTable(
       .notNull(),
     difficulty: difficultyEnum('difficulty').default('medium').notNull(),
     requirements: jsonb('requirements').$type<string[]>().default([]),
+    claimMode: claimModeEnum('claim_mode').default('exclusive').notNull(),
+    maxClaims: integer('max_claims'),
     deadline: timestamp('deadline'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -155,11 +164,36 @@ export const taskClaims = pgTable('task_claims', {
     .references(() => agents.id, { onDelete: 'cascade' })
     .notNull(),
   status: claimStatusEnum('status').default('active').notNull(),
+  proposal: text('proposal'),
+  greenlighted: boolean('greenlighted').default(false).notNull(),
   submissionUrl: text('submission_url'),
   submissionNotes: text('submission_notes'),
   verificationResult: jsonb('verification_result').$type<Record<string, unknown>>(),
   claimedAt: timestamp('claimed_at').defaultNow().notNull(),
   completedAt: timestamp('completed_at'),
+});
+
+export const taskSubmissions = pgTable('task_submissions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  claimId: uuid('claim_id')
+    .references(() => taskClaims.id, { onDelete: 'cascade' })
+    .notNull(),
+  taskId: uuid('task_id')
+    .references(() => tasks.id, { onDelete: 'cascade' })
+    .notNull(),
+  agentId: uuid('agent_id')
+    .references(() => agents.id, { onDelete: 'cascade' })
+    .notNull(),
+  submissionUrl: text('submission_url').notNull(),
+  submissionNotes: text('submission_notes'),
+  artifacts: jsonb('artifacts').$type<Record<string, string>>().default({}),
+  verificationMethod: verificationMethodEnum('verification_method').notNull(),
+  verificationStatus: verificationStatusEnum('verification_status').default('pending').notNull(),
+  verificationResult: jsonb('verification_result').$type<Record<string, unknown>>().default({}),
+  reviewedBy: uuid('reviewed_by').references(() => agents.id, { onDelete: 'set null' }),
+  reviewedAt: timestamp('reviewed_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
 export const reputationEvents = pgTable('reputation_events', {
@@ -224,6 +258,7 @@ export const auditLogs = pgTable('audit_logs', {
 export const agentsRelations = relations(agents, ({ many }) => ({
   tasks: many(tasks),
   claims: many(taskClaims),
+  submissions: many(taskSubmissions),
   reputationEvents: many(reputationEvents),
   payments: many(payments),
   apiKeys: many(apiKeys),
@@ -235,6 +270,7 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
     references: [agents.id],
   }),
   claims: many(taskClaims),
+  submissions: many(taskSubmissions),
   payments: many(payments),
   milestones: many(taskMilestones),
   invites: many(taskInvites),
@@ -259,13 +295,33 @@ export const taskInvitesRelations = relations(taskInvites, ({ one }) => ({
   }),
 }));
 
-export const taskClaimsRelations = relations(taskClaims, ({ one }) => ({
+export const taskClaimsRelations = relations(taskClaims, ({ one, many }) => ({
   task: one(tasks, {
     fields: [taskClaims.taskId],
     references: [tasks.id],
   }),
   agent: one(agents, {
     fields: [taskClaims.agentId],
+    references: [agents.id],
+  }),
+  submissions: many(taskSubmissions),
+}));
+
+export const taskSubmissionsRelations = relations(taskSubmissions, ({ one }) => ({
+  claim: one(taskClaims, {
+    fields: [taskSubmissions.claimId],
+    references: [taskClaims.id],
+  }),
+  task: one(tasks, {
+    fields: [taskSubmissions.taskId],
+    references: [tasks.id],
+  }),
+  agent: one(agents, {
+    fields: [taskSubmissions.agentId],
+    references: [agents.id],
+  }),
+  reviewer: one(agents, {
+    fields: [taskSubmissions.reviewedBy],
     references: [agents.id],
   }),
 }));
