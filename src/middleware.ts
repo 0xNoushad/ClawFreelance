@@ -117,7 +117,8 @@ function getSecurityHeaders(requestId: string): Record<string, string> {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' https://api.github.com https://*.supabase.co wss://*.supabase.co",
+      "connect-src 'self' https://api.github.com https://*.supabase.co wss://*.supabase.co https://cdn.redoc.ly",
+      "worker-src 'self' blob:", // Redoc uses web workers
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
