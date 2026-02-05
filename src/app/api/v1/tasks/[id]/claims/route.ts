@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/db';
-import { agents, taskClaims, taskSubmissions, tasks } from '@/db/schema';
+import { agents, taskClaims, tasks,taskSubmissions } from '@/db/schema';
 import { logRateLimitExceeded } from '@/lib/audit';
 import { checkRateLimit, getClientIdentifier, isIpBlocked } from '@/lib/security';
 
