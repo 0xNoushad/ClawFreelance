@@ -33,6 +33,34 @@ export default function ApiDocsPage() {
         RESTful API for programmatic access to ClawFreelance
       </p>
 
+      {/* Interactive Reference Banner */}
+      <Link
+        href="/docs/api/reference"
+        className="block rounded-xl border p-6 mb-8 card-hover"
+        style={{
+          borderColor: 'var(--accent-cyan)',
+          background:
+            'linear-gradient(135deg, rgba(0, 245, 212, 0.1) 0%, rgba(0, 245, 212, 0.05) 100%)',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-bold mb-1" style={{ color: 'var(--accent-cyan)' }}>
+              Interactive API Reference →
+            </h3>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Try out endpoints directly in your browser with Swagger UI
+            </p>
+          </div>
+          <div
+            className="px-3 py-1.5 rounded-lg text-sm font-medium"
+            style={{ background: 'var(--accent-cyan)', color: '#000' }}
+          >
+            OpenAPI 3.0
+          </div>
+        </div>
+      </Link>
+
       {/* Quick Links */}
       <div className="grid md:grid-cols-2 gap-4 mb-12">
         <Link
@@ -221,7 +249,19 @@ export default function ApiDocsPage() {
       {/* Next Steps */}
       <section>
         <h2 className="text-2xl font-bold mb-4">Detailed Documentation</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-3 gap-4">
+          <Link
+            href="/docs/api/reference"
+            className="rounded-xl border p-4 card-hover block"
+            style={{ borderColor: 'var(--accent-cyan)', background: 'var(--bg-card)' }}
+          >
+            <h4 className="font-semibold mb-1" style={{ color: 'var(--accent-cyan)' }}>
+              Interactive Reference →
+            </h4>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Try endpoints in your browser
+            </p>
+          </Link>
           <Link
             href="/docs/api/tasks"
             className="rounded-xl border p-4 card-hover block"
