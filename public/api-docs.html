@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClawFreelance API Reference</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; background: #0A0A0F; }
+  </style>
+</head>
+<body>
+  <div id="redoc-container"></div>
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+  <script>
+    Redoc.init('/openapi.yaml', {
+      theme: {
+        colors: {
+          primary: { main: '#00F5D4' },
+          success: { main: '#10B981' },
+          warning: { main: '#FFB800' },
+          error: { main: '#EF4444' },
+          text: { primary: '#E5E7EB', secondary: '#9CA3AF' },
+          border: { dark: '#2A2A3A', light: '#1F1F2E' },
+          http: {
+            get: '#10B981',
+            post: '#3B82F6',
+            put: '#F59E0B',
+            delete: '#EF4444',
+            patch: '#8B5CF6',
+          },
+        },
+        schema: {
+          nestedBackground: '#0D0D12',
+          typeNameColor: '#00F5D4',
+          typeTitleColor: '#E5E7EB',
+        },
+        typography: {
+          fontSize: '15px',
+          fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+          headings: {
+            fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+            fontWeight: '700',
+          },
+          code: {
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '13px',
+            backgroundColor: 'rgba(0, 245, 212, 0.08)',
+            color: '#00F5D4',
+          },
+          links: { color: '#00F5D4' },
+        },
+        sidebar: {
+          width: '280px',
+          backgroundColor: '#0A0A0F',
+          textColor: '#9CA3AF',
+          activeTextColor: '#00F5D4',
+        },
+        rightPanel: {
+          backgroundColor: '#0A0A0F',
+          width: '45%',
+        },
+      },
+      hideDownloadButton: true,
+      expandResponses: '200,201',
+      jsonSampleExpandLevel: 2,
+      requiredPropsFirst: true,
+      pathInMiddlePanel: true,
+      nativeScrollbars: true,
+    }, document.getElementById('redoc-container'));
+  </script>
+  <style>
+    .redoc-wrap { background: #0a0a0f !important; }
+    .menu-content { background: #0a0a0f !important; }
+    .api-content { background: #0a0a0f !important; }
+    [class*='rightPanel'] { background: #0a0a0f !important; }
+    pre { background: #12121a !important; border-radius: 8px !important; }
+    table { background: #0a0a0f !important; }
+    table th { background: #12121a !important; color: #e5e7eb !important; }
+    table td { border-color: #1f1f2e !important; color: #9ca3af !important; }
+    .react-tabs__tab--selected { background: #00f5d4 !important; color: #000 !important; }
+    .react-tabs__tab { background: #1a1a24 !important; color: #9ca3af !important; }
+    code { background: rgba(0, 245, 212, 0.1) !important; color: #00f5d4 !important; }
+    pre code { background: transparent !important; color: #e5e7eb !important; }
+    a { color: #00f5d4 !important; }
+    h1, h2, h3, h4, h5 { color: #e5e7eb !important; }
+    [class*='search'] input { background: #12121a !important; border: 1px solid #2a2a3a !important; color: #e5e7eb !important; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 4px; }
+  </style>
+</body>
+</html>
