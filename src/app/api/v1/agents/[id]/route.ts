@@ -125,13 +125,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const successRate = totalResolved > 0 ? Math.round((completed / totalResolved) * 1000) / 10 : 0;
 
     // Compute total earned from released payments
-    const earningsResult = await db
-      .select({
-        totalEarned: sql<number>`coalesce(sum(${payments.amount}), 0)`,
-      })
-      .from(payments)
-      .where(eq(payments.agentId, id));
-    // Only count released payments
     const releasedEarnings = await db
       .select({
         totalEarned: sql<number>`coalesce(sum(${payments.amount}), 0)`,

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { db } from '@/db';
-import { agents, reputationEvents, taskClaims, taskSubmissions, tasks } from '@/db/schema';
+import { agents, reputationEvents, taskClaims, tasks,taskSubmissions } from '@/db/schema';
 import { createAuditLog, logRateLimitExceeded, logSecurityEvent } from '@/lib/audit';
 import { authenticateRequest, validateBodySize, validateContentType } from '@/lib/auth';
 import {
@@ -267,6 +267,82 @@ async function awardReputation(
 }
 
 /**
+ * Determine verification status based on task method
+ */
+async function runVerification(
+  method: string,
+  submissionUrl: string
+): Promise<{ status: 'pending' | 'auto_verified'; result: Record<string, unknown> }> {
+  switch (method) {
+    case 'pr_merged': {
+      const prResult = await verifyPrMerged(submissionUrl);
+      return { status: prResult.verified ? 'auto_verified' : 'pending', result: prResult.result };
+    }
+    case 'tests_pass': {
+      const testsResult = await verifyTestsPass(submissionUrl);
+      return {
+        status: testsResult.verified ? 'auto_verified' : 'pending',
+        result: testsResult.result,
+      };
+    }
+    case 'peer_review':
+      return {
+        status: 'pending',
+        result: { method: 'peer_review', reviews: [], threshold: 3, approvalCount: 0 },
+      };
+    default:
+      return { status: 'pending', result: { method: 'owner_approval', awaitingReview: true } };
+  }
+}
+
+/**
+ * Validate and sanitize submission body, returning an error response or parsed data
+ */
+function validateSubmissionBody(
+  body: Record<string, unknown>,
+  request: NextRequest,
+  agentId: string
+): { error: NextResponse } | { data: z.infer<typeof submitWorkSchema> } {
+  if (body.submissionUrl) body.submissionUrl = sanitizeInputStrict(body.submissionUrl as string);
+  if (body.submissionNotes) body.submissionNotes = sanitizeMarkdown(body.submissionNotes as string);
+
+  const fieldsToCheck: Array<[string, string]> = [];
+  if (body.submissionUrl) fieldsToCheck.push(['submissionUrl', body.submissionUrl as string]);
+  if (body.submissionNotes) fieldsToCheck.push(['submissionNotes', body.submissionNotes as string]);
+
+  if (body.artifacts && typeof body.artifacts === 'object') {
+    for (const [key, value] of Object.entries(body.artifacts as Record<string, unknown>)) {
+      if (typeof value === 'string') fieldsToCheck.push([`artifacts.${key}`, value]);
+    }
+  }
+
+  for (const [fieldName, fieldValue] of fieldsToCheck) {
+    const injection = detectInjection(fieldValue);
+    if (injection.detected) {
+      logSecurityEvent(
+        request,
+        'suspicious_activity',
+        `Injection attempt in submission field: ${fieldName}`,
+        { types: injection.types, agentId }
+      );
+      return { error: NextResponse.json({ error: 'Invalid content detected' }, { status: 400 }) };
+    }
+  }
+
+  const parsed = submitWorkSchema.safeParse(body);
+  if (!parsed.success) {
+    return {
+      error: NextResponse.json(
+        { error: 'Invalid submission data', details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      ),
+    };
+  }
+
+  return { data: parsed.data };
+}
+
+/**
  * POST /api/v1/tasks/[id]/submit - Submit work for a claimed task
  */
 export async function POST(
@@ -275,24 +351,20 @@ export async function POST(
 ) {
   const clientId = getClientIdentifier(request);
 
-  // Check if IP is blocked
   if (isIpBlocked(clientId)) {
     return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
-  // Validate content type
   const contentTypeCheck = validateContentType(request);
   if (!contentTypeCheck.valid) {
     return NextResponse.json({ error: contentTypeCheck.error }, { status: 415 });
   }
 
-  // Validate body size (1MB max)
   const bodySizeCheck = validateBodySize(request.headers.get('content-length'), 1024 * 1024);
   if (!bodySizeCheck.valid) {
     return NextResponse.json({ error: bodySizeCheck.error }, { status: 413 });
   }
 
-  // Rate limiting (5 per minute for writes)
   const rateLimit = checkRateLimit(`${clientId}:write:submit`, {
     maxRequests: 5,
     windowMs: 60000,
@@ -316,7 +388,6 @@ export async function POST(
     );
   }
 
-  // Authenticate request
   const authResult = await authenticateRequest(request);
   if (!authResult.authenticated || !authResult.agent) {
     createAuditLog(request, 'auth.failure', {
@@ -332,7 +403,6 @@ export async function POST(
 
   const { id: taskId } = await params;
 
-  // Validate UUID format
   if (!UUID_REGEX.test(taskId)) {
     return NextResponse.json({ error: 'Invalid task ID format' }, { status: 400 });
   }
@@ -340,64 +410,16 @@ export async function POST(
   try {
     const body = await request.json();
 
-    // Sanitize inputs
-    if (body.submissionUrl) body.submissionUrl = sanitizeInputStrict(body.submissionUrl);
-    if (body.submissionNotes) body.submissionNotes = sanitizeMarkdown(body.submissionNotes);
+    const validation = validateSubmissionBody(body, request, authResult.agent.id);
+    if ('error' in validation) return validation.error;
+    const submissionData = validation.data;
 
-    // Check for injection in text fields
-    const fieldsToCheck: Array<[string, string]> = [];
-    if (body.submissionUrl) fieldsToCheck.push(['submissionUrl', body.submissionUrl]);
-    if (body.submissionNotes) fieldsToCheck.push(['submissionNotes', body.submissionNotes]);
-
-    // Check artifacts values for injection
-    if (body.artifacts && typeof body.artifacts === 'object') {
-      for (const [key, value] of Object.entries(body.artifacts)) {
-        if (typeof value === 'string') {
-          fieldsToCheck.push([`artifacts.${key}`, value]);
-        }
-      }
-    }
-
-    for (const [fieldName, fieldValue] of fieldsToCheck) {
-      const injection = detectInjection(fieldValue);
-      if (injection.detected) {
-        logSecurityEvent(
-          request,
-          'suspicious_activity',
-          `Injection attempt in submission field: ${fieldName}`,
-          {
-            types: injection.types,
-            agentId: authResult.agent.id,
-          }
-        );
-        return NextResponse.json({ error: 'Invalid content detected' }, { status: 400 });
-      }
-    }
-
-    // Validate against schema
-    const parsed = submitWorkSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: 'Invalid submission data',
-          details: parsed.error.flatten().fieldErrors,
-        },
-        { status: 400 }
-      );
-    }
-
-    const submissionData = parsed.data;
-
-    // Fetch the task
     const taskResult = await db.select().from(tasks).where(eq(tasks.id, taskId)).limit(1);
-
     if (taskResult.length === 0) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
-
     const task = taskResult[0];
 
-    // Validate agent has an active claim on this task
     const claimResult = await db
       .select()
       .from(taskClaims)
@@ -416,47 +438,10 @@ export async function POST(
         { status: 403 }
       );
     }
-
     const claim = claimResult[0];
 
-    // Run verification based on method
-    let verificationStatus: 'pending' | 'auto_verified' = 'pending';
-    let verificationResult: Record<string, unknown> = {};
+    const verification = await runVerification(task.verificationMethod, submissionData.submissionUrl);
 
-    switch (task.verificationMethod) {
-      case 'owner_approval': {
-        verificationStatus = 'pending';
-        verificationResult = { method: 'owner_approval', awaitingReview: true };
-        break;
-      }
-
-      case 'pr_merged': {
-        const prResult = await verifyPrMerged(submissionData.submissionUrl);
-        verificationResult = prResult.result;
-        verificationStatus = prResult.verified ? 'auto_verified' : 'pending';
-        break;
-      }
-
-      case 'tests_pass': {
-        const testsResult = await verifyTestsPass(submissionData.submissionUrl);
-        verificationResult = testsResult.result;
-        verificationStatus = testsResult.verified ? 'auto_verified' : 'pending';
-        break;
-      }
-
-      case 'peer_review': {
-        verificationStatus = 'pending';
-        verificationResult = {
-          method: 'peer_review',
-          reviews: [],
-          threshold: 3,
-          approvalCount: 0,
-        };
-        break;
-      }
-    }
-
-    // Create submission record
     const [newSubmission] = await db
       .insert(taskSubmissions)
       .values({
@@ -467,29 +452,24 @@ export async function POST(
         submissionNotes: submissionData.submissionNotes,
         artifacts: submissionData.artifacts ?? {},
         verificationMethod: task.verificationMethod,
-        verificationStatus,
-        verificationResult,
+        verificationStatus: verification.status,
+        verificationResult: verification.result,
       })
       .returning();
 
-    // If auto-verified, complete the task workflow
-    if (verificationStatus === 'auto_verified') {
-      // Update claim status to completed
+    if (verification.status === 'auto_verified') {
       await db
         .update(taskClaims)
         .set({ status: 'completed', completedAt: new Date() })
         .where(eq(taskClaims.id, claim.id));
 
-      // Update task status based on claim mode
       if (task.claimMode === 'exclusive') {
         await db
           .update(tasks)
           .set({ status: 'completed', updatedAt: new Date() })
           .where(eq(tasks.id, taskId));
       }
-      // For competitive mode, task stays open/claimed for other claimants
 
-      // Award reputation
       await awardReputation(
         authResult.agent.id,
         taskId,
@@ -497,14 +477,12 @@ export async function POST(
         `Auto-verified submission for task: ${task.title}`
       );
     } else {
-      // Set task to verification status
       await db
         .update(tasks)
         .set({ status: 'verification', updatedAt: new Date() })
         .where(eq(tasks.id, taskId));
     }
 
-    // Audit log
     createAuditLog(request, 'task.submit', {
       actorId: authResult.agent.id,
       actorType: 'agent',
@@ -515,26 +493,21 @@ export async function POST(
         submissionId: newSubmission.id,
         claimId: claim.id,
         verificationMethod: task.verificationMethod,
-        verificationStatus,
-        autoVerified: verificationStatus === 'auto_verified',
+        verificationStatus: verification.status,
+        autoVerified: verification.status === 'auto_verified',
       },
     });
 
     return NextResponse.json(
       {
         message:
-          verificationStatus === 'auto_verified'
+          verification.status === 'auto_verified'
             ? 'Submission auto-verified and task completed'
             : 'Submission received and pending verification',
         submission: newSubmission,
-        verificationStatus,
+        verificationStatus: verification.status,
       },
-      {
-        status: 201,
-        headers: {
-          'X-RateLimit-Remaining': String(rateLimit.remaining),
-        },
-      }
+      { status: 201, headers: { 'X-RateLimit-Remaining': String(rateLimit.remaining) } }
     );
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });

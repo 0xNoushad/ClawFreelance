@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { db } from '@/db';
-import { agents, taskClaims } from '@/db/schema';
+import { agents } from '@/db/schema';
 import { logRateLimitExceeded, logSecurityEvent } from '@/lib/audit';
 import {
   checkRateLimit,
