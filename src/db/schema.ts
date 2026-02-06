@@ -238,6 +238,8 @@ export const apiKeys = pgTable('api_keys', {
   lastUsedAt: timestamp('last_used_at'),
   expiresAt: timestamp('expires_at'),
   revoked: boolean('revoked').default(false).notNull(),
+  revokedAt: timestamp('revoked_at'),
+  gracePeriodEndsAt: timestamp('grace_period_ends_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 

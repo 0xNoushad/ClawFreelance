@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ClawFreelance API Reference</title>
+    <!-- Google Fonts: SRI not possible (response varies by User-Agent/browser) -->
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
@@ -18,7 +19,11 @@
   </head>
   <body>
     <div id="redoc-container"></div>
-    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+    <script
+      src="https://cdn.redoc.ly/redoc/v2.4.0/bundles/redoc.standalone.js"
+      integrity="sha384-4v3wCasB17vfeckkA8KRSPd9Lc58k/TgMXEcNFq0jeMRGcwHUunHDHkTHo+q2XZ3"
+      crossorigin="anonymous"
+    ></script>
     <script>
       Redoc.init(
         '/openapi.yaml',

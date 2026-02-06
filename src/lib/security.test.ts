@@ -10,6 +10,7 @@ import {
   detectCommandInjection,
   detectInjection,
   detectPromptInjection,
+  detectSecrets,
   detectSqlInjection,
   detectXss,
   generateApiKey,
@@ -865,6 +866,168 @@ describe('Security Module', () => {
       const longMarkdown = '# Title\n' + 'content '.repeat(10000);
       const result = sanitizeMarkdown(longMarkdown);
       expect(result.length).toBeLessThanOrEqual(50000);
+    });
+  });
+
+  // ============================================
+  // SECRET DETECTION TESTS
+  // ============================================
+  describe('detectSecrets', () => {
+    describe('AWS access key detection', () => {
+      it('should detect AWS access key IDs', () => {
+        const result = detectSecrets('Here is my key: AKIAIOSFODNN7EXAMPLE');
+        expect(result.detected).toBe(true);
+        expect(result.findings).toHaveLength(1);
+        expect(result.findings[0].type).toBe('aws_access_key');
+        expect(result.findings[0].description).toBe('AWS Access Key ID');
+      });
+    });
+
+    describe('GitHub token detection', () => {
+      it.each([
+        ['ghp_' + 'a'.repeat(36), 'ghp_ prefix'],
+        ['gho_' + 'B'.repeat(36), 'gho_ prefix'],
+        ['github_pat_' + 'c'.repeat(22), 'github_pat_ prefix'],
+      ])('should detect GitHub token with %s', (token) => {
+        const result = detectSecrets(`Token: ${token}`);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].type).toBe('github_token');
+        expect(result.findings[0].description).toBe('GitHub Personal Access Token');
+      });
+    });
+
+    describe('private key detection', () => {
+      it.each([
+        '-----BEGIN RSA PRIVATE KEY-----',
+        '-----BEGIN PRIVATE KEY-----',
+        '-----BEGIN EC PRIVATE KEY-----',
+        '-----BEGIN DSA PRIVATE KEY-----',
+        '-----BEGIN OPENSSH PRIVATE KEY-----',
+        '-----BEGIN PGP PRIVATE KEY-----',
+      ])('should detect private key header: %s', (header) => {
+        const result = detectSecrets(`Content with ${header} embedded`);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].type).toBe('private_key');
+        expect(result.findings[0].description).toBe('Private Key Block');
+      });
+    });
+
+    describe('database URL detection', () => {
+      it.each([
+        ['postgres://user:pass@host:5432/db', 'PostgreSQL'],
+        ['mongodb+srv://user:pass@cluster.mongodb.net/db', 'MongoDB SRV'],
+        ['redis://default:password@redis-host:6379', 'Redis'],
+        ['mysql://root:secret@localhost:3306/mydb', 'MySQL'],
+      ])('should detect database URL: %s (%s)', (url) => {
+        const result = detectSecrets(`Database: ${url}`);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].type).toBe('database_url');
+        expect(result.findings[0].description).toBe('Database Connection String');
+      });
+    });
+
+    describe('JWT token detection', () => {
+      it('should detect JWT tokens', () => {
+        const jwt =
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
+        const result = detectSecrets(`Bearer ${jwt}`);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].type).toBe('jwt_token');
+        expect(result.findings[0].description).toBe('JSON Web Token');
+      });
+    });
+
+    describe('Slack webhook detection', () => {
+      it('should detect Slack webhook URLs', () => {
+        // Build URL dynamically to avoid GitHub push protection flagging test data
+        const base = 'https://hooks.slack.com/services/';
+        const path = ['TABC12345', 'BDEF67890', 'abcdefghijklmnopqrstuvwx'].join('/');
+        const webhook = base + path;
+        const result = detectSecrets(`Webhook: ${webhook}`);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].type).toBe('slack_webhook');
+        expect(result.findings[0].description).toBe('Slack Webhook URL');
+      });
+    });
+
+    describe('generic API key detection', () => {
+      it.each([
+        'api_key=abc123def456ghi789jkl012',
+        'api-key: abcdefghijklmnopqrstuvwxyz',
+        'apikey="12345678901234567890"',
+        "api_secret='abcdefghijklmnopqrst'",
+        'api_token=abcdefghijklmnopqrst',
+      ])('should detect generic API key pattern: %s', (input) => {
+        const result = detectSecrets(input);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].type).toBe('generic_api_key');
+        expect(result.findings[0].description).toBe('Generic API Key Assignment');
+      });
+    });
+
+    describe('safe content should NOT be flagged', () => {
+      it.each([
+        'Build a REST API with proper authentication',
+        'Implement JWT validation middleware for the app',
+        'Add postgres support to the data layer',
+        'Fix the database migration scripts',
+        'Create a webhook handler for incoming events',
+        'Set up Redis caching for improved performance',
+        'The API key should be stored securely in environment variables',
+        'Write documentation for the authentication flow',
+      ])('should not flag safe content: %s', (input) => {
+        const result = detectSecrets(input);
+        expect(result.detected).toBe(false);
+        expect(result.findings).toHaveLength(0);
+      });
+    });
+
+    describe('redaction in findings', () => {
+      it('should redact AWS access key in location field', () => {
+        const fullKey = 'AKIAIOSFODNN7EXAMPLE';
+        const result = detectSecrets(`Key: ${fullKey}`);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].location).toContain('[REDACTED]');
+        expect(result.findings[0].location).not.toBe(fullKey);
+      });
+
+      it('should redact database URL in location field', () => {
+        const fullUrl = 'postgres://admin:supersecret@db.example.com:5432/production';
+        const result = detectSecrets(fullUrl);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].location).toContain('[REDACTED]');
+        expect(result.findings[0].location).not.toBe(fullUrl);
+      });
+
+      it('should redact JWT token in location field', () => {
+        const jwt =
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
+        const result = detectSecrets(jwt);
+        expect(result.detected).toBe(true);
+        expect(result.findings[0].location).toContain('[REDACTED]');
+        expect(result.findings[0].location).not.toBe(jwt);
+      });
+
+      it('should include prefix and suffix in redacted location', () => {
+        const result = detectSecrets('AKIAIOSFODNN7EXAMPLE');
+        expect(result.detected).toBe(true);
+        const location = result.findings[0].location;
+        expect(location).toMatch(/^AKIAIO\.\.\.\[REDACTED\]\.\.\..{4}$/);
+      });
+    });
+
+    describe('multiple secrets in one input', () => {
+      it('should detect multiple different secret types', () => {
+        const input =
+          'AWS key: AKIAIOSFODNN7EXAMPLE and database: postgres://user:pass@host:5432/db';
+        const result = detectSecrets(input);
+        expect(result.detected).toBe(true);
+        expect(result.findings.length).toBeGreaterThanOrEqual(2);
+
+        const types = result.findings.map((f) => f.type);
+        expect(types).toContain('aws_access_key');
+        expect(types).toContain('database_url');
+      });
     });
   });
 });

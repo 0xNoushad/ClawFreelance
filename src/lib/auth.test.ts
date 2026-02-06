@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   authenticateRequest,
@@ -10,6 +10,38 @@ import {
   validateContentType,
   withAuth,
 } from './auth';
+import { hashApiKey } from './security';
+
+// Mock DB for auth tests
+let mockKeyResult: Array<Record<string, unknown>> = [];
+
+vi.mock('@/db', () => {
+  const mockLimit = vi.fn(() => Promise.resolve(mockKeyResult));
+  const mockWhere = vi.fn(() => ({ limit: mockLimit }));
+  const mockInnerJoin = vi.fn(() => ({ where: mockWhere }));
+  const mockFrom = vi.fn(() => ({ innerJoin: mockInnerJoin }));
+  const mockSelect = vi.fn(() => ({ from: mockFrom }));
+
+  const _mockUpdateWhere = vi.fn(() => Promise.resolve([]));
+  const _mockUpdateSet = vi.fn(() => ({ where: _mockUpdateWhere, then: vi.fn() }));
+  const mockUpdate = vi.fn(() => ({
+    set: vi.fn(() => ({
+      where: vi.fn(() => ({
+        then: vi.fn((cb: () => void) => {
+          cb();
+          return { catch: vi.fn() };
+        }),
+      })),
+    })),
+  }));
+
+  return {
+    db: {
+      select: mockSelect,
+      update: mockUpdate,
+    },
+  };
+});
 
 // Helper to create mock NextRequest
 function createMockRequest(
@@ -27,10 +59,31 @@ function createMockRequest(
   } as unknown as NextRequest;
 }
 
+const VALID_KEY = 'clf_' + 'a'.repeat(60);
+
+function setMockAgent(key: string = VALID_KEY) {
+  const keyHash = hashApiKey(key);
+  mockKeyResult = [
+    {
+      keyId: '00000000-0000-0000-0000-000000000001',
+      keyHash,
+      permissions: ['read', 'write', 'claim'],
+      revoked: false,
+      expiresAt: null,
+      gracePeriodEndsAt: null,
+      agentId: '00000000-0000-0000-0000-000000000099',
+      displayName: 'Test Agent',
+      source: 'openclaw',
+      agentStatus: 'active',
+    },
+  ];
+}
+
 describe('Auth Module', () => {
-  // ============================================
-  // AUTHENTICATION TESTS
-  // ============================================
+  beforeEach(() => {
+    mockKeyResult = [];
+  });
+
   describe('authenticateRequest', () => {
     it('should reject requests without API key', async () => {
       const request = createMockRequest();
@@ -60,22 +113,22 @@ describe('Auth Module', () => {
       expect(result.authenticated).toBe(false);
     });
 
-    it('should accept valid Bearer token format', async () => {
-      const validKey = 'clf_' + 'a'.repeat(60);
+    it('should accept valid Bearer token with matching DB record', async () => {
+      setMockAgent(VALID_KEY);
       const request = createMockRequest({
-        headers: { authorization: `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${VALID_KEY}` },
       });
       const result = await authenticateRequest(request);
 
-      // In demo mode, any properly formatted key is accepted
       expect(result.authenticated).toBe(true);
       expect(result.agent).toBeDefined();
     });
 
     it('should accept X-API-Key header', async () => {
-      const validKey = 'clf_' + 'b'.repeat(60);
+      const key = 'clf_' + 'b'.repeat(60);
+      setMockAgent(key);
       const request = createMockRequest({
-        headers: { 'x-api-key': validKey },
+        headers: { 'x-api-key': key },
       });
       const result = await authenticateRequest(request);
 
@@ -83,22 +136,57 @@ describe('Auth Module', () => {
     });
 
     it('should return agent info on successful auth', async () => {
-      const validKey = 'clf_' + 'c'.repeat(60);
+      setMockAgent(VALID_KEY);
       const request = createMockRequest({
-        headers: { authorization: `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${VALID_KEY}` },
       });
       const result = await authenticateRequest(request);
 
       expect(result.agent).toBeDefined();
-      expect(result.agent?.id).toBeDefined();
-      expect(result.agent?.displayName).toBeDefined();
-      expect(result.agent?.permissions).toBeDefined();
+      expect(result.agent?.id).toBe('00000000-0000-0000-0000-000000000099');
+      expect(result.agent?.displayName).toBe('Test Agent');
+      expect(result.agent?.permissions).toContain('read');
+      expect(result.agent?.keyHash).toBeDefined();
+    });
+
+    it('should reject valid format key with no DB match', async () => {
+      mockKeyResult = [];
+      const request = createMockRequest({
+        headers: { authorization: `Bearer ${VALID_KEY}` },
+      });
+      const result = await authenticateRequest(request);
+
+      expect(result.authenticated).toBe(false);
+      expect(result.error).toContain('Invalid or expired');
+    });
+
+    it('should reject suspended agents', async () => {
+      const keyHash = hashApiKey(VALID_KEY);
+      mockKeyResult = [
+        {
+          keyId: '00000000-0000-0000-0000-000000000001',
+          keyHash,
+          permissions: ['read'],
+          revoked: false,
+          expiresAt: null,
+          gracePeriodEndsAt: null,
+          agentId: '00000000-0000-0000-0000-000000000099',
+          displayName: 'Suspended Agent',
+          source: 'openclaw',
+          agentStatus: 'suspended',
+        },
+      ];
+      const request = createMockRequest({
+        headers: { authorization: `Bearer ${VALID_KEY}` },
+      });
+      const result = await authenticateRequest(request);
+
+      expect(result.authenticated).toBe(false);
+      expect(result.error).toContain('suspended');
+      expect(result.statusCode).toBe(403);
     });
   });
 
-  // ============================================
-  // CONTENT TYPE VALIDATION TESTS
-  // ============================================
   describe('validateContentType', () => {
     it('should reject missing Content-Type', () => {
       const request = createMockRequest();
@@ -137,9 +225,6 @@ describe('Auth Module', () => {
     });
   });
 
-  // ============================================
-  // BODY SIZE VALIDATION TESTS
-  // ============================================
   describe('validateBodySize', () => {
     it('should accept null content-length', () => {
       const result = validateBodySize(null);
@@ -174,9 +259,6 @@ describe('Auth Module', () => {
     });
   });
 
-  // ============================================
-  // RESPONSE HELPER TESTS
-  // ============================================
   describe('Response Helpers', () => {
     describe('errorResponse', () => {
       it('should create error response with default status', async () => {
@@ -226,9 +308,6 @@ describe('Auth Module', () => {
     });
   });
 
-  // ============================================
-  // WITH AUTH MIDDLEWARE TESTS
-  // ============================================
   describe('withAuth', () => {
     it('should return 401 when no API key provided', async () => {
       const handler = withAuth(async (_req, agent) => {
@@ -242,13 +321,13 @@ describe('Auth Module', () => {
     });
 
     it('should call handler with authenticated agent', async () => {
-      const validKey = 'clf_' + 'd'.repeat(60);
+      setMockAgent(VALID_KEY);
       const handler = withAuth(async (_req, agent) => {
         return successResponse({ agentId: agent.id });
       });
 
       const request = createMockRequest({
-        headers: { authorization: `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${VALID_KEY}` },
       });
       const response = await handler(request);
 
@@ -258,6 +337,7 @@ describe('Auth Module', () => {
     });
 
     it('should return 429 when rate limit exceeded', async () => {
+      setMockAgent(VALID_KEY);
       const uniqueId = `test-rate-${Date.now()}`;
       const handler = withAuth(
         async (_req, agent) => {
@@ -268,24 +348,21 @@ describe('Auth Module', () => {
         }
       );
 
-      const validKey = 'clf_' + 'e'.repeat(60);
       const request = createMockRequest({
         headers: {
-          authorization: `Bearer ${validKey}`,
+          authorization: `Bearer ${VALID_KEY}`,
           'x-forwarded-for': uniqueId,
         },
       });
 
-      // First request should succeed
       await handler(request);
 
-      // Second request should be rate limited
       const response2 = await handler(request);
       expect(response2.status).toBe(429);
     });
 
     it('should return 403 when permissions missing', async () => {
-      const validKey = 'clf_' + 'f'.repeat(60);
+      setMockAgent(VALID_KEY);
       const handler = withAuth(
         async (_req, agent) => {
           return successResponse({ agentId: agent.id });
@@ -296,7 +373,7 @@ describe('Auth Module', () => {
       );
 
       const request = createMockRequest({
-        headers: { authorization: `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${VALID_KEY}` },
       });
       const response = await handler(request);
 
@@ -306,9 +383,6 @@ describe('Auth Module', () => {
     });
   });
 
-  // ============================================
-  // OPTIONAL AUTH TESTS
-  // ============================================
   describe('optionalAuth', () => {
     it('should return null when no API key provided', async () => {
       const request = createMockRequest();
@@ -318,9 +392,9 @@ describe('Auth Module', () => {
     });
 
     it('should return agent when valid API key provided', async () => {
-      const validKey = 'clf_' + 'g'.repeat(60);
+      setMockAgent(VALID_KEY);
       const request = createMockRequest({
-        headers: { authorization: `Bearer ${validKey}` },
+        headers: { authorization: `Bearer ${VALID_KEY}` },
       });
       const result = await optionalAuth(request);
 

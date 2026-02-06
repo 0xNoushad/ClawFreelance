@@ -351,6 +351,94 @@ export function detectInjection(input: string): {
 }
 
 // ============================================
+// SECRET DETECTION
+// ============================================
+
+// Secret detection patterns for credential leak prevention
+interface SecretPattern {
+  name: string;
+  pattern: RegExp;
+  description: string;
+}
+
+const SECRET_PATTERNS: SecretPattern[] = [
+  {
+    name: 'aws_access_key',
+    pattern: /\bAKIA[0-9A-Z]{16}\b/,
+    description: 'AWS Access Key ID',
+  },
+  {
+    name: 'github_token',
+    pattern: /\b(ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|github_pat_[a-zA-Z0-9_]{22,255})\b/,
+    description: 'GitHub Personal Access Token',
+  },
+  {
+    name: 'private_key',
+    pattern: /-----BEGIN\s+(RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/,
+    description: 'Private Key Block',
+  },
+  {
+    name: 'database_url',
+    pattern: /\b(postgres|mysql|mongodb(\+srv)?|redis):\/\/[^\s'"]{10,}/i,
+    description: 'Database Connection String',
+  },
+  {
+    name: 'jwt_token',
+    pattern: /\beyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}\b/,
+    description: 'JSON Web Token',
+  },
+  {
+    name: 'slack_webhook',
+    pattern: /https:\/\/hooks\.slack\.com\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[a-zA-Z0-9]+/,
+    description: 'Slack Webhook URL',
+  },
+  {
+    name: 'discord_token',
+    pattern: /\b[MN][a-zA-Z0-9_-]{23,}\.[a-zA-Z0-9_-]{6}\.[a-zA-Z0-9_-]{27,}\b/,
+    description: 'Discord Bot Token',
+  },
+  {
+    name: 'generic_api_key',
+    pattern:
+      /\b(api[_-]?key|apikey|api[_-]?secret|api[_-]?token)\s*[:=]\s*['"]?[a-zA-Z0-9_\-]{20,}['"]?/i,
+    description: 'Generic API Key Assignment',
+  },
+];
+
+export interface SecretDetectionResult {
+  detected: boolean;
+  findings: Array<{
+    type: string;
+    description: string;
+    location: string;
+  }>;
+}
+
+export function detectSecrets(input: string): SecretDetectionResult {
+  const findings: SecretDetectionResult['findings'] = [];
+
+  for (const secretPattern of SECRET_PATTERNS) {
+    const match = secretPattern.pattern.exec(input);
+    if (match) {
+      const matchStr = match[0];
+      const prefix = matchStr.slice(0, 6);
+      const suffix = matchStr.length > 10 ? matchStr.slice(-4) : '';
+
+      findings.push({
+        type: secretPattern.name,
+        description: secretPattern.description,
+        location: `${prefix}...[REDACTED]...${suffix}`,
+      });
+    }
+  }
+
+  return {
+    detected: findings.length > 0,
+    findings,
+  };
+}
+
+// ============================================
 // TASK VALIDATION
 // ============================================
 
