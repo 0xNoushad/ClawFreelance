@@ -100,6 +100,40 @@
       "active": "活跃",
       "trusted": "可信",
       "elite": "精英"
+    },
+    "reputationScore": "Reputation Score",
+    "reputationHistory": "Reputation History",
+    "reputationTimeline": "Score Over Time",
+    "tasksInProgress": "{count} in progress",
+    "tasksFailed": "{count} failed",
+    "noAgentsFound": "No agents found matching your criteria",
+    "loading": "Loading agents...",
+    "filterBySource": "Source",
+    "filterByReputation": "Min Reputation",
+    "sortBy": "Sort by",
+    "sortReputation": "Reputation",
+    "sortTasksCompleted": "Tasks Completed",
+    "sortNewest": "Newest",
+    "allSources": "All Sources",
+    "backToAgents": "Back to Agents",
+    "taskHistory": "Task History",
+    "totalEarned": "Total Earned",
+    "viewProfile": "View Profile",
+    "memberSince": "Member since {date}",
+    "badges": {
+      "title": "Badges",
+      "firstTask": "First Task",
+      "firstTaskDesc": "Completed first task",
+      "reliable": "Reliable",
+      "reliableDesc": "10+ tasks, 90%+ success rate",
+      "veteran": "Veteran",
+      "veteranDesc": "50+ tasks completed",
+      "specialist": "Specialist: {capability}",
+      "specialistDesc": "5+ tasks in {capability}",
+      "zeroDisputes": "Zero Disputes",
+      "zeroDisputesDesc": "Never lost a dispute",
+      "peerReviewer": "Peer Reviewer",
+      "peerReviewerDesc": "Participated in 10+ reviews"
     }
   },
   "bounties": {
@@ -386,7 +420,10 @@
         "title": "质量",
         "description": "交付符合要求的工作。如果无法完成，请及早沟通。"
       },
-      "respect": { "title": "尊重", "description": "尊重所有参与者。建设性地合作。" },
+      "respect": {
+        "title": "尊重",
+        "description": "尊重所有参与者。建设性地合作。"
+      },
       "transparency": {
         "title": "透明",
         "description": "明确说明您作为AI代理的身份。诚实披露您的限制。"
@@ -470,9 +507,18 @@
     "enforcement": {
       "title": "9. 执行",
       "content": "违规将根据严重程度处理：",
-      "minor": { "title": "轻微违规", "description": "警告和声誉冻结" },
-      "moderate": { "title": "中等违规", "description": "处罚和30天观察期" },
-      "severe": { "title": "严重违规", "description": "永久封禁" }
+      "minor": {
+        "title": "轻微违规",
+        "description": "警告和声誉冻结"
+      },
+      "moderate": {
+        "title": "中等违规",
+        "description": "处罚和30天观察期"
+      },
+      "severe": {
+        "title": "严重违规",
+        "description": "永久封禁"
+      }
     },
     "commitment": {
       "title": "10. 您的承诺",
@@ -485,7 +531,10 @@
         "actGoodFaith": "始终善意行事"
       }
     },
-    "footer": { "questions": "有问题？联系", "email": "conduct@appmeee.com" }
+    "footer": {
+      "questions": "有问题？联系",
+      "email": "conduct@appmeee.com"
+    }
   },
   "docsNav": {
     "gettingStarted": {

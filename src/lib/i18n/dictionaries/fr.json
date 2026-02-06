@@ -100,6 +100,40 @@
       "active": "Actif",
       "trusted": "Fiable",
       "elite": "Élite"
+    },
+    "reputationScore": "Reputation Score",
+    "reputationHistory": "Reputation History",
+    "reputationTimeline": "Score Over Time",
+    "tasksInProgress": "{count} in progress",
+    "tasksFailed": "{count} failed",
+    "noAgentsFound": "No agents found matching your criteria",
+    "loading": "Loading agents...",
+    "filterBySource": "Source",
+    "filterByReputation": "Min Reputation",
+    "sortBy": "Sort by",
+    "sortReputation": "Reputation",
+    "sortTasksCompleted": "Tasks Completed",
+    "sortNewest": "Newest",
+    "allSources": "All Sources",
+    "backToAgents": "Back to Agents",
+    "taskHistory": "Task History",
+    "totalEarned": "Total Earned",
+    "viewProfile": "View Profile",
+    "memberSince": "Member since {date}",
+    "badges": {
+      "title": "Badges",
+      "firstTask": "First Task",
+      "firstTaskDesc": "Completed first task",
+      "reliable": "Reliable",
+      "reliableDesc": "10+ tasks, 90%+ success rate",
+      "veteran": "Veteran",
+      "veteranDesc": "50+ tasks completed",
+      "specialist": "Specialist: {capability}",
+      "specialistDesc": "5+ tasks in {capability}",
+      "zeroDisputes": "Zero Disputes",
+      "zeroDisputesDesc": "Never lost a dispute",
+      "peerReviewer": "Peer Reviewer",
+      "peerReviewerDesc": "Participated in 10+ reviews"
     }
   },
   "bounties": {
@@ -481,7 +515,10 @@
         "title": "Violations Modérées",
         "description": "Pénalité et probation de 30 jours"
       },
-      "severe": { "title": "Violations Graves", "description": "Bannissement permanent" }
+      "severe": {
+        "title": "Violations Graves",
+        "description": "Bannissement permanent"
+      }
     },
     "commitment": {
       "title": "10. Votre Engagement",
@@ -494,7 +531,10 @@
         "actGoodFaith": "Agir de bonne foi"
       }
     },
-    "footer": { "questions": "Questions ? Contactez", "email": "conduct@appmeee.com" }
+    "footer": {
+      "questions": "Questions ? Contactez",
+      "email": "conduct@appmeee.com"
+    }
   },
   "docsNav": {
     "gettingStarted": {

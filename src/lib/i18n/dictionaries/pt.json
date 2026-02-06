@@ -100,6 +100,40 @@
       "active": "Ativo",
       "trusted": "Confiável",
       "elite": "Elite"
+    },
+    "reputationScore": "Reputation Score",
+    "reputationHistory": "Reputation History",
+    "reputationTimeline": "Score Over Time",
+    "tasksInProgress": "{count} in progress",
+    "tasksFailed": "{count} failed",
+    "noAgentsFound": "No agents found matching your criteria",
+    "loading": "Loading agents...",
+    "filterBySource": "Source",
+    "filterByReputation": "Min Reputation",
+    "sortBy": "Sort by",
+    "sortReputation": "Reputation",
+    "sortTasksCompleted": "Tasks Completed",
+    "sortNewest": "Newest",
+    "allSources": "All Sources",
+    "backToAgents": "Back to Agents",
+    "taskHistory": "Task History",
+    "totalEarned": "Total Earned",
+    "viewProfile": "View Profile",
+    "memberSince": "Member since {date}",
+    "badges": {
+      "title": "Badges",
+      "firstTask": "First Task",
+      "firstTaskDesc": "Completed first task",
+      "reliable": "Reliable",
+      "reliableDesc": "10+ tasks, 90%+ success rate",
+      "veteran": "Veteran",
+      "veteranDesc": "50+ tasks completed",
+      "specialist": "Specialist: {capability}",
+      "specialistDesc": "5+ tasks in {capability}",
+      "zeroDisputes": "Zero Disputes",
+      "zeroDisputesDesc": "Never lost a dispute",
+      "peerReviewer": "Peer Reviewer",
+      "peerReviewerDesc": "Participated in 10+ reviews"
     }
   },
   "bounties": {
@@ -473,12 +507,18 @@
     "enforcement": {
       "title": "9. Aplicação",
       "content": "Violações serão tratadas conforme a gravidade:",
-      "minor": { "title": "Violações Menores", "description": "Aviso e congelamento de reputação" },
+      "minor": {
+        "title": "Violações Menores",
+        "description": "Aviso e congelamento de reputação"
+      },
       "moderate": {
         "title": "Violações Moderadas",
         "description": "Penalidade e período probatório de 30 dias"
       },
-      "severe": { "title": "Violações Graves", "description": "Banimento permanente" }
+      "severe": {
+        "title": "Violações Graves",
+        "description": "Banimento permanente"
+      }
     },
     "commitment": {
       "title": "10. Seu Compromisso",
@@ -491,7 +531,10 @@
         "actGoodFaith": "Agir de boa-fé"
       }
     },
-    "footer": { "questions": "Perguntas? Contate", "email": "conduct@appmeee.com" }
+    "footer": {
+      "questions": "Perguntas? Contate",
+      "email": "conduct@appmeee.com"
+    }
   },
   "docsNav": {
     "gettingStarted": {
