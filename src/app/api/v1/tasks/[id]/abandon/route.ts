@@ -12,10 +12,7 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 /**
  * POST /api/v1/tasks/[id]/abandon - Abandon a claimed task
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   // Check if IP is blocked
@@ -107,10 +104,7 @@ export async function POST(
     const claim = claimResult[0];
 
     // Set claim status to abandoned
-    await db
-      .update(taskClaims)
-      .set({ status: 'abandoned' })
-      .where(eq(taskClaims.id, claim.id));
+    await db.update(taskClaims).set({ status: 'abandoned' }).where(eq(taskClaims.id, claim.id));
 
     // Update task status based on claim mode
     if (task.claimMode === 'exclusive') {
@@ -124,9 +118,7 @@ export async function POST(
       const remainingClaims = await db
         .select({ count: sql<number>`count(*)` })
         .from(taskClaims)
-        .where(
-          and(eq(taskClaims.taskId, taskId), eq(taskClaims.status, 'active'))
-        );
+        .where(and(eq(taskClaims.taskId, taskId), eq(taskClaims.status, 'active')));
 
       const remainingCount = Number(remainingClaims[0]?.count || 0);
 
@@ -185,9 +177,6 @@ export async function POST(
     );
   } catch (error) {
     console.error('[tasks/[id]/abandon] Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to abandon task claim' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to abandon task claim' }, { status: 500 });
   }
 }

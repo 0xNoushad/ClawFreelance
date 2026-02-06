@@ -180,10 +180,7 @@ async function handleRejection(
 /**
  * POST /api/v1/tasks/[id]/review - Owner reviews a submission
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   if (isIpBlocked(clientId)) {
@@ -295,15 +292,32 @@ export async function POST(
 
     if (submission.verificationStatus !== 'pending') {
       return NextResponse.json(
-        { error: 'Submission has already been reviewed', currentStatus: submission.verificationStatus },
+        {
+          error: 'Submission has already been reviewed',
+          currentStatus: submission.verificationStatus,
+        },
         { status: 409 }
       );
     }
 
     if (reviewData.decision === 'approved') {
-      return handleApproval(request, task, submission, authResult.agent.id, reviewData.feedback, rateLimit);
+      return handleApproval(
+        request,
+        task,
+        submission,
+        authResult.agent.id,
+        reviewData.feedback,
+        rateLimit
+      );
     }
-    return handleRejection(request, task, submission, authResult.agent.id, reviewData.feedback, rateLimit);
+    return handleRejection(
+      request,
+      task,
+      submission,
+      authResult.agent.id,
+      reviewData.feedback,
+      rateLimit
+    );
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }

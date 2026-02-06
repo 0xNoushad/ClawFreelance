@@ -17,10 +17,7 @@ const greenlightSchema = z.object({
 /**
  * POST /api/v1/tasks/[id]/greenlight - Owner greenlights a claim (competitive mode only)
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   // Check if IP is blocked
@@ -141,27 +138,18 @@ export async function POST(
       .limit(1);
 
     if (claimResult.length === 0) {
-      return NextResponse.json(
-        { error: 'Active claim not found for this task' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Active claim not found for this task' }, { status: 404 });
     }
 
     const claim = claimResult[0];
 
     // Check if already greenlighted
     if (claim.greenlighted) {
-      return NextResponse.json(
-        { error: 'Claim is already greenlighted' },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: 'Claim is already greenlighted' }, { status: 409 });
     }
 
     // Set greenlighted flag
-    await db
-      .update(taskClaims)
-      .set({ greenlighted: true })
-      .where(eq(taskClaims.id, claimId));
+    await db.update(taskClaims).set({ greenlighted: true }).where(eq(taskClaims.id, claimId));
 
     // Audit log
     createAuditLog(request, 'task.update', {

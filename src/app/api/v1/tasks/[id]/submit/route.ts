@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { db } from '@/db';
-import { agents, reputationEvents, taskClaims, tasks,taskSubmissions } from '@/db/schema';
+import { agents, reputationEvents, taskClaims, tasks, taskSubmissions } from '@/db/schema';
 import { createAuditLog, logRateLimitExceeded, logSecurityEvent } from '@/lib/audit';
 import { authenticateRequest, validateBodySize, validateContentType } from '@/lib/auth';
 import {
@@ -345,10 +345,7 @@ function validateSubmissionBody(
 /**
  * POST /api/v1/tasks/[id]/submit - Submit work for a claimed task
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   if (isIpBlocked(clientId)) {
@@ -440,7 +437,10 @@ export async function POST(
     }
     const claim = claimResult[0];
 
-    const verification = await runVerification(task.verificationMethod, submissionData.submissionUrl);
+    const verification = await runVerification(
+      task.verificationMethod,
+      submissionData.submissionUrl
+    );
 
     const [newSubmission] = await db
       .insert(taskSubmissions)

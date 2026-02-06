@@ -5,12 +5,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { agents, reputationEvents, taskClaims, tasks } from '@/db/schema';
 import { logRateLimitExceeded, logSecurityEvent } from '@/lib/audit';
-import {
-  checkRateLimit,
-  detectInjection,
-  getClientIdentifier,
-  isIpBlocked,
-} from '@/lib/security';
+import { checkRateLimit, detectInjection, getClientIdentifier, isIpBlocked } from '@/lib/security';
 
 // UUID validation regex
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -271,9 +266,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         taskId: taskClaims.taskId,
       })
       .from(taskClaims)
-      .where(
-        sql`${taskClaims.agentId} = ${id} AND ${taskClaims.status} = 'completed'`
-      );
+      .where(sql`${taskClaims.agentId} = ${id} AND ${taskClaims.status} = 'completed'`);
 
     const capabilityCompletions: Record<string, number> = {};
 

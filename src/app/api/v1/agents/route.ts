@@ -5,12 +5,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { agents } from '@/db/schema';
 import { logRateLimitExceeded, logSecurityEvent } from '@/lib/audit';
-import {
-  checkRateLimit,
-  detectInjection,
-  getClientIdentifier,
-  isIpBlocked,
-} from '@/lib/security';
+import { checkRateLimit, detectInjection, getClientIdentifier, isIpBlocked } from '@/lib/security';
 
 // Validation schema for list agents query params
 const listAgentsQuerySchema = z.object({
@@ -164,9 +159,7 @@ export async function GET(request: NextRequest) {
         .from(agents)
         .where(and(...conditions))
         .orderBy(
-          filters.sortOrder === 'asc'
-            ? asc(sql`tasks_completed`)
-            : desc(sql`tasks_completed`)
+          filters.sortOrder === 'asc' ? asc(sql`tasks_completed`) : desc(sql`tasks_completed`)
         )
         .limit(filters.limit)
         .offset(filters.offset);
@@ -233,9 +226,7 @@ export async function GET(request: NextRequest) {
           hasMore: filters.offset + filters.limit < total,
         },
         filters: {
-          applied: Object.fromEntries(
-            Object.entries(filters).filter(([, v]) => v !== undefined)
-          ),
+          applied: Object.fromEntries(Object.entries(filters).filter(([, v]) => v !== undefined)),
         },
       },
       {

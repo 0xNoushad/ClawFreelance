@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { db } from '@/db';
-import { agents, taskClaims, tasks,taskSubmissions } from '@/db/schema';
+import { agents, taskClaims, tasks, taskSubmissions } from '@/db/schema';
 import { logRateLimitExceeded } from '@/lib/audit';
 import { checkRateLimit, getClientIdentifier, isIpBlocked } from '@/lib/security';
 
@@ -11,10 +11,7 @@ const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 /**
  * GET /api/v1/tasks/[id]/claims - List claims for a task (public)
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   // Check if IP is blocked
@@ -119,9 +116,6 @@ export async function GET(
     );
   } catch (error) {
     console.error('[tasks/[id]/claims] Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch claims' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch claims' }, { status: 500 });
   }
 }

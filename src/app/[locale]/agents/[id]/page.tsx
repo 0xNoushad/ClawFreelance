@@ -278,7 +278,11 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
           <Header />
           <main className="pt-24 pb-20 px-6">
             <div className="max-w-5xl mx-auto text-center py-20">
-              <AgentIcon size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
+              <AgentIcon
+                size={48}
+                className="mx-auto mb-4"
+                style={{ color: 'var(--text-muted)' }}
+              />
               <h2 className="text-xl font-bold mb-2">
                 {error === 'not_found' ? 'Agent not found' : 'Failed to load profile'}
               </h2>
@@ -384,7 +388,11 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
                 {/* Score + Stats */}
                 <div className="flex gap-6 items-start">
                   <div className="text-center">
-                    <ReputationIcon size={20} className="mx-auto mb-1" style={{ color: 'var(--accent-amber)' }} />
+                    <ReputationIcon
+                      size={20}
+                      className="mx-auto mb-1"
+                      style={{ color: 'var(--accent-amber)' }}
+                    />
                     <div
                       className="text-3xl font-bold font-mono"
                       style={{ color: 'var(--accent-amber)' }}
@@ -400,9 +408,7 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
                     style={{ background: 'var(--border-subtle)' }}
                   />
                   <div className="text-center">
-                    <div className="text-2xl font-bold font-mono">
-                      {agent.stats.successRate}%
-                    </div>
+                    <div className="text-2xl font-bold font-mono">{agent.stats.successRate}%</div>
                     <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       {t('agents.successRate')}
                     </div>
@@ -461,7 +467,8 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
                 },
                 {
                   label: t('agents.totalEarned'),
-                  value: agent.stats.totalEarned > 0 ? agent.stats.totalEarned.toLocaleString() : '0',
+                  value:
+                    agent.stats.totalEarned > 0 ? agent.stats.totalEarned.toLocaleString() : '0',
                   sub: 'Points earned',
                   icon: <StarIcon size={18} style={{ color: 'var(--accent-amber)' }} />,
                 },
@@ -471,7 +478,8 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
                   className="rounded-xl border p-4"
                   style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-card)' }}
                 >
-                  <div className="flex items-center gap-2 mb-2">{stat.icon}
+                  <div className="flex items-center gap-2 mb-2">
+                    {stat.icon}
                     <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       {stat.sub}
                     </span>
@@ -514,11 +522,13 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
 
                       const badgeName = isSpecialist
                         ? `Specialist: ${badge.capability || badge.type.replace('specialist_', '')}`
-                        : t(`agents.badges.${badge.type}` as 'agents.badges.firstTask') || badge.type;
+                        : t(`agents.badges.${badge.type}` as 'agents.badges.firstTask') ||
+                          badge.type;
 
                       const badgeDesc = isSpecialist
                         ? `5+ tasks in ${badge.capability || badge.type.replace('specialist_', '')}`
-                        : t(`agents.badges.${badge.type}Desc` as 'agents.badges.firstTaskDesc') || '';
+                        : t(`agents.badges.${badge.type}Desc` as 'agents.badges.firstTaskDesc') ||
+                          '';
 
                       return (
                         <div
@@ -528,10 +538,7 @@ export default function AgentProfilePage({ params }: { params: Promise<{ id: str
                         >
                           <span className="text-xl">{config.icon}</span>
                           <div className="flex-1 min-w-0">
-                            <div
-                              className="text-sm font-medium"
-                              style={{ color: config.color }}
-                            >
+                            <div className="text-sm font-medium" style={{ color: config.color }}>
                               {badgeName}
                             </div>
                             {badgeDesc && (

@@ -130,9 +130,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         totalEarned: sql<number>`coalesce(sum(${payments.amount}), 0)`,
       })
       .from(payments)
-      .where(
-        sql`${payments.agentId} = ${id} AND ${payments.status} = 'released'`
-      );
+      .where(sql`${payments.agentId} = ${id} AND ${payments.status} = 'released'`);
 
     const totalEarned = Number(releasedEarnings[0]?.totalEarned || 0);
 
@@ -196,10 +194,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 /**
  * PATCH /api/v1/agents/[id] - Update agent profile (auth required, self only)
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   // Check if IP is blocked
@@ -315,10 +310,7 @@ export async function PATCH(
 
     // Ensure there's something to update
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { error: 'No valid fields provided for update' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No valid fields provided for update' }, { status: 400 });
     }
 
     // Verify agent exists

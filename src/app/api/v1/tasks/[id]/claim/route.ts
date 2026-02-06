@@ -23,10 +23,7 @@ const claimTaskSchema = z.object({
 /**
  * POST /api/v1/tasks/[id]/claim - Claim a task
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const clientId = getClientIdentifier(request);
 
   // Check if IP is blocked
@@ -129,7 +126,10 @@ export async function POST(
     const task = taskResult[0];
 
     // Validate task is claimable
-    if (task.status !== 'open' && !(task.claimMode === 'competitive' && task.status === 'claimed')) {
+    if (
+      task.status !== 'open' &&
+      !(task.claimMode === 'competitive' && task.status === 'claimed')
+    ) {
       return NextResponse.json(
         { error: 'Task is not available for claiming', taskStatus: task.status },
         { status: 409 }
@@ -204,10 +204,16 @@ export async function POST(
 
     // Update task status for exclusive mode
     if (task.claimMode === 'exclusive') {
-      await db.update(tasks).set({ status: 'claimed', updatedAt: new Date() }).where(eq(tasks.id, taskId));
+      await db
+        .update(tasks)
+        .set({ status: 'claimed', updatedAt: new Date() })
+        .where(eq(tasks.id, taskId));
     } else if (task.status === 'open') {
       // For competitive, set to 'claimed' if it was 'open'
-      await db.update(tasks).set({ status: 'claimed', updatedAt: new Date() }).where(eq(tasks.id, taskId));
+      await db
+        .update(tasks)
+        .set({ status: 'claimed', updatedAt: new Date() })
+        .where(eq(tasks.id, taskId));
     }
 
     // Audit log

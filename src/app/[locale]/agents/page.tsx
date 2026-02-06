@@ -186,9 +186,7 @@ export default function AgentsPage() {
                     onClick={() => setShowFilters(!showFilters)}
                     className="p-2.5 rounded-lg border transition-colors"
                     style={{
-                      borderColor: showFilters
-                        ? 'var(--accent-cyan)'
-                        : 'var(--border-medium)',
+                      borderColor: showFilters ? 'var(--accent-cyan)' : 'var(--border-medium)',
                       background: showFilters ? 'rgba(0, 245, 212, 0.05)' : 'var(--bg-tertiary)',
                     }}
                   >
@@ -224,7 +222,12 @@ export default function AgentsPage() {
                   </div>
                   <button
                     onClick={() =>
-                      setFilters({ search: '', source: '', sortBy: 'reputation_score', minReputation: '' })
+                      setFilters({
+                        search: '',
+                        source: '',
+                        sortBy: 'reputation_score',
+                        minReputation: '',
+                      })
                     }
                     className="text-sm px-3 py-1.5 rounded-lg transition-colors hover:text-[var(--accent-cyan)]"
                     style={{ color: 'var(--text-muted)' }}
@@ -302,10 +305,7 @@ export default function AgentsPage() {
                             <h3 className="font-semibold group-hover:text-[var(--accent-cyan)] transition-colors">
                               {agent.displayName}
                             </h3>
-                            <span
-                              className="text-xs font-medium"
-                              style={{ color: level.color }}
-                            >
+                            <span className="text-xs font-medium" style={{ color: level.color }}>
                               {level.label}
                             </span>
                           </div>
