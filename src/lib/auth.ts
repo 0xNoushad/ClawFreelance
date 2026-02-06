@@ -1,6 +1,10 @@
+import { and, eq, gt, isNull, or } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { checkRateLimit, extractApiKey, getClientIdentifier } from './security';
+import { db } from '@/db';
+import { agents, apiKeys } from '@/db/schema';
+
+import { checkRateLimit, extractApiKey, getClientIdentifier, hashApiKey } from './security';
 
 /**
  * Authentication and authorization utilities for ClawFreelance API
@@ -11,6 +15,7 @@ export interface AuthenticatedAgent {
   displayName: string;
   permissions: string[];
   source: string;
+  keyHash: string;
 }
 
 export interface AuthResult {
@@ -21,8 +26,7 @@ export interface AuthResult {
 }
 
 /**
- * Verify API key and return agent information
- * In production, this would query the database
+ * Verify API key against database and return agent information
  */
 export async function authenticateRequest(request: NextRequest): Promise<AuthResult> {
   const apiKey = extractApiKey(request);
@@ -35,7 +39,6 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthRes
     };
   }
 
-  // Validate API key format
   if (!apiKey.startsWith('clf_') || apiKey.length < 32) {
     return {
       authenticated: false,
@@ -44,27 +47,78 @@ export async function authenticateRequest(request: NextRequest): Promise<AuthRes
     };
   }
 
-  // In production, look up the key hash in the database
-  // For now, we'll simulate validation
-  // const keyHash = hashApiKey(apiKey);
-  // const apiKeyRecord = await db.query.apiKeys.findFirst({
-  //   where: and(eq(apiKeys.keyHash, keyHash), eq(apiKeys.revoked, false)),
-  //   with: { agent: true },
-  // });
+  const keyHash = hashApiKey(apiKey);
 
-  // Simulate a valid agent for demo
-  // In production, return the actual agent from database
-  const simulatedAgent: AuthenticatedAgent = {
-    id: 'agent-demo',
-    displayName: 'Demo Agent',
-    permissions: ['read', 'write', 'claim'],
-    source: 'openclaw',
-  };
+  try {
+    const now = new Date();
 
-  return {
-    authenticated: true,
-    agent: simulatedAgent,
-  };
+    const keyResult = await db
+      .select({
+        keyId: apiKeys.id,
+        keyHash: apiKeys.keyHash,
+        permissions: apiKeys.permissions,
+        revoked: apiKeys.revoked,
+        expiresAt: apiKeys.expiresAt,
+        gracePeriodEndsAt: apiKeys.gracePeriodEndsAt,
+        agentId: agents.id,
+        displayName: agents.displayName,
+        source: agents.source,
+        agentStatus: agents.status,
+      })
+      .from(apiKeys)
+      .innerJoin(agents, eq(apiKeys.agentId, agents.id))
+      .where(
+        and(
+          eq(apiKeys.keyHash, keyHash),
+          eq(apiKeys.revoked, false),
+          or(isNull(apiKeys.expiresAt), gt(apiKeys.expiresAt, now)),
+          or(isNull(apiKeys.gracePeriodEndsAt), gt(apiKeys.gracePeriodEndsAt, now))
+        )
+      )
+      .limit(1);
+
+    if (keyResult.length === 0) {
+      return {
+        authenticated: false,
+        error: 'Invalid or expired API key.',
+        statusCode: 401,
+      };
+    }
+
+    const record = keyResult[0];
+
+    if (record.agentStatus !== 'active') {
+      return {
+        authenticated: false,
+        error: `Agent account is ${record.agentStatus}.`,
+        statusCode: 403,
+      };
+    }
+
+    // Update lastUsedAt in background (fire-and-forget)
+    db.update(apiKeys)
+      .set({ lastUsedAt: now })
+      .where(eq(apiKeys.id, record.keyId))
+      .then(() => {})
+      .catch(() => {});
+
+    return {
+      authenticated: true,
+      agent: {
+        id: record.agentId,
+        displayName: record.displayName,
+        permissions: (record.permissions as string[]) || ['read'],
+        source: record.source,
+        keyHash,
+      },
+    };
+  } catch {
+    return {
+      authenticated: false,
+      error: 'Authentication service unavailable.',
+      statusCode: 503,
+    };
+  }
 }
 
 /**
@@ -78,7 +132,6 @@ export function withAuth(
   } = {}
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
-    // Rate limiting
     if (options.rateLimit) {
       const clientId = getClientIdentifier(request);
       const rateLimitResult = checkRateLimit(clientId, options.rateLimit);
@@ -101,7 +154,6 @@ export function withAuth(
       }
     }
 
-    // Authenticate
     const authResult = await authenticateRequest(request);
 
     if (!authResult.authenticated || !authResult.agent) {
@@ -111,7 +163,6 @@ export function withAuth(
       );
     }
 
-    // Check permissions
     if (options.requiredPermissions && options.requiredPermissions.length > 0) {
       const hasPermission = options.requiredPermissions.every((perm) =>
         authResult.agent!.permissions.includes(perm)
@@ -128,7 +179,6 @@ export function withAuth(
       }
     }
 
-    // Call the handler with the authenticated agent
     return handler(request, authResult.agent);
   };
 }
@@ -163,10 +213,10 @@ export function validateContentType(request: NextRequest): { valid: boolean; err
  */
 export function validateBodySize(
   contentLength: string | null,
-  maxBytes: number = 1024 * 1024 // 1MB default
+  maxBytes: number = 1024 * 1024
 ): { valid: boolean; error?: string } {
   if (!contentLength) {
-    return { valid: true }; // Let the handler deal with it
+    return { valid: true };
   }
 
   const size = parseInt(contentLength, 10);

@@ -27,6 +27,7 @@ export type AuditAction =
   | 'task.complete'
   | 'task.dispute'
   | 'api_key.create'
+  | 'api_key.rotate'
   | 'api_key.revoke'
   | 'api_key.use'
   | 'payment.initiate'

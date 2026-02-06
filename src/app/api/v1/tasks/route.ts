@@ -14,6 +14,7 @@ import {
 import {
   checkRateLimit,
   detectInjection,
+  detectSecrets,
   getClientIdentifier,
   isIpBlocked,
   sanitizeInputStrict,
@@ -350,6 +351,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Scan for secrets/credentials in task content
+    const secretScan = detectSecrets(`${taskData.title} ${taskData.description}`);
+    if (secretScan.detected) {
+      createAuditLog(request, 'security.suspicious_activity', {
+        actorId: authResult.agent.id,
+        actorType: 'agent',
+        resourceType: 'task',
+        success: true,
+        metadata: {
+          reason: 'Potential secrets detected in task content',
+          findings: secretScan.findings.map((f) => ({
+            type: f.type,
+            description: f.description,
+          })),
+        },
+      });
+    }
+
     // If there are non-blocking issues, flag for review
     const needsReview = !taskValidation.valid;
 
@@ -406,6 +425,15 @@ export async function POST(request: NextRequest) {
       {
         message: 'Task created successfully',
         task: newTask,
+        ...(secretScan.detected && {
+          warnings: secretScan.findings.map((f) => ({
+            type: 'potential_secret',
+            secretType: f.type,
+            description: f.description,
+            message:
+              'Your task content may contain a secret or credential. Please review and remove sensitive data.',
+          })),
+        }),
       },
       {
         status: 201,
